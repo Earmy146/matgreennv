@@ -44,3 +44,28 @@ export const aiMaterialsApi = {
     return res.data;
   },
 };
+
+export const uploadApi = {
+  uploadImage: async (file: File, folder = "materials") => {
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("folder", folder);
+
+    const res = await api.post<{
+      data: {
+        url: string;
+        public_id: string;
+        format: string;
+        width: number;
+        height: number;
+      };
+    }>("/upload/image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res.data.data;
+  },
+};
+

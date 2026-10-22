@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LocateFixed, Upload, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { LocateFixed, Upload, CheckCircle, AlertCircle, Loader2, X, Image as ImageIcon } from "lucide-react";
 import { useLocationStore } from "@/stores/location.store";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { materialsApi } from "@/services/api";
+import { materialsApi, uploadApi } from "@/services/api";
 import { CATEGORY_LABELS } from "@/lib/utils";
 
 export const PostMaterialPage: React.FC = () => {
@@ -26,8 +26,25 @@ export const PostMaterialPage: React.FC = () => {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError(null);
+    try {
+      const result = await uploadApi.uploadImage(file, "materials");
+      setFormData((prev) => ({ ...prev, images: result.url }));
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Lỗi khi tải ảnh lên Cloudinary");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,15 +238,49 @@ export const PostMaterialPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Link ảnh vật liệu (tùy chọn)
+                Ảnh vật liệu (Cloudinary)
               </label>
-              <input
-                type="url"
-                placeholder="https://..."
-                value={formData.images}
-                onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-              />
+              {formData.images ? (
+                <div className="relative w-full h-32 rounded-xl overflow-hidden border border-emerald-200 bg-slate-50 flex items-center justify-center group">
+                  <img src={formData.images} alt="Preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, images: "" })}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-2 pb-2">
+                      {uploadingImage ? (
+                        <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+                      ) : (
+                        <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                      )}
+                      <p className="text-xs text-slate-500 font-medium">
+                        {uploadingImage ? "Đang tải lên Cloudinary..." : "Bấm để tải ảnh từ máy lên Cloudinary"}
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingImage}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="Hoặc dán trực tiếp link ảnh (https://...)"
+                    value={formData.images}
+                    onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

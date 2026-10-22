@@ -4,6 +4,7 @@ const router = express.Router();
 const authRoutes = require("./auth.routes");
 const materialRoutes = require("./material.routes");
 const chatRoutes = require("./chat.routes");
+const uploadRoutes = require("./upload.routes");
 
 router.get("/health", (req, res) => {
   res.json({
@@ -16,5 +17,6 @@ router.get("/health", (req, res) => {
 router.use("/auth", authRoutes);
 router.use("/materials", materialRoutes);
 router.use("/chat", chatRoutes);
+router.use("/upload", uploadRoutes);
 
 module.exports = router;
