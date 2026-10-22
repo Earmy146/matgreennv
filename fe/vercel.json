@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.matgreen.id.vn/:path*"
+    },
+    {
+      "source": "/ai-api/:path*",
+      "destination": "https://ai.matgreen.id.vn/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
