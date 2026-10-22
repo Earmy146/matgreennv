@@ -13,7 +13,7 @@ export const MaterialDetailPage: React.FC = () => {
     description:
       "Nhà chuẩn bị đập để xây mới, thép còn thẳng và đẹp, đã được cắt thành từng thanh 3-4m gọn gàng. Bán thanh lý giá hữu nghị cho ai cần đổ móng hoặc dựng xưởng nhỏ. Người mua tự bố trí xe đến bốc xếp.",
     category: "sat_thep",
-    type: "sell" as const,
+    type: "sell" as "free" | "sell",
     price: 8500,
     unit: "kg",
     images: ["https://images.unsplash.com/photo-1535813547-99c456a41d4a?auto=format&fit=crop&w=1000&q=80"],
