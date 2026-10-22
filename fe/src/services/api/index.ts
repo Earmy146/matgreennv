@@ -89,3 +89,59 @@ export const uploadApi = {
     return res.data.data;
   },
 };
+
+export const authApi = {
+  register: async (payload: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+    address?: string;
+  }) => {
+    const res = await api.post<{
+      message: string;
+      data: { email: string; needVerify: boolean; message: string };
+    }>("/auth/register", payload);
+    return res.data;
+  },
+
+  verifyEmail: async (payload: { email: string; otp: string }) => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        user: any;
+        token: string;
+        message: string;
+      };
+    }>("/auth/verify-email", payload);
+    return res.data;
+  },
+
+  resendOtp: async (email: string) => {
+    const res = await api.post<{
+      message: string;
+      data: { email: string; message: string };
+    }>("/auth/resend-otp", { email });
+    return res.data;
+  },
+
+  login: async (payload: { email: string; password: string }) => {
+    const res = await api.post<{
+      message: string;
+      data: {
+        user?: any;
+        token?: string;
+        needVerify?: boolean;
+        email?: string;
+        message?: string;
+      };
+    }>("/auth/login", payload);
+    return res.data;
+  },
+
+  me: async () => {
+    const res = await api.get<{ message: string; data: any }>("/auth/me");
+    return res.data;
+  },
+};
+

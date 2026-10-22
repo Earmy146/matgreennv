@@ -26,6 +26,30 @@ class AuthController {
     }
   }
 
+  async verifyEmail(req, res, next) {
+    try {
+      const result = await authService.verifyEmail(req.body);
+      new OK({
+        message: result.message || "Xác thực tài khoản thành công",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async resendOtp(req, res, next) {
+    try {
+      const result = await authService.resendOtp(req.body);
+      new OK({
+        message: result.message || "Gửi lại mã xác thực thành công",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async me(req, res, next) {
     try {
       new OK({

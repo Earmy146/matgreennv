@@ -34,6 +34,19 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    // Xác thực tài khoản qua Gmail / SMTP
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationOtp: {
+      code: { type: String },
+      expiresAt: { type: Date },
+    },
+    resetPasswordOtp: {
+      code: { type: String },
+      expiresAt: { type: Date },
+    },
   },
   {
     timestamps: true,

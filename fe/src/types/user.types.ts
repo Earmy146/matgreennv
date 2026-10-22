@@ -5,6 +5,7 @@ export interface User {
   phone?: string;
   address?: string;
   role: "user" | "admin";
+  isVerified?: boolean;
 }
 
 export interface AuthState {
