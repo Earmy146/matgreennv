@@ -15,6 +15,7 @@ import { MaterialDetailPage } from "@/pages/MaterialDetailPage";
 import { AiAdvisorPage } from "@/pages/AiAdvisorPage";
 import { ChatPage } from "@/pages/ChatPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 export const router = createBrowserRouter([
   // Các trang công khai phong cách Landing (Home Three & Solox style)
@@ -45,7 +46,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin/news",
-    element: <AdminNewsPage />,
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <AdminNewsPage />
+      </ProtectedRoute>
+    ),
   },
   // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
   {
@@ -66,11 +71,19 @@ export const router = createBrowserRouter([
       },
       {
         path: "post",
-        element: <PostMaterialPage />,
+        element: (
+          <ProtectedRoute>
+            <PostMaterialPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "my-posts",
-        element: <MyPostsPage />,
+        element: (
+          <ProtectedRoute>
+            <MyPostsPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "materials/:id",
@@ -82,7 +95,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "chat",
-        element: <ChatPage />,
+        element: (
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "login",

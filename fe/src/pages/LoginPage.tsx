@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   Recycle,
   Lock,
@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  KeyRound,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { authApi } from "@/services/api";
@@ -21,6 +22,10 @@ type AuthMode = "login" | "register" | "verify";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const redirectTarget = searchParams.get("redirect") || "/dashboard";
+
   const { setAuth } = useAuthStore();
 
   const [mode, setMode] = useState<AuthMode>("login");
@@ -34,6 +39,13 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Hiển thị thông báo nếu bị chuyển hướng từ Protected Route
+  useEffect(() => {
+    if (location.state && (location.state as any).message) {
+      setErrorMsg((location.state as any).message);
+    }
+  }, [location.state]);
 
   // Bộ đếm ngược thời gian gửi lại mã OTP (60s)
   const [resendCountdown, setResendCountdown] = useState(0);
@@ -51,6 +63,13 @@ export const LoginPage: React.FC = () => {
   const clearMessages = () => {
     setErrorMsg(null);
     setSuccessMsg(null);
+  };
+
+  // Chọn tài khoản mẫu nhanh
+  const fillSampleAccount = (sampleEmail: string, samplePass: string) => {
+    setEmail(sampleEmail);
+    setPassword(samplePass);
+    clearMessages();
   };
 
   // Xử lý Đăng Nhập
@@ -76,7 +95,7 @@ export const LoginPage: React.FC = () => {
       if (data.user && data.token) {
         setAuth(data.user, data.token);
         setSuccessMsg("Đăng nhập thành công! Đang chuyển hướng...");
-        setTimeout(() => navigate("/"), 800);
+        setTimeout(() => navigate(redirectTarget), 800);
       }
     } catch (err: any) {
       setErrorMsg(
@@ -277,6 +296,36 @@ export const LoginPage: React.FC = () => {
                   </>
                 )}
               </button>
+
+              {/* Quick Fill Sample Accounts */}
+              <div className="pt-3 border-t border-slate-100">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2 flex items-center gap-1">
+                  <KeyRound className="w-3.5 h-3.5 text-emerald-600" /> Tài khoản mẫu đăng nhập nhanh:
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => fillSampleAccount("admin@matgreen.vn", "MatGreen@Admin2026")}
+                    className="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/60 font-bold transition-all text-center cursor-pointer"
+                  >
+                    👑 Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillSampleAccount("nhaa.thao.do@gmail.com", "MatGreen@123456")}
+                    className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200/60 font-bold transition-all text-center cursor-pointer"
+                  >
+                    🏗️ Nhà A (Cho)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillSampleAccount("nhab.xaydung@gmail.com", "MatGreen@123456")}
+                    className="p-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200/60 font-bold transition-all text-center cursor-pointer"
+                  >
+                    🏡 Nhà B (Nhận)
+                  </button>
+                </div>
+              </div>
             </form>
           )}
 

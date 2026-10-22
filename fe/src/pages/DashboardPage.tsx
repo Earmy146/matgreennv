@@ -27,106 +27,7 @@ import { materialsApi } from "@/services/api";
 import type { MaterialItem } from "@/types/material.types";
 import { formatCurrency, formatDistance, CATEGORY_LABELS } from "@/lib/utils";
 
-// Demo fallback data
-const DEMO_ITEMS: MaterialItem[] = [
-  {
-    _id: "demo-1",
-    title: "1.5 Tấn thép phi 10, phi 12 cũ tháo dỡ từ nhà 3 tầng",
-    description: "Nhà chuẩn bị đập để xây mới, thép còn thẳng và đẹp, bán thanh lý giá mềm cho ai cần làm móng hoặc xưởng cơ khí.",
-    category: "sat_thep",
-    type: "sell",
-    price: 8500,
-    unit: "kg",
-    images: ["https://images.unsplash.com/photo-1535813547-99c456a41d4a?auto=format&fit=crop&w=600&q=80"],
-    location: {
-      type: "Point",
-      coordinates: [105.8542, 21.0285],
-      address: "Số 45, Ngõ 12 Đội Cấn, Ba Đình, Hà Nội",
-    },
-    contactPhone: "0987654321",
-    contactZalo: "0987654321",
-    contactName: "Anh Nam (Chủ nhà)",
-    contactHours: "Gọi trước 30p hoặc 8h-18h",
-    status: "available",
-    owner: { _id: "user-1", name: "Anh Nam (Chủ nhà A)" },
-    distanceKm: 0.8,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    _id: "demo-2",
-    title: "Tặng miễn phí 3 xe xà bần, vữa vụn gạch vỡ tôn nền",
-    description: "Công trình đập tường ngăn phòng, cần dọn mặt bằng gấp trong ngày hôm nay. Miễn phí 100%, ai cần san lấp ao hố vui lòng tự chở.",
-    category: "xa_ban",
-    type: "free",
-    price: 0,
-    unit: "xe tải",
-    images: ["https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=600&q=80"],
-    location: {
-      type: "Point",
-      coordinates: [105.8590, 21.0310],
-      address: "Ngõ 175 Cầu Giấy, Hà Nội",
-    },
-    contactPhone: "0912345678",
-    contactZalo: "0912345678",
-    contactName: "Bác Hùng Thợ Tháo Dỡ",
-    contactHours: "Bất kể lúc nào trong ngày",
-    status: "available",
-    owner: { _id: "user-2", name: "Bác Hùng Thợ Tháo Dỡ" },
-    distanceKm: 1.4,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    _id: "demo-3",
-    title: "Bộ 4 cửa gỗ lim và 2 bộ cửa nhôm kính hệ Xingfa cũ",
-    description: "Nhà thay toàn bộ hệ thống cửa sang kính cường lực nên thanh lý cửa cũ còn rất chắc chắn, khóa và tay nắm còn nguyên.",
-    category: "cua_kinh",
-    type: "sell",
-    price: 450000,
-    unit: "bộ",
-    images: ["https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80"],
-    location: {
-      type: "Point",
-      coordinates: [105.8420, 21.0250],
-      address: "Đường Kim Mã, Ba Đình, Hà Nội",
-    },
-    contactPhone: "0904112233",
-    contactZalo: "0904112233",
-    contactName: "Chị Lan",
-    contactHours: "Sau 17h hoặc cuối tuần",
-    status: "available",
-    owner: { _id: "user-3", name: "Chị Lan" },
-    distanceKm: 2.1,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    _id: "demo-4",
-    title: "Cho tặng bồn cầu Inax và chậu rửa lavabo cũ còn dùng tốt",
-    description: "Nâng cấp nội thất vệ sinh, tặng lại cho ai làm phòng trọ hoặc công trình tạm. Tự tháo mang về.",
-    category: "thiet_bi_ve_sinh",
-    type: "free",
-    price: 0,
-    unit: "bộ",
-    images: ["https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80"],
-    location: {
-      type: "Point",
-      coordinates: [105.8300, 21.0200],
-      address: "Đường Láng, Đống Đa, Hà Nội",
-    },
-    contactPhone: "0977889900",
-    contactZalo: "0977889900",
-    contactName: "Tuấn Anh",
-    contactHours: "Buổi sáng 8h - 12h",
-    status: "available",
-    owner: { _id: "user-4", name: "Tuấn Anh" },
-    distanceKm: 3.5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
+// DashboardPage - Sàn tuần hoàn vật liệu
 export const DashboardPage: React.FC = () => {
   const { latitude, longitude, radiusKm, address } = useLocationStore();
   const { user } = useAuthStore();
@@ -164,18 +65,33 @@ export const DashboardPage: React.FC = () => {
     retry: 1,
   });
 
-  // Dữ liệu hiển thị (Ưu tiên từ Backend, fallback demo nếu chưa có dữ liệu)
+  // Query dự phòng toàn hệ thống nếu phạm vi hẹp chưa có bài đăng
+  const { data: allResult } = useQuery({
+    queryKey: ["dashboard-all-materials", selectedCategory, selectedType, page],
+    queryFn: () =>
+      materialsApi.getAll({
+        category: selectedCategory || undefined,
+        type: selectedType || undefined,
+        page,
+        limit: pageSize,
+      }),
+    enabled: Boolean(nearbyResult && nearbyResult.items.length === 0),
+  });
+
+  const isUsingFallback = Boolean(
+    nearbyResult && nearbyResult.items.length === 0 && allResult && allResult.items.length > 0
+  );
+
   const displayMaterials =
     nearbyResult?.items && nearbyResult.items.length > 0
       ? nearbyResult.items
-      : DEMO_ITEMS.filter((item) => {
-          if (selectedCategory && item.category !== selectedCategory) return false;
-          if (selectedType && item.type !== selectedType) return false;
-          if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-          return true;
-        });
+      : allResult?.items || [];
 
-  const paginationData = nearbyResult?.pagination || {
+  const paginationData = (
+    nearbyResult?.items && nearbyResult.items.length > 0
+      ? nearbyResult.pagination
+      : allResult?.pagination
+  ) || {
     page,
     limit: pageSize,
     total: displayMaterials.length,
@@ -303,6 +219,13 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isUsingFallback && (
+        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+          <span className="font-bold shrink-0">📍 Lưu ý phạm vi:</span>
+          <span>Không tìm thấy vật liệu trong bán kính {radiusKm}km quanh vị trí hiện tại của bạn. Đang hiển thị các nguồn vật liệu mới nhất trên toàn quốc.</span>
+        </div>
+      )}
 
       {/* View Switcher Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
