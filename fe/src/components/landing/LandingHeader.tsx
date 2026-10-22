@@ -112,42 +112,66 @@ export const LandingHeader: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8">
-            <button
-              onClick={() => scrollToSection("hero")}
-              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            <Link
+              to="/"
+              className={`text-sm font-bold transition-colors ${
+                location.pathname === "/"
+                  ? "text-emerald-600 font-extrabold"
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Trang Chủ
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            </Link>
+            <Link
+              to="/about"
+              className={`text-sm font-bold transition-colors ${
+                location.pathname === "/about"
+                  ? "text-emerald-600 font-extrabold"
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Về MatGreen
-            </button>
-            <button
-              onClick={() => scrollToSection("services")}
-              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            </Link>
+            <Link
+              to="/services"
+              className={`text-sm font-bold transition-colors ${
+                location.pathname === "/services"
+                  ? "text-emerald-600 font-extrabold"
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Dịch Vụ & Tính Năng
-            </button>
-            <button
-              onClick={() => scrollToSection("categories")}
-              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            </Link>
+            <Link
+              to="/materials"
+              className={`text-sm font-bold transition-colors ${
+                location.pathname === "/materials"
+                  ? "text-emerald-600 font-extrabold"
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Kho Vật Liệu
-            </button>
+            </Link>
             <Link
               to="/news"
-              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors"
+              className={`text-sm font-bold transition-colors ${
+                location.pathname.startsWith("/news")
+                  ? "text-emerald-600 font-extrabold"
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Tin Tức & Cẩm Nang
             </Link>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            <Link
+              to="/contact"
+              className={`text-sm font-bold transition-colors ${
+                location.pathname === "/contact"
+                  ? "text-emerald-600 font-extrabold"
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Liên Hệ
-            </button>
+            </Link>
           </nav>
 
           {/* Action Buttons */}
@@ -184,43 +208,48 @@ export const LandingHeader: React.FC = () => {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white border-b border-slate-200 px-5 py-4 space-y-3 animate-fadeIn">
-            <button
-              onClick={() => scrollToSection("hero")}
-              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            <Link
+              to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full py-2 font-bold text-slate-800 hover:text-emerald-600"
             >
               Trang Chủ
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            </Link>
+            <Link
+              to="/about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full py-2 font-bold text-slate-800 hover:text-emerald-600"
             >
               Về MatGreen
-            </button>
-            <button
-              onClick={() => scrollToSection("services")}
-              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            </Link>
+            <Link
+              to="/services"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full py-2 font-bold text-slate-800 hover:text-emerald-600"
             >
               Dịch Vụ & Tính Năng
-            </button>
-            <button
-              onClick={() => scrollToSection("categories")}
-              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            </Link>
+            <Link
+              to="/materials"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full py-2 font-bold text-slate-800 hover:text-emerald-600"
             >
               Kho Vật Liệu
-            </button>
+            </Link>
             <Link
               to="/news"
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+              className="block w-full py-2 font-bold text-slate-800 hover:text-emerald-600"
             >
               Tin Tức & Cẩm Nang
             </Link>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            <Link
+              to="/contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full py-2 font-bold text-slate-800 hover:text-emerald-600"
             >
               Liên Hệ
-            </button>
+            </Link>
 
             <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
               <Link

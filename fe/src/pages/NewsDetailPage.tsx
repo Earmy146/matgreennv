@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -14,16 +14,20 @@ import {
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
-import { initialNewsList } from "@/data/news.data";
+import { useNewsStore } from "@/stores/news.store";
 
 export const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { articles, getArticleBySlugOrId, incrementViews } = useNewsStore();
 
-  // Tìm bài viết theo slug hoặc id
-  const article = initialNewsList.find(
-    (item) => item.slug === id || item.id === id
-  );
+  const article = getArticleBySlugOrId(id || "");
+
+  useEffect(() => {
+    if (article) {
+      incrementViews(article.id);
+    }
+  }, [article?.id]);
 
   if (!article) {
     return (
@@ -49,7 +53,7 @@ export const NewsDetailPage: React.FC = () => {
   }
 
   // Lấy các bài viết khác làm bài viết liên quan
-  const relatedArticles = initialNewsList
+  const relatedArticles = articles
     .filter((item) => item.id !== article.id)
     .slice(0, 2);
 

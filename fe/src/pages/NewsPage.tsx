@@ -10,14 +10,16 @@ import {
   Eye,
   Tag,
   PlusCircle,
+  Settings,
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
-import { initialNewsList } from "@/data/news.data";
+import { useNewsStore } from "@/stores/news.store";
 import { useAuthStore } from "@/stores/auth.store";
 
 export const NewsPage: React.FC = () => {
   const { user } = useAuthStore();
+  const { articles } = useNewsStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Tất cả");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -29,7 +31,7 @@ export const NewsPage: React.FC = () => {
     "Hướng Dẫn & Mẹo",
   ];
 
-  const filteredNews = initialNewsList.filter((article) => {
+  const filteredNews = articles.filter((article) => {
     const matchesCategory =
       selectedCategory === "Tất cả" || article.category === selectedCategory;
     const matchesSearch =
@@ -56,13 +58,14 @@ export const NewsPage: React.FC = () => {
             Nơi chia sẻ kiến thức thực tế về tháo dỡ công trình, kỹ thuật thu hồi vật tư nguyên vẹn và các giải pháp xây dựng bền vững vì môi trường.
           </p>
 
-          {user?.role === "admin" && (
-            <div className="mt-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs shadow-md">
-                <PlusCircle className="w-4 h-4" /> Bảng Quản Trị: Quyền Admin chỉnh sửa tin tức đang sẵn sàng
-              </span>
-            </div>
-          )}
+          <div className="mt-6">
+            <Link
+              to="/admin/news"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-colors"
+            >
+              <Settings className="w-4 h-4" /> Bảng Quản Trị: Thêm / Chỉnh Sửa Bài Viết Tin Tức
+            </Link>
+          </div>
         </div>
       </div>
 

@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Newspaper, Calendar, Clock, ArrowRight, User } from "lucide-react";
-import { initialNewsList } from "@/data/news.data";
+import { useNewsStore } from "@/stores/news.store";
 
 export const LandingNewsSection: React.FC = () => {
+  const { articles } = useNewsStore();
   // Lấy 3 bài viết mới nhất
-  const featuredNews = initialNewsList.slice(0, 3);
+  const featuredNews = articles.slice(0, 3);
 
   return (
     <section id="news" className="py-20 lg:py-28 bg-white relative">

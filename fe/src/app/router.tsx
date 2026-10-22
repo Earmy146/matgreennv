@@ -1,8 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { LandingPage } from "@/pages/LandingPage";
+import { AboutPage } from "@/pages/AboutPage";
+import { ServicesPage } from "@/pages/ServicesPage";
+import { ContactPage } from "@/pages/ContactPage";
 import { NewsPage } from "@/pages/NewsPage";
 import { NewsDetailPage } from "@/pages/NewsDetailPage";
+import { AdminNewsPage } from "@/pages/AdminNewsPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { HomePage } from "@/pages/HomePage";
 import { PostMaterialPage } from "@/pages/PostMaterialPage";
@@ -13,12 +17,24 @@ import { ChatPage } from "@/pages/ChatPage";
 import { LoginPage } from "@/pages/LoginPage";
 
 export const router = createBrowserRouter([
-  // Trang Landing Page Chính thức (Home Three Style)
+  // Các trang công khai phong cách Landing (Home Three & Solox style)
   {
     path: "/",
     element: <LandingPage />,
   },
-  // Module Tin Tức & Cẩm Nang
+  {
+    path: "/about",
+    element: <AboutPage />,
+  },
+  {
+    path: "/services",
+    element: <ServicesPage />,
+  },
+  {
+    path: "/contact",
+    element: <ContactPage />,
+  },
+  // Module Tin Tức & Quản Trị Bài Viết
   {
     path: "/news",
     element: <NewsPage />,
@@ -26,6 +42,10 @@ export const router = createBrowserRouter([
   {
     path: "/news/:id",
     element: <NewsDetailPage />,
+  },
+  {
+    path: "/admin/news",
+    element: <AdminNewsPage />,
   },
   // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
   {
