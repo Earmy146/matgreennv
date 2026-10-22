@@ -1,3 +1,5 @@
+import type { Pagination } from "./api.types";
+
 export type MaterialCategory =
   | "sat_thep"
   | "gach_ngoi"
@@ -25,15 +27,26 @@ export interface MaterialItem {
   unit: string;
   images: string[];
   location: MaterialLocation;
-  contactPhone?: string;
+  contactPhone: string;
+  contactZalo?: string;
+  contactName?: string;
+  contactHours?: string;
   status: "available" | "reserved" | "completed";
   owner: {
     _id: string;
     name: string;
     phone?: string;
     avatar?: string;
+    email?: string;
   };
   distanceKm?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface NearbyMaterialsResult {
+  items: MaterialItem[];
+  pagination: Pagination;
+  searchRadiusKm: number;
+  searchDiameterKm: number;
 }

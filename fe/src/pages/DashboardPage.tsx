@@ -9,8 +9,6 @@ import {
   Layers,
   Recycle,
   DollarSign,
-  TrendingUp,
-  Building2,
   Gift,
   ArrowUpRight,
   Filter,
@@ -22,6 +20,7 @@ import {
 import { RadarMapWidget } from "@/features/map/RadarMapWidget";
 import { MaterialCard } from "@/features/materials/MaterialCard";
 import { MaterialFilter } from "@/features/materials/MaterialFilter";
+import { Pagination } from "@/components/ui/Pagination";
 import { useLocationStore } from "@/stores/location.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { materialsApi } from "@/services/api";
@@ -45,6 +44,9 @@ const DEMO_ITEMS: MaterialItem[] = [
       address: "Số 45, Ngõ 12 Đội Cấn, Ba Đình, Hà Nội",
     },
     contactPhone: "0987654321",
+    contactZalo: "0987654321",
+    contactName: "Anh Nam (Chủ nhà)",
+    contactHours: "Gọi trước 30p hoặc 8h-18h",
     status: "available",
     owner: { _id: "user-1", name: "Anh Nam (Chủ nhà A)" },
     distanceKm: 0.8,
@@ -66,6 +68,9 @@ const DEMO_ITEMS: MaterialItem[] = [
       address: "Ngõ 175 Cầu Giấy, Hà Nội",
     },
     contactPhone: "0912345678",
+    contactZalo: "0912345678",
+    contactName: "Bác Hùng Thợ Tháo Dỡ",
+    contactHours: "Bất kể lúc nào trong ngày",
     status: "available",
     owner: { _id: "user-2", name: "Bác Hùng Thợ Tháo Dỡ" },
     distanceKm: 1.4,
@@ -87,6 +92,9 @@ const DEMO_ITEMS: MaterialItem[] = [
       address: "Đường Kim Mã, Ba Đình, Hà Nội",
     },
     contactPhone: "0904112233",
+    contactZalo: "0904112233",
+    contactName: "Chị Lan",
+    contactHours: "Sau 17h hoặc cuối tuần",
     status: "available",
     owner: { _id: "user-3", name: "Chị Lan" },
     distanceKm: 2.1,
@@ -108,6 +116,9 @@ const DEMO_ITEMS: MaterialItem[] = [
       address: "Đường Láng, Đống Đa, Hà Nội",
     },
     contactPhone: "0977889900",
+    contactZalo: "0977889900",
+    contactName: "Tuấn Anh",
+    contactHours: "Buổi sáng 8h - 12h",
     status: "available",
     owner: { _id: "user-4", name: "Tuấn Anh" },
     distanceKm: 3.5,
@@ -120,40 +131,75 @@ export const DashboardPage: React.FC = () => {
   const { latitude, longitude, radiusKm, address } = useLocationStore();
   const { user } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState<"radar" | "list" | "my-posts">("radar");
+  const [activeTab, setActiveTab] = useState<"radar" | "list">("radar");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 8;
 
-  const { data: remoteMaterials, isLoading } = useQuery({
-    queryKey: ["dashboard-materials", latitude, longitude, radiusKm, selectedCategory, selectedType],
+  // Lấy dữ liệu theo tọa độ người nhận và bán kính quét có phân trang
+  const { data: nearbyResult, isLoading } = useQuery({
+    queryKey: [
+      "dashboard-nearby-materials",
+      latitude,
+      longitude,
+      radiusKm,
+      selectedCategory,
+      selectedType,
+      searchTerm,
+      page,
+    ],
     queryFn: () =>
-      latitude && longitude
-        ? materialsApi.getNearby({
-            latitude,
-            longitude,
-            radiusKm,
-            category: selectedCategory || undefined,
-            type: selectedType || undefined,
-          })
-        : materialsApi.getAll({
-            category: selectedCategory || undefined,
-            type: selectedType || undefined,
-          }),
+      materialsApi.getNearby({
+        latitude: latitude || 21.0285,
+        longitude: longitude || 105.8542,
+        radiusKm,
+        category: selectedCategory || undefined,
+        type: selectedType || undefined,
+        search: searchTerm || undefined,
+        page,
+        limit: pageSize,
+      }),
     retry: 1,
   });
 
+  // Dữ liệu hiển thị (Ưu tiên từ Backend, fallback demo nếu chưa có dữ liệu)
   const displayMaterials =
-    remoteMaterials && remoteMaterials.length > 0
-      ? remoteMaterials
+    nearbyResult?.items && nearbyResult.items.length > 0
+      ? nearbyResult.items
       : DEMO_ITEMS.filter((item) => {
           if (selectedCategory && item.category !== selectedCategory) return false;
           if (selectedType && item.type !== selectedType) return false;
+          if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
           return true;
         });
+
+  const paginationData = nearbyResult?.pagination || {
+    page,
+    limit: pageSize,
+    total: displayMaterials.length,
+    totalPages: Math.ceil(displayMaterials.length / pageSize) || 1,
+  };
 
   // KPI calculations
   const totalFree = displayMaterials.filter((m) => m.type === "free").length;
   const totalSell = displayMaterials.filter((m) => m.type === "sell").length;
+
+  const handleFilterCategory = (cat: string) => {
+    setSelectedCategory(cat);
+    setPage(1);
+  };
+
+  const handleFilterType = (t: string) => {
+    setSelectedType(t);
+    setPage(1);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -168,8 +214,8 @@ export const DashboardPage: React.FC = () => {
             Xin chào, {user?.name || "Bạn"}! 👋
           </h1>
           <p className="text-xs sm:text-sm text-emerald-100/80 max-w-xl">
-            Đang quét trong bán kính <strong>{radiusKm}km</strong> xung quanh <strong>{address}</strong>. Tìm thấy{" "}
-            <strong>{displayMaterials.length}</strong> công trình và nguồn vật liệu khả dụng.
+            Đang quét trong bán kính <strong>{radiusKm}km</strong> (đường kính <strong>{radiusKm * 2}km</strong>) quanh{" "}
+            <strong>{address}</strong>. Tìm thấy <strong>{paginationData.total}</strong> công trình và nguồn vật liệu khả dụng.
           </p>
         </div>
 
@@ -202,10 +248,10 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black text-slate-900">
-            {displayMaterials.length}
+            {paginationData.total}
           </div>
           <div className="mt-1 text-xs text-emerald-600 font-medium">
-            Trong bán kính {radiusKm} km
+            Bán kính quét: {radiusKm} km
           </div>
         </div>
 
@@ -237,7 +283,7 @@ export const DashboardPage: React.FC = () => {
             {totalSell}
           </div>
           <div className="mt-1 text-xs text-slate-500">
-            Sắt thép, cửa nhôm, gỗ copha
+            Sắt thép, cửa nhôm, gỗ ván
           </div>
         </div>
 
@@ -282,7 +328,7 @@ export const DashboardPage: React.FC = () => {
             }`}
           >
             <Layers className="w-4 h-4" />
-            Danh Sách Lưới Thẻ ({displayMaterials.length})
+            Danh Sách Phân Trang ({paginationData.total})
           </button>
         </div>
 
@@ -322,20 +368,42 @@ export const DashboardPage: React.FC = () => {
 
       {activeTab === "list" && (
         <div className="space-y-6">
-          {/* Filters */}
+          {/* Filters with custom radius/diameter input and keyword search */}
           <MaterialFilter
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleFilterCategory}
             selectedType={selectedType}
-            onSelectType={setSelectedType}
+            onSelectType={handleFilterType}
+            searchTerm={searchTerm}
+            onSearchChange={handleSearch}
           />
 
           {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {displayMaterials.map((mat) => (
-              <MaterialCard key={mat._id} material={mat} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="py-20 text-center text-slate-400 text-sm">
+              Đang quét các công trình trong bán kính {radiusKm} km...
+            </div>
+          ) : displayMaterials.length === 0 ? (
+            <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-2">
+              <MapPin className="w-10 h-10 text-slate-300 mx-auto" />
+              <h4 className="font-bold text-slate-700 text-sm">Không có vật liệu nào trong bán kính {radiusKm}km</h4>
+              <p className="text-xs text-slate-400">
+                Hãy thử tăng bán kính quét lên (ví dụ: 10km hoặc 20km) hoặc xóa từ khóa tìm kiếm.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {displayMaterials.map((mat) => (
+                <MaterialCard key={mat._id} material={mat} />
+              ))}
+            </div>
+          )}
+
+          {/* Phân Trang (Pagination Controls) */}
+          <Pagination
+            pagination={paginationData}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
         </div>
       )}
     </div>

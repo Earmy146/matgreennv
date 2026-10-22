@@ -16,16 +16,76 @@ class MaterialController {
 
   async getNearby(req, res, next) {
     try {
-      const { latitude, longitude, radiusKm, category, type } = req.query;
+      const {
+        latitude,
+        longitude,
+        radiusKm,
+        diameterKm,
+        category,
+        type,
+        search,
+        page,
+        limit,
+      } = req.query;
+
       const result = await materialService.getNearbyMaterials({
         latitude,
         longitude,
         radiusKm,
+        diameterKm,
         category,
         type,
+        search,
+        page,
+        limit,
       });
+
       new OK({
         message: "Lấy danh sách vật liệu quanh bạn thành công",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getMyPosts(req, res, next) {
+    try {
+      const { status, page, limit } = req.query;
+      const result = await materialService.getMyMaterials(req.user.id, {
+        status,
+        page,
+        limit,
+      });
+      new OK({
+        message: "Lấy danh sách bài đăng của bạn thành công",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateStatus(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const result = await materialService.updateStatus(id, req.user.id, status);
+      new OK({
+        message: "Cập nhật trạng thái thành công",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async delete(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await materialService.deleteMaterial(id, req.user.id);
+      new OK({
+        message: "Xóa bài đăng thành công",
         data: result,
       }).send(res);
     } catch (err) {
@@ -36,7 +96,10 @@ class MaterialController {
   async list(req, res, next) {
     try {
       const { category, type, page, limit } = req.query;
-      const result = await materialService.getMaterials({
+      const result = await materialService.getNearbyMaterials({
+        latitude: 21.0285,
+        longitude: 105.8542,
+        radiusKm: 100,
         category,
         type,
         page,

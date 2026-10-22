@@ -4,11 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Recycle, Sparkles, MapPin, Search, PlusCircle, ArrowRight, Layers } from "lucide-react";
 import { MaterialFilter } from "@/features/materials/MaterialFilter";
 import { MaterialCard } from "@/features/materials/MaterialCard";
+import { Pagination } from "@/components/ui/Pagination";
 import { useLocationStore } from "@/stores/location.store";
 import { materialsApi } from "@/services/api";
 import type { MaterialItem } from "@/types/material.types";
 
-// Mock demo data để khi chưa kết nối database vẫn xem và trải nghiệm giao diện mượt mà
+// Mock demo data
 const DEMO_MATERIALS: MaterialItem[] = [
   {
     _id: "demo-1",
@@ -100,34 +101,66 @@ export const HomePage: React.FC = () => {
   const { latitude, longitude, radiusKm } = useLocationStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 12;
 
-  const { data: remoteMaterials, isLoading } = useQuery({
-    queryKey: ["materials-nearby", latitude, longitude, radiusKm, selectedCategory, selectedType],
+  const { data: nearbyResult, isLoading } = useQuery({
+    queryKey: [
+      "materials-nearby-page",
+      latitude,
+      longitude,
+      radiusKm,
+      selectedCategory,
+      selectedType,
+      searchTerm,
+      page,
+    ],
     queryFn: () =>
-      latitude && longitude
-        ? materialsApi.getNearby({
-            latitude,
-            longitude,
-            radiusKm,
-            category: selectedCategory || undefined,
-            type: selectedType || undefined,
-          })
-        : materialsApi.getAll({
-            category: selectedCategory || undefined,
-            type: selectedType || undefined,
-          }),
+      materialsApi.getNearby({
+        latitude: latitude || 21.0285,
+        longitude: longitude || 105.8542,
+        radiusKm,
+        category: selectedCategory || undefined,
+        type: selectedType || undefined,
+        search: searchTerm || undefined,
+        page,
+        limit: pageSize,
+      }),
     retry: 1,
   });
 
-  // Ưu tiên hiển thị dữ liệu từ Backend, nếu chưa có hoặc đang khởi tạo thì fallback demo
   const displayMaterials =
-    remoteMaterials && remoteMaterials.length > 0
-      ? remoteMaterials
+    nearbyResult?.items && nearbyResult.items.length > 0
+      ? nearbyResult.items
       : DEMO_MATERIALS.filter((item) => {
           if (selectedCategory && item.category !== selectedCategory) return false;
           if (selectedType && item.type !== selectedType) return false;
+          if (searchTerm && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
           return true;
         });
+
+  const paginationData = nearbyResult?.pagination || {
+    page,
+    limit: pageSize,
+    total: displayMaterials.length,
+    totalPages: Math.ceil(displayMaterials.length / pageSize) || 1,
+  };
+
+  const handleFilterCategory = (cat: string) => {
+    setSelectedCategory(cat);
+    setPage(1);
+  };
+
+  const handleFilterType = (t: string) => {
+    setSelectedType(t);
+    setPage(1);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-8">
@@ -172,12 +205,14 @@ export const HomePage: React.FC = () => {
         <div className="absolute -right-20 -bottom-20 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
       </section>
 
-      {/* Filter Component */}
+      {/* Filter Component with Custom Radius/Diameter and Keyword Search */}
       <MaterialFilter
         selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+        onSelectCategory={handleFilterCategory}
         selectedType={selectedType}
-        onSelectType={setSelectedType}
+        onSelectType={handleFilterType}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
       />
 
       {/* Material Grid Section */}
@@ -189,7 +224,7 @@ export const HomePage: React.FC = () => {
               Vật Liệu Khả Dụng Quanh Vị Trí Của Bạn
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tìm thấy {displayMaterials.length} nguồn vật liệu trong bán kính {radiusKm}km
+              Tìm thấy {paginationData.total} nguồn vật liệu trong bán kính {radiusKm}km
             </p>
           </div>
         </div>
@@ -199,10 +234,10 @@ export const HomePage: React.FC = () => {
             Đang tìm kiếm vật liệu quanh khu vực của bạn...
           </div>
         ) : displayMaterials.length === 0 ? (
-          <div className="py-16 text-center bg-white rounded-2xl border border-slate-200 p-8">
-            <MapPin className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-2">
+            <MapPin className="w-12 h-12 text-slate-300 mx-auto mb-2" />
             <h3 className="text-base font-bold text-slate-700">Không có vật liệu nào quanh đây</h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
               Hãy thử nới rộng bán kính tìm kiếm (ví dụ lên 10km hoặc 20km) hoặc chọn danh mục khác.
             </p>
           </div>
@@ -213,6 +248,12 @@ export const HomePage: React.FC = () => {
             ))}
           </div>
         )}
+
+        {/* Phân Trang (Pagination) */}
+        <Pagination
+          pagination={paginationData}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
       </section>
     </div>
   );

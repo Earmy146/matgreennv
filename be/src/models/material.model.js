@@ -62,7 +62,20 @@ const materialSchema = new mongoose.Schema(
     },
     contactPhone: {
       type: String,
+      required: true,
       trim: true,
+    },
+    contactZalo: {
+      type: String,
+      trim: true,
+    },
+    contactName: {
+      type: String,
+      trim: true,
+    },
+    contactHours: {
+      type: String,
+      trim: true, // ví dụ: "7h - 18h hàng ngày", "Báo trước 30 phút"
     },
     status: {
       type: String,
