@@ -1,0 +1,246 @@
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Recycle,
+  Phone,
+  Mail,
+  MapPin,
+  Menu,
+  X,
+  Compass,
+  PlusCircle,
+  LayoutDashboard,
+  LogIn,
+  Search,
+} from "lucide-react";
+import { useAuthStore } from "@/stores/auth.store";
+
+export const LandingHeader: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuthStore();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToSection = (sectionId: string) => {
+    setMobileMenuOpen(false);
+    if (location.pathname !== "/") {
+      navigate(`/#${sectionId}`);
+      return;
+    }
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  return (
+    <header className="w-full relative z-50">
+      {/* Top bar info */}
+      <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800 hidden md:block">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+              <Phone className="w-3.5 h-3.5 text-emerald-400" /> Hotline: 1900 8899 / 0988 776 655
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-slate-400" /> hotro@matgreen.vn
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" /> Kết nối toàn quốc (Hà Nội, TP.HCM, Đà Nẵng...)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-slate-300">
+                  Xin chào, <strong className="text-emerald-400">{user.name}</strong>
+                </span>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" /> Bảng điều khiển
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors"
+                >
+                  <LogIn className="w-3.5 h-3.5" /> Đăng nhập / Đăng ký
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navbar */}
+      <div
+        className={`w-full transition-all duration-300 ${
+          isScrolled
+            ? "fixed top-0 left-0 bg-white/95 backdrop-blur-md shadow-md py-3"
+            : "bg-white py-4 border-b border-slate-100"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          {/* Brand Logo */}
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
+              <Recycle className="w-6 h-6 animate-spin-slow" />
+            </div>
+            <div>
+              <span className="text-2xl font-black tracking-tight text-slate-900 block leading-tight">
+                Mat<span className="text-emerald-600">Green</span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block -mt-1">
+                Vật Liệu Tuần Hoàn
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-8">
+            <button
+              onClick={() => scrollToSection("hero")}
+              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              Trang Chủ
+            </button>
+            <button
+              onClick={() => scrollToSection("about")}
+              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              Về MatGreen
+            </button>
+            <button
+              onClick={() => scrollToSection("services")}
+              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              Dịch Vụ & Tính Năng
+            </button>
+            <button
+              onClick={() => scrollToSection("categories")}
+              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              Kho Vật Liệu
+            </button>
+            <Link
+              to="/news"
+              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors"
+            >
+              Tin Tức & Cẩm Nang
+            </Link>
+            <button
+              onClick={() => scrollToSection("contact")}
+              className="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              Liên Hệ
+            </button>
+          </nav>
+
+          {/* Action Buttons */}
+          <div className="hidden sm:flex items-center gap-3">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all shadow-xs"
+            >
+              <Compass className="w-4 h-4 text-emerald-600" />
+              Bản Đồ Radar
+            </Link>
+
+            <Link
+              to="/post"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 active:scale-98"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Đăng Tin Vật Liệu
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex lg:hidden items-center gap-2">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Mở menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-white border-b border-slate-200 px-5 py-4 space-y-3 animate-fadeIn">
+            <button
+              onClick={() => scrollToSection("hero")}
+              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            >
+              Trang Chủ
+            </button>
+            <button
+              onClick={() => scrollToSection("about")}
+              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            >
+              Về MatGreen
+            </button>
+            <button
+              onClick={() => scrollToSection("services")}
+              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            >
+              Dịch Vụ & Tính Năng
+            </button>
+            <button
+              onClick={() => scrollToSection("categories")}
+              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            >
+              Kho Vật Liệu
+            </button>
+            <Link
+              to="/news"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            >
+              Tin Tức & Cẩm Nang
+            </Link>
+            <button
+              onClick={() => scrollToSection("contact")}
+              className="block w-full text-left py-2 font-bold text-slate-800 hover:text-emerald-600"
+            >
+              Liên Hệ
+            </button>
+
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 text-center rounded-xl bg-slate-100 font-bold text-slate-800 text-xs flex items-center justify-center gap-1.5"
+              >
+                <Compass className="w-4 h-4 text-emerald-600" /> Vào Bản Đồ Radar GPS
+              </Link>
+              <Link
+                to="/post"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 text-center rounded-xl bg-emerald-600 font-bold text-white text-xs flex items-center justify-center gap-1.5"
+              >
+                <PlusCircle className="w-4 h-4" /> Đăng Tin Cho / Bán Vật Liệu
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};

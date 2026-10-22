@@ -44,6 +44,15 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
           <Menu className="w-5 h-5" />
         </button>
 
+        {/* Home Link */}
+        <Link
+          to="/"
+          className="hidden lg:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-emerald-700 hover:bg-slate-50 text-xs font-bold transition-colors"
+          title="Về Trang Chủ Landing Page"
+        >
+          Trang Chủ
+        </Link>
+
         {/* Global Search Bar */}
         <div className="relative w-full max-w-md hidden sm:block">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />

@@ -59,14 +59,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       group: "Khám Phá & Tìm Kiếm",
       items: [
         {
+          label: "Trang Chủ Landing Page",
+          href: "/",
+          icon: Layers,
+        },
+        {
           label: "Tổng Quan Dashboard",
           href: "/dashboard",
           icon: LayoutDashboard,
           badge: "Mới",
         },
         {
-          label: "Vật Liệu Quanh Bạn",
-          href: "/",
+          label: "Kho Vật Liệu Quanh Bạn",
+          href: "/materials",
           icon: Compass,
         },
         {
@@ -93,12 +98,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      group: "Giao Dịch & Trợ Lý",
+      group: "Giao Dịch, Tin Tức & AI",
       items: [
+        {
+          label: "Tin Tức & Cẩm Nang",
+          href: "/news",
+          icon: MessageSquare,
+        },
         {
           label: "Tin Nhắn Trao Đổi",
           href: "/chat",
-          icon: MessageSquare,
+          icon: PhoneCall,
           badge: "2",
         },
         {
