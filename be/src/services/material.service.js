@@ -65,9 +65,7 @@ class MaterialService {
     if (accuracy === undefined || capturedAt === undefined) {
       throw new BadRequestError("Vui lòng lấy GPS hiện tại trước khi đăng bài");
     }
-    if (/^GPS\s*\(/i.test(address.trim())) {
-      throw new BadRequestError("Vui lòng nhập địa chỉ chi tiết, không dùng tọa độ GPS thay cho địa chỉ");
-    }
+
 
     const parsedLatitude = parseCoordinate(latitude, "Vĩ độ", -90, 90);
     const parsedLongitude = parseCoordinate(longitude, "Kinh độ", -180, 180);
