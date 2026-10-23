@@ -20,9 +20,22 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       smoothWheel: true,
       wheelMultiplier: 1,
       touchMultiplier: 1.5,
+      prevent: (node) => {
+        // Cho phép cuộn native tức thì không bị Lenis chặn trên modal, form hoặc trang admin
+        return (
+          node.closest("[data-lenis-prevent]") !== null ||
+          node.closest(".admin-scrollable") !== null ||
+          window.location.pathname.startsWith("/admin")
+        );
+      },
     });
 
     lenisRef.current = lenis;
+
+    // Tự động dừng Lenis trên trang Admin để con lăn chuột cuộn native mượt mà
+    if (window.location.pathname.startsWith("/admin")) {
+      lenis.stop();
+    }
 
     let rafId: number;
     function raf(time: number) {
@@ -37,6 +50,16 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       lenisRef.current = null;
     };
   }, []);
+
+  // Tạm dừng Lenis khi chuyển vào /admin hoặc bật lại khi ra ngoài
+  useEffect(() => {
+    if (!lenisRef.current) return;
+    if (location.pathname.startsWith("/admin")) {
+      lenisRef.current.stop();
+    } else {
+      lenisRef.current.start();
+    }
+  }, [location.pathname]);
 
   // Cuộn lên đầu trang tức thì khi chuyển trang
   useEffect(() => {
