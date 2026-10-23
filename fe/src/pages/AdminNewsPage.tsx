@@ -186,7 +186,10 @@ export const AdminNewsPage: React.FC = () => {
         setFormData((prev) => ({
           ...prev,
           thumbnail: uploadedUrl,
-          bannerImage: prev.bannerImage ? prev.bannerImage : uploadedUrl,
+          bannerImage:
+            !prev.bannerImage || prev.bannerImage.includes("res.cloudinary.com")
+              ? uploadedUrl
+              : prev.bannerImage,
         }));
       } else {
         setFormData((prev) => ({ ...prev, bannerImage: uploadedUrl }));
@@ -599,16 +602,29 @@ export const AdminNewsPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Ảnh bìa lớn (Banner Header URL)
+                    Ảnh bìa lớn (Banner Header)
                   </label>
-                  <input
-                    type="text"
-                    inputMode="url"
-                    placeholder="https://... hoặc /uploads/..."
-                    value={formData.bannerImage}
-                    onChange={(e) => setFormData({ ...formData, bannerImage: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                  <div className="flex gap-2">
+                    <label className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs cursor-pointer transition-colors">
+                      <UploadCloud className="w-4 h-4 text-emerald-600" />
+                      {uploadingTarget === "banner" ? "Đang tải..." : "Tải ảnh"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingTarget !== null}
+                        onChange={(e) => handleFileUpload(e, "banner")}
+                        className="hidden"
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="url"
+                      placeholder="https://... hoặc /uploads/..."
+                      value={formData.bannerImage}
+                      onChange={(e) => setFormData({ ...formData, bannerImage: e.target.value })}
+                      className="min-w-0 flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
                 </div>
 
                 <div>
