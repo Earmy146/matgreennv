@@ -1,6 +1,7 @@
 import { Outlet, createBrowserRouter } from "react-router-dom";
 import { SmoothScrollProvider } from "@/components/common/SmoothScrollProvider";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import { LandingPage } from "@/pages/LandingPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ServicesPage } from "@/pages/ServicesPage";
@@ -20,6 +21,8 @@ import { MaterialRequestsPage } from "@/pages/MaterialRequestsPage";
 import { SavedMaterialsPage } from "@/pages/SavedMaterialsPage";
 import { EditMaterialPage } from "@/pages/EditMaterialPage";
 import { AdminModerationPage } from "@/pages/AdminModerationPage";
+import { AdminHubPage } from "@/pages/AdminHubPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
@@ -32,6 +35,7 @@ const RootLayout = () => (
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <NotFoundPage />,
     children: [
       // Các trang công khai phong cách Landing (Home Three & Solox style)
       {
@@ -59,21 +63,32 @@ export const router = createBrowserRouter([
         path: "/news/:id",
         element: <NewsDetailPage />,
       },
+      // Trung Tâm Quản Trị Viên (Admin Portal Hub - Tách biệt hoàn toàn)
       {
-        path: "/admin/news",
-        element: (
-          <ProtectedRoute requiredRole="admin">
-            <AdminNewsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/admin/moderation",
+        path: "/admin",
         element: (
           <ProtectedRoute requiredRole="moderator">
-            <AdminModerationPage />
+            <AdminLayout />
           </ProtectedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: <AdminHubPage />,
+          },
+          {
+            path: "moderation",
+            element: <AdminModerationPage />,
+          },
+          {
+            path: "news",
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminNewsPage />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
       // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
       {
@@ -161,6 +176,10 @@ export const router = createBrowserRouter([
             element: <LoginPage />,
           },
         ],
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
     ],
   },

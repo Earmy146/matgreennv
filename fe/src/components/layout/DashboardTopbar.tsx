@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Sparkles,
   SlidersHorizontal,
+  Shield,
 } from "lucide-react";
 import { useLocationStore } from "@/stores/location.store";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -28,7 +29,7 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
   onToggleSidebar,
   collapsed,
 }) => {
-  const { radiusKm, setRadius, address } = useLocationStore();
+  const { latitude, longitude, radiusKm, setRadius, address } = useLocationStore();
   const { getCurrentLocation, isLocating } = useGeolocation();
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
         <Link
           to="/"
           className="hidden lg:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-emerald-700 hover:bg-slate-50 text-xs font-bold transition-colors"
-          title="Về Trang Chủ Landing Page"
+          title="Về Trang Chủ"
         >
           Trang Chủ
         </Link>
@@ -110,11 +111,29 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
         <button
           onClick={getCurrentLocation}
           disabled={isLocating}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-semibold hover:bg-emerald-100/70 transition-colors"
+          className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
+            latitude && longitude
+              ? "border border-emerald-200 bg-emerald-50 text-emerald-800 font-semibold hover:bg-emerald-100/70"
+              : "bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs shadow-emerald-600/30 ring-2 ring-emerald-500/20"
+          }`}
           title="Nhấn để lấy tọa độ thực tế từ GPS"
         >
-          <LocateFixed className={`w-3.5 h-3.5 ${isLocating ? "animate-spin text-emerald-600" : ""}`} />
-          <span className="max-w-[120px] truncate">{address || "Lấy GPS"}</span>
+          <LocateFixed
+            className={`w-3.5 h-3.5 ${
+              isLocating
+                ? "animate-spin"
+                : latitude && longitude
+                ? "text-emerald-600"
+                : "text-white"
+            }`}
+          />
+          <span className="max-w-[120px] truncate">
+            {isLocating
+              ? "Đang dò GPS..."
+              : latitude && longitude
+              ? address || "GPS Đã Bật"
+              : "Bật Vị Trí GPS"}
+          </span>
         </button>
 
         {/* AI Quick Button */}
@@ -188,6 +207,18 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
             </div>
           )}
         </div>
+
+        {/* Admin Quick Portal Access */}
+        {isAuthenticated && (user?.role === "admin" || user?.role === "moderator") && (
+          <Link
+            to="/admin"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-colors border border-slate-700"
+            title="Trở về Cổng Quản Trị Hệ Thống"
+          >
+            <Shield className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Cổng Quản Trị</span>
+          </Link>
+        )}
 
         {/* Post Button (Nhà A) */}
         <Link

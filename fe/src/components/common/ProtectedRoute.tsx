@@ -36,11 +36,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             <ShieldAlert className="w-9 h-9" />
           </div>
           <h2 className="text-xl font-black text-slate-900">
-            Truy Cập Bị Từ Chối (403 Forbidden)
+            Bạn Không Có Quyền Truy Cập
           </h2>
           <p className="text-xs text-slate-500 leading-relaxed">
-            Khu vực này chỉ dành riêng cho tài khoản Quản Trị Viên (Admin). Tài khoản hiện tại của bạn là{" "}
-            <strong className="text-slate-800">"{user.name}" ({user.role})</strong>.
+            Khu vực này yêu cầu tài khoản Quản trị viên hoặc Kiểm duyệt viên. Tài khoản hiện tại của bạn là{" "}
+            <strong className="text-slate-800">
+              "{user.name}" ({user.role === "admin" ? "Quản trị viên" : user.role === "moderator" ? "Kiểm duyệt viên" : "Thành viên"})
+            </strong>.
           </p>
           <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
             <Link
