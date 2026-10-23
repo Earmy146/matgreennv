@@ -185,9 +185,12 @@ export const AdminSettingsPage: React.FC = () => {
     currentUrl: string,
     onUrlChange: (newUrl: string) => void,
     helperText?: string,
-    previewHeight: string = "h-36"
+    previewHeight: string = "h-36",
+    options?: { stacked?: boolean; uploadKey?: string }
   ) => {
-    const uploadId = `upload-${label.replace(/\s+/g, "-").toLowerCase()}`;
+    const uploadId = `upload-${(
+      options?.uploadKey || label.replace(/\s+/g, "-").toLowerCase()
+    ).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
     return (
       <div className="space-y-2">
         <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
@@ -195,10 +198,16 @@ export const AdminSettingsPage: React.FC = () => {
         </label>
         {helperText && <p className="text-[11px] text-slate-500">{helperText}</p>}
 
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div
+          className={
+            options?.stacked
+              ? "flex flex-col gap-3 items-stretch"
+              : "flex flex-col sm:flex-row gap-4 items-start sm:items-center"
+          }
+        >
           {/* Preview Khung ảnh */}
           <div
-            className={`w-full sm:w-48 ${previewHeight} rounded-2xl bg-stone-100 border-2 border-dashed border-stone-300 overflow-hidden relative group shrink-0 flex items-center justify-center`}
+            className={`${options?.stacked ? "w-full" : "w-full sm:w-48"} ${previewHeight} rounded-2xl bg-stone-100 border-2 border-dashed border-stone-300 overflow-hidden relative group shrink-0 flex items-center justify-center`}
           >
             {currentUrl ? (
               <>
@@ -2542,7 +2551,8 @@ export const AdminSettingsPage: React.FC = () => {
                           setFormData({ ...formData, testimonials: newTestimonials });
                         },
                         undefined,
-                        "h-28"
+                        "h-28",
+                        { stacked: true, uploadKey: `testimonial-${idx}-avatar` }
                       )}
 
                       {renderImageUploader(
@@ -2554,7 +2564,8 @@ export const AdminSettingsPage: React.FC = () => {
                           setFormData({ ...formData, testimonials: newTestimonials });
                         },
                         undefined,
-                        "h-28"
+                        "h-28",
+                        { stacked: true, uploadKey: `testimonial-${idx}-project` }
                       )}
                     </div>
 
