@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, CATEGORY_LABELS } from "@/lib/utils";
 import type { MaterialItem } from "@/types/material.types";
-import { materialsApi } from "@/services/api";
+import { materialRequestsApi, materialsApi, type MaterialRequest } from "@/services/api";
 
 export const MyPostsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -24,10 +24,22 @@ export const MyPostsPage: React.FC = () => {
     queryFn: () => materialsApi.getMyPosts({ limit: 50 }),
   });
   const myPosts = data?.items || [];
+  const { data: incomingRequests = [] } = useQuery({
+    queryKey: ["material-requests", "owner"],
+    queryFn: () => materialRequestsApi.listMine("owner"),
+  });
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => materialsApi.updateStatus(id, status),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-materials"] }),
+  });
+  const updateRequest = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: MaterialRequest["status"] }) =>
+      materialRequestsApi.updateStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["material-requests", "owner"] });
+      queryClient.invalidateQueries({ queryKey: ["my-materials"] });
+    },
   });
 
   const deletePost = async (id: string) => {
@@ -100,6 +112,47 @@ export const MyPostsPage: React.FC = () => {
                       <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
                         No image
                       </div>
+                    )}
+
+                    {incomingRequests.length > 0 && (
+                      <section className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
+                        <div>
+                          <h2 className="font-extrabold text-slate-900">Yêu cầu nhận vật liệu</h2>
+                          <p className="text-xs text-slate-500 mt-1">Xem và phản hồi các yêu cầu từ người cần vật liệu.</p>
+                        </div>
+                        <div className="space-y-3">
+                          {incomingRequests.map((request) => (
+                            <div key={request._id} className="rounded-2xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="text-sm">
+                                <div className="font-bold text-slate-900">{request.material?.title}</div>
+                                <div className="text-xs text-slate-600 mt-1">
+                                  Người nhận: <strong>{request.requester?.name}</strong>{request.requester?.phone ? ` · ${request.requester.phone}` : ""}
+                                </div>
+                                {request.message && <div className="text-xs text-slate-500 mt-1">“{request.message}”</div>}
+                                <div className="text-xs mt-1 text-emerald-700">Trạng thái: {request.status}</div>
+                              </div>
+                              {request.status === "pending" && (
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => updateRequest.mutate({ id: request._id, status: "approved" })}
+                                    className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
+                                  >
+                                    Duyệt nhận
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateRequest.mutate({ id: request._id, status: "rejected" })}
+                                    className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-bold"
+                                  >
+                                    Từ chối
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </section>
                     )}
                   </div>
 

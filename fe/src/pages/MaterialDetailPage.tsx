@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Clock,
@@ -10,8 +10,9 @@ import {
   MessageSquare,
   Phone,
   User,
+  CheckCircle2,
 } from "lucide-react";
-import { materialsApi } from "@/services/api";
+import { materialRequestsApi, materialsApi } from "@/services/api";
 import { formatCurrency, formatDistance, CATEGORY_LABELS } from "@/lib/utils";
 import { useLocationStore } from "@/stores/location.store";
 
@@ -19,6 +20,8 @@ export const MaterialDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { latitude, longitude } = useLocationStore();
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [requestMessage, setRequestMessage] = useState("");
+  const queryClient = useQueryClient();
 
   const { data: material, isLoading, isError } = useQuery({
     queryKey: ["material-detail", id, latitude, longitude],
@@ -29,6 +32,16 @@ export const MaterialDetailPage: React.FC = () => {
       }),
     enabled: Boolean(id),
     retry: 1,
+  });
+  const requestMutation = useMutation({
+    mutationFn: () => {
+      if (!material?._id) throw new Error("Chưa tải xong bài đăng");
+      return materialRequestsApi.create(material._id, requestMessage);
+    },
+    onSuccess: () => {
+      setRequestMessage("");
+      queryClient.invalidateQueries({ queryKey: ["material-requests"] });
+    },
   });
 
   if (isLoading) {
@@ -111,6 +124,39 @@ export const MaterialDetailPage: React.FC = () => {
             </div>
           </div>
           <div className="pt-6 border-t border-slate-100 space-y-2.5 mt-6">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                <CheckCircle2 className="w-4 h-4" /> Đăng ký nhận vật liệu
+              </div>
+              <textarea
+                value={requestMessage}
+                onChange={(event) => setRequestMessage(event.target.value)}
+                placeholder="Mô tả nhu cầu và thời gian bạn có thể đến lấy..."
+                rows={2}
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <button
+                type="button"
+                disabled={requestMutation.isPending || material.status !== "available"}
+                onClick={() => requestMutation.mutate()}
+                className="w-full rounded-xl bg-emerald-700 py-2.5 text-xs font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {requestMutation.isPending
+                  ? "Đang gửi yêu cầu..."
+                  : material.status === "available"
+                    ? "Gửi yêu cầu cho người đăng"
+                    : "Bài đăng không còn sẵn sàng"}
+              </button>
+              {requestMutation.isSuccess && (
+                <p className="text-xs font-medium text-emerald-800">Đã gửi yêu cầu. Người đăng sẽ xem và phản hồi.</p>
+              )}
+              {requestMutation.isError && (
+                <p className="text-xs font-medium text-rose-700">
+                  {(requestMutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+                    "Không thể gửi yêu cầu. Bạn có thể cần đăng nhập."}
+                </p>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <a href={`tel:${cleanPhone}`} className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-600 text-white text-xs font-bold"><Phone className="w-4 h-4" /> Gọi điện</a>
               <a href={`https://zalo.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-600 text-white text-xs font-bold"><MessageCircle className="w-4 h-4" /> Nhắn Zalo</a>

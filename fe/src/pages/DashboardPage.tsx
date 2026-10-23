@@ -247,6 +247,8 @@ export const DashboardPage: React.FC = () => {
               materials={displayMaterials}
               radiusKm={radiusKm}
               userAddress={address}
+              userLatitude={latitude}
+              userLongitude={longitude}
             />
           )}
 

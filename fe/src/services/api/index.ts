@@ -68,6 +68,38 @@ export const materialsApi = {
   },
 };
 
+export interface MaterialRequest {
+  _id: string;
+  message?: string;
+  status: "pending" | "approved" | "rejected" | "cancelled" | "completed";
+  material: MaterialItem;
+  requester: { _id: string; name: string; phone?: string; email?: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const materialRequestsApi = {
+  create: async (materialId: string, message?: string) => {
+    const res = await api.post<{ data: MaterialRequest }>("/material-requests", {
+      materialId,
+      message,
+    });
+    return res.data.data;
+  },
+  listMine: async (role: "requester" | "owner" = "requester") => {
+    const res = await api.get<{ data: MaterialRequest[] }>("/material-requests", {
+      params: { role },
+    });
+    return res.data.data;
+  },
+  updateStatus: async (id: string, status: MaterialRequest["status"]) => {
+    const res = await api.patch<{ data: MaterialRequest }>(`/material-requests/${id}/status`, {
+      status,
+    });
+    return res.data.data;
+  },
+};
+
 export const aiMaterialsApi = {
   analyzeDemolition: async (description: string, address?: string) => {
     const res = await aiApi.post("/ai/materials/analyze-demolition", {
