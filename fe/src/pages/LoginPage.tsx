@@ -13,6 +13,8 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { authApi } from "@/services/api";
@@ -35,6 +37,11 @@ export const LoginPage: React.FC = () => {
   const [address, setAddress] = useState("");
   const [otp, setOtp] = useState("");
   const [resetPassword, setResetPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Toggle hiển thị mật khẩu
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -114,6 +121,12 @@ export const LoginPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     clearMessages();
+
+    if (password !== confirmPassword) {
+      setErrorMsg("Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -293,13 +306,21 @@ export const LoginPage: React.FC = () => {
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all bg-slate-50/50 focus:bg-white"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all bg-slate-50/50 focus:bg-white"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -387,13 +408,60 @@ export const LoginPage: React.FC = () => {
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
+                    minLength={6}
                     placeholder="Ít nhất 6 ký tự"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all bg-slate-50/50 focus:bg-white"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all bg-slate-50/50 focus:bg-white"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Xác nhận mật khẩu <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    placeholder="Nhập lại mật khẩu"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 transition-all bg-slate-50/50 focus:bg-white ${
+                      confirmPassword && confirmPassword !== password
+                        ? "border-rose-400 focus:ring-rose-300"
+                        : confirmPassword && confirmPassword === password
+                        ? "border-emerald-400 focus:ring-emerald-300"
+                        : "border-slate-200 focus:ring-emerald-500"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                  {confirmPassword && confirmPassword !== password && (
+                    <p className="text-[11px] text-rose-500 mt-1">Mật khẩu xác nhận chưa khớp</p>
+                  )}
+                  {confirmPassword && confirmPassword === password && (
+                    <p className="text-[11px] text-emerald-600 mt-1">✓ Mật khẩu khớp</p>
+                  )}
                 </div>
               </div>
 
