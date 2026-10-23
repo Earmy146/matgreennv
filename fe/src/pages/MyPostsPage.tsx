@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   FolderOpen,
@@ -14,69 +15,25 @@ import {
 } from "lucide-react";
 import { formatCurrency, CATEGORY_LABELS } from "@/lib/utils";
 import type { MaterialItem } from "@/types/material.types";
+import { materialsApi } from "@/services/api";
 
 export const MyPostsPage: React.FC = () => {
-  const [myPosts, setMyPosts] = useState<MaterialItem[]>([
-    {
-      _id: "my-1",
-      title: "1.5 Tấn thép phi 10, phi 12 cũ tháo dỡ từ nhà 3 tầng",
-      description: "Nhà chuẩn bị đập để xây mới, thép còn thẳng và đẹp, đã gom lại gọn gàng trong sân.",
-      category: "sat_thep",
-      type: "sell",
-      price: 8500,
-      unit: "kg",
-      images: ["https://images.unsplash.com/photo-1535813547-99c456a41d4a?auto=format&fit=crop&w=600&q=80"],
-      location: {
-        type: "Point",
-        coordinates: [105.8542, 21.0285],
-        address: "Số 45, Ngõ 12 Đội Cấn, Ba Đình, Hà Nội",
-      },
-      contactPhone: "0987654321",
-      status: "available",
-      owner: { _id: "user-me", name: "Tôi (Nhà A)" },
-      createdAt: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      _id: "my-2",
-      title: "Tặng miễn phí 3 xe xà bần, vữa vụn gạch vỡ tôn nền",
-      description: "Đập tường ngăn phòng, cần dọn mặt bằng gấp trong ngày hôm nay.",
-      category: "xa_ban",
-      type: "free",
-      price: 0,
-      unit: "xe tải",
-      images: ["https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=600&q=80"],
-      location: {
-        type: "Point",
-        coordinates: [105.8542, 21.0285],
-        address: "Số 45, Ngõ 12 Đội Cấn, Ba Đình, Hà Nội",
-      },
-      contactPhone: "0987654321",
-      status: "reserved",
-      owner: { _id: "user-me", name: "Tôi (Nhà A)" },
-      createdAt: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ]);
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["my-materials"],
+    queryFn: () => materialsApi.getMyPosts({ limit: 50 }),
+  });
+  const myPosts = data?.items || [];
 
-  const toggleStatus = (id: string) => {
-    setMyPosts((prev) =>
-      prev.map((post) => {
-        if (post._id !== id) return post;
-        const nextStatus =
-          post.status === "available"
-            ? "reserved"
-            : post.status === "reserved"
-            ? "completed"
-            : "available";
-        return { ...post, status: nextStatus };
-      })
-    );
-  };
+  const updateStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => materialsApi.updateStatus(id, status),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-materials"] }),
+  });
 
-  const deletePost = (id: string) => {
+  const deletePost = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa tin đăng vật liệu này?")) {
-      setMyPosts((prev) => prev.filter((p) => p._id !== id));
+      await materialsApi.delete(id);
+      await queryClient.invalidateQueries({ queryKey: ["my-materials"] });
     }
   };
 
@@ -107,7 +64,11 @@ export const MyPostsPage: React.FC = () => {
       </div>
 
       {/* Listing Cards */}
-      {myPosts.length === 0 ? (
+      {isLoading ? (
+        <div className="py-16 text-center text-slate-500">Đang tải bài đăng của bạn...</div>
+      ) : isError ? (
+        <div className="py-16 text-center text-rose-600">Không thể tải bài đăng. Vui lòng thử lại.</div>
+      ) : myPosts.length === 0 ? (
         <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
           <FolderOpen className="w-12 h-12 text-slate-300 mx-auto" />
           <h3 className="font-bold text-slate-800 text-base">Bạn chưa có bài đăng nào</h3>
@@ -174,7 +135,11 @@ export const MyPostsPage: React.FC = () => {
                 {/* Status Toggle & Action Controls */}
                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
                   <button
-                    onClick={() => toggleStatus(post._id)}
+                    onClick={() => {
+                      const nextStatus =
+                        post.status === "available" ? "reserved" : post.status === "reserved" ? "completed" : "available";
+                      updateStatus.mutate({ id: post._id, status: nextStatus });
+                    }}
                     className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${
                       post.status === "available"
                         ? "bg-emerald-50 border-emerald-300 text-emerald-800"

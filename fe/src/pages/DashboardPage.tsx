@@ -53,8 +53,8 @@ export const DashboardPage: React.FC = () => {
     ],
     queryFn: () =>
       materialsApi.getNearby({
-        latitude: latitude || 21.0285,
-        longitude: longitude || 105.8542,
+        latitude: latitude as number,
+        longitude: longitude as number,
         radiusKm,
         category: selectedCategory || undefined,
         type: selectedType || undefined,
@@ -63,35 +63,12 @@ export const DashboardPage: React.FC = () => {
         limit: pageSize,
       }),
     retry: 1,
+    enabled: latitude !== null && longitude !== null,
   });
 
-  // Query dự phòng toàn hệ thống nếu phạm vi hẹp chưa có bài đăng
-  const { data: allResult } = useQuery({
-    queryKey: ["dashboard-all-materials", selectedCategory, selectedType, page],
-    queryFn: () =>
-      materialsApi.getAll({
-        category: selectedCategory || undefined,
-        type: selectedType || undefined,
-        page,
-        limit: pageSize,
-      }),
-    enabled: Boolean(nearbyResult && nearbyResult.items.length === 0),
-  });
+  const displayMaterials = nearbyResult?.items || [];
 
-  const isUsingFallback = Boolean(
-    nearbyResult && nearbyResult.items.length === 0 && allResult && allResult.items.length > 0
-  );
-
-  const displayMaterials =
-    nearbyResult?.items && nearbyResult.items.length > 0
-      ? nearbyResult.items
-      : allResult?.items || [];
-
-  const paginationData = (
-    nearbyResult?.items && nearbyResult.items.length > 0
-      ? nearbyResult.pagination
-      : allResult?.pagination
-  ) || {
+  const paginationData = nearbyResult?.pagination || {
     page,
     limit: pageSize,
     total: displayMaterials.length,
@@ -220,13 +197,6 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {isUsingFallback && (
-        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
-          <span className="font-bold shrink-0">📍 Lưu ý phạm vi:</span>
-          <span>Không tìm thấy vật liệu trong bán kính {radiusKm}km quanh vị trí hiện tại của bạn. Đang hiển thị các nguồn vật liệu mới nhất trên toàn quốc.</span>
-        </div>
-      )}
-
       {/* View Switcher Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
         <div className="flex items-center gap-1.5">
@@ -268,11 +238,17 @@ export const DashboardPage: React.FC = () => {
       {activeTab === "radar" && (
         <div className="space-y-6">
           {/* Radar Component */}
-          <RadarMapWidget
-            materials={displayMaterials}
-            radiusKm={radiusKm}
-            userAddress={address}
-          />
+          {latitude === null || longitude === null ? (
+            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
+              Vui lòng cấp quyền vị trí GPS để xem các công trình quanh bạn. Hệ thống không dùng vị trí mặc định.
+            </div>
+          ) : (
+            <RadarMapWidget
+              materials={displayMaterials}
+              radiusKm={radiusKm}
+              userAddress={address}
+            />
+          )}
 
           {/* Quick list of nearest spots */}
           <div className="space-y-3">

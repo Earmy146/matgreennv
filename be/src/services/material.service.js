@@ -2,6 +2,25 @@ const Material = require("../models/material.model");
 const { calculateHaversineDistance } = require("../utils/haversine");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../core/error.response");
 
+const EARTH_RADIUS_KM = 6371;
+
+function parseCoordinate(value, name, min, max) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
+    throw new BadRequestError(`${name} không hợp lệ`);
+  }
+  return parsed;
+}
+
+function parsePositiveNumber(value, name, fallback) {
+  if (value === undefined || value === null || value === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new BadRequestError(`${name} phải là số lớn hơn 0`);
+  }
+  return parsed;
+}
+
 class MaterialService {
   /**
    * Tạo bài đăng vật liệu mới (Nhà A)
@@ -17,6 +36,8 @@ class MaterialService {
       images,
       latitude,
       longitude,
+      accuracy,
+      capturedAt,
       address,
       contactPhone,
       contactZalo,
@@ -24,8 +45,29 @@ class MaterialService {
       contactHours,
     } = data;
 
-    if (latitude === undefined || longitude === undefined || !address) {
+    if (latitude === undefined || longitude === undefined || !address?.trim()) {
       throw new BadRequestError("Vui lòng cung cấp tọa độ định vị và địa chỉ công trình");
+    }
+    if (accuracy === undefined || capturedAt === undefined) {
+      throw new BadRequestError("Vui lòng lấy GPS hiện tại trước khi đăng bài");
+    }
+    if (/^GPS\s*\(/i.test(address.trim())) {
+      throw new BadRequestError("Vui lòng nhập địa chỉ chi tiết, không dùng tọa độ GPS thay cho địa chỉ");
+    }
+
+    const parsedLatitude = parseCoordinate(latitude, "Vĩ độ", -90, 90);
+    const parsedLongitude = parseCoordinate(longitude, "Kinh độ", -180, 180);
+    const parsedAccuracy =
+      accuracy === undefined ? undefined : parsePositiveNumber(accuracy, "Độ chính xác GPS");
+    const parsedCapturedAt = capturedAt ? new Date(capturedAt) : new Date();
+    if (Number.isNaN(parsedCapturedAt.getTime())) {
+      throw new BadRequestError("Thời điểm lấy GPS không hợp lệ");
+    }
+    if (Date.now() - parsedCapturedAt.getTime() > 15 * 60 * 1000) {
+      throw new BadRequestError("Vị trí GPS đã quá cũ, vui lòng lấy lại vị trí hiện tại");
+    }
+    if (parsedCapturedAt.getTime() > Date.now() + 60 * 1000) {
+      throw new BadRequestError("Thời điểm lấy GPS không hợp lệ");
     }
 
     if (!contactPhone) {
@@ -42,9 +84,12 @@ class MaterialService {
       images: Array.isArray(images) ? images : images ? [images] : [],
       location: {
         type: "Point",
-        coordinates: [Number(longitude), Number(latitude)], // GeoJSON: [lng, lat]
+        coordinates: [parsedLongitude, parsedLatitude],
+        address: address.trim(),
+        accuracy: parsedAccuracy,
+        capturedAt: parsedCapturedAt,
+        source: "browser_gps",
       },
-      address,
       contactPhone,
       contactZalo: contactZalo || contactPhone,
       contactName: contactName || "",
@@ -72,35 +117,28 @@ class MaterialService {
     page = 1,
     limit = 12,
   }) {
-    const lat = Number(latitude);
-    const lng = Number(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      throw new BadRequestError("Tọa độ hiện tại (latitude, longitude) không hợp lệ");
-    }
+    const lat = parseCoordinate(latitude, "Vĩ độ", -90, 90);
+    const lng = parseCoordinate(longitude, "Kinh độ", -180, 180);
 
     // Nếu người dùng nhập đường kính, bán kính = đường kính / 2
-    let radius = 5; // Mặc định 5km
+    let radius = 5;
     if (diameterKm) {
-      radius = Number(diameterKm) / 2;
+      radius = parsePositiveNumber(diameterKm, "Đường kính") / 2;
     } else if (radiusKm) {
-      radius = Number(radiusKm);
+      radius = parsePositiveNumber(radiusKm, "Bán kính");
+    }
+
+    if (radius > 200) {
+      throw new BadRequestError("Bán kính tìm kiếm không được vượt quá 200 km");
     }
 
     const currentPage = Math.max(1, Number(page) || 1);
-    const pageSize = Math.max(1, Number(limit) || 12);
+    const pageSize = Math.max(1, Math.min(50, Number(limit) || 12));
     const skip = (currentPage - 1) * pageSize;
 
     // Bán kính trái đất ~ 6378.1 km
-    const radiusInRadians = radius / 6378.1;
-
     const query = {
       status,
-      location: {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radiusInRadians],
-        },
-      },
     };
 
     if (category) {
@@ -122,27 +160,49 @@ class MaterialService {
 
     // Đếm tổng số bài đăng trong bán kính để làm phân trang
     const [rawMaterials, total] = await Promise.all([
-      Material.find(query)
-        .populate("owner", "name phone avatar email")
-        .skip(skip)
-        .limit(pageSize)
-        .lean(),
-      Material.countDocuments(query),
+      Material.aggregate([
+        {
+          $geoNear: {
+            near: { type: "Point", coordinates: [lng, lat] },
+            key: "location",
+            distanceField: "distanceMeters",
+            maxDistance: radius * 1000,
+            spherical: true,
+            query,
+          },
+        },
+        { $skip: skip },
+        { $limit: pageSize },
+      ]),
+      Material.countDocuments({
+        ...query,
+        location: {
+          $geoWithin: {
+            $centerSphere: [[lng, lat], radius / EARTH_RADIUS_KM],
+          },
+        },
+      }),
     ]);
+
+    await Material.populate(rawMaterials, {
+      path: "owner",
+      select: "name phone avatar email",
+    });
 
     // Tính toán khoảng cách chính xác theo km (Haversine) cho từng bài đăng
     const items = rawMaterials
       .map((item) => {
         const [itemLng, itemLat] = item.location?.coordinates || [0, 0];
-        const distanceKm = calculateHaversineDistance(lat, lng, itemLat, itemLng);
+        const distanceKm = Number.isFinite(item.distanceMeters)
+          ? Math.round((item.distanceMeters / 1000) * 100) / 100
+          : calculateHaversineDistance(lat, lng, itemLat, itemLng);
         return {
           ...item,
           distanceKm,
         };
-      })
-      .sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
+      });
 
-    const totalPages = Math.ceil(total / pageSize) || 1;
+    const totalPages = Math.ceil(total / pageSize);
 
     return {
       items,
@@ -156,6 +216,37 @@ class MaterialService {
       },
       searchRadiusKm: radius,
       searchDiameterKm: radius * 2,
+    };
+  }
+
+  async getAllMaterials({ category, type, page = 1, limit = 12 }) {
+    const query = { status: "available" };
+    if (category) query.category = category;
+    if (type) query.type = type;
+
+    const currentPage = Math.max(1, Number(page) || 1);
+    const pageSize = Math.max(1, Math.min(50, Number(limit) || 12));
+    const [items, total] = await Promise.all([
+      Material.find(query)
+        .populate("owner", "name phone avatar email")
+        .sort({ createdAt: -1 })
+        .skip((currentPage - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      Material.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(total / pageSize);
+    return {
+      items,
+      pagination: {
+        page: currentPage,
+        limit: pageSize,
+        total,
+        totalPages,
+        hasPrevPage: currentPage > 1,
+        hasNextPage: currentPage < totalPages,
+      },
     };
   }
 

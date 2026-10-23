@@ -20,7 +20,7 @@ import { CATEGORY_LABELS } from "@/lib/utils";
 
 export const PostMaterialPage: React.FC = () => {
   const navigate = useNavigate();
-  const { latitude, longitude, address } = useLocationStore();
+  const { latitude, longitude, address, accuracy, capturedAt, setLocation } = useLocationStore();
   const { getCurrentLocation, isLocating } = useGeolocation();
 
   const [formData, setFormData] = useState({
@@ -35,8 +35,10 @@ export const PostMaterialPage: React.FC = () => {
     contactZalo: "",
     contactHours: "Gọi trước 30 phút hoặc giờ hành chính",
     address: address || "",
-    latitude: latitude || 21.0285,
-    longitude: longitude || 105.8542,
+    latitude: latitude || 0,
+    longitude: longitude || 0,
+    accuracy: accuracy || 0,
+    capturedAt: capturedAt || "",
     images: [] as string[],
   });
 
@@ -93,6 +95,13 @@ export const PostMaterialPage: React.FC = () => {
     setError(null);
 
     try {
+      if (latitude === null || longitude === null || !capturedAt || !accuracy) {
+        throw new Error("Vui lòng lấy GPS hiện tại trước khi đăng bài");
+      }
+      if (!formData.address.trim()) {
+        throw new Error("Vui lòng nhập địa chỉ chi tiết của công trình");
+      }
+
       const payload = {
         ...formData,
         price: formData.type === "free" ? 0 : Number(formData.price),
@@ -103,9 +112,7 @@ export const PostMaterialPage: React.FC = () => {
       setSuccess(true);
       setTimeout(() => navigate("/dashboard"), 1500);
     } catch (err: any) {
-      // Mock fallback nếu đang phát triển
-      setSuccess(true);
-      setTimeout(() => navigate("/dashboard"), 1500);
+      setError(err?.response?.data?.message || err?.message || "Không thể đăng bài");
     } finally {
       setSubmitting(false);
     }
@@ -310,7 +317,29 @@ export const PostMaterialPage: React.FC = () => {
               </label>
               <button
                 type="button"
-                onClick={getCurrentLocation}
+                onClick={async () => {
+                  try {
+                    const position = await getCurrentLocation();
+                    const nextAddress = formData.address;
+                    setLocation(
+                      position.coords.latitude,
+                      position.coords.longitude,
+                      `GPS (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`,
+                      position.coords.accuracy,
+                      new Date(position.timestamp).toISOString()
+                    );
+                    setFormData((prev) => ({
+                      ...prev,
+                      address: nextAddress,
+                      latitude: position.coords.latitude,
+                      longitude: position.coords.longitude,
+                      accuracy: position.coords.accuracy,
+                      capturedAt: new Date(position.timestamp).toISOString(),
+                    }));
+                  } catch {
+                    // useGeolocation already exposes the user-facing error
+                  }
+                }}
                 disabled={isLocating}
                 className="text-xs text-emerald-700 font-bold flex items-center gap-1 hover:underline"
               >
@@ -327,7 +356,9 @@ export const PostMaterialPage: React.FC = () => {
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
             />
             <div className="mt-1 text-xs text-slate-400 font-mono">
-              Tọa độ: [{formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}] (Người nhận quét bán kính quanh đây sẽ nhìn thấy công trình của bạn)
+              {capturedAt && accuracy
+                ? `Đã lấy GPS: [${formData.latitude.toFixed(5)}, ${formData.longitude.toFixed(5)}], độ chính xác khoảng ${Math.round(accuracy)} m`
+                : "Chưa có GPS hợp lệ. Bạn phải lấy vị trí hiện tại trước khi đăng bài."}
             </div>
           </div>
 

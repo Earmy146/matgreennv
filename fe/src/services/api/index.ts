@@ -45,7 +45,24 @@ export const materialsApi = {
     return res.data.data;
   },
 
-  create: async (data: any) => {
+  create: async (data: {
+    title: string;
+    description: string;
+    category: string;
+    type: string;
+    price: number;
+    unit: string;
+    images: string[];
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    capturedAt: string;
+    address: string;
+    contactPhone: string;
+    contactZalo?: string;
+    contactName?: string;
+    contactHours?: string;
+  }) => {
     const res = await api.post<{ data: MaterialItem }>("/materials", data);
     return res.data.data;
   },
@@ -144,4 +161,3 @@ export const authApi = {
     return res.data;
   },
 };
-

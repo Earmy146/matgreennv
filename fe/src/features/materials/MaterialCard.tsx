@@ -79,6 +79,17 @@ export const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
             <div className="font-medium text-slate-700 truncate" title={material.location?.address}>
               {material.location?.address}
             </div>
+            {material.location?.coordinates?.length === 2 && (
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${material.location.coordinates[1]},${material.location.coordinates[0]}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-bold text-emerald-700 hover:underline"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Mở bản đồ / Chỉ đường
+              </a>
+            )}
           </div>
         </div>
 

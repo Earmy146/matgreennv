@@ -31,8 +31,8 @@ export const HomePage: React.FC = () => {
     ],
     queryFn: () =>
       materialsApi.getNearby({
-        latitude: latitude || 21.0285,
-        longitude: longitude || 105.8542,
+        latitude: latitude as number,
+        longitude: longitude as number,
         radiusKm,
         category: selectedCategory || undefined,
         type: selectedType || undefined,
@@ -41,35 +41,12 @@ export const HomePage: React.FC = () => {
         limit: pageSize,
       }),
     retry: 1,
+    enabled: latitude !== null && longitude !== null,
   });
 
-  // Query dự phòng: lấy toàn bộ danh mục vật liệu nếu trong bán kính hiện tại chưa có
-  const { data: allResult } = useQuery({
-    queryKey: ["materials-all-fallback", selectedCategory, selectedType, page],
-    queryFn: () =>
-      materialsApi.getAll({
-        category: selectedCategory || undefined,
-        type: selectedType || undefined,
-        page,
-        limit: pageSize,
-      }),
-    enabled: Boolean(nearbyResult && nearbyResult.items.length === 0),
-  });
+  const displayMaterials = nearbyResult?.items || [];
 
-  const isUsingFallback = Boolean(
-    nearbyResult && nearbyResult.items.length === 0 && allResult && allResult.items.length > 0
-  );
-
-  const displayMaterials =
-    nearbyResult?.items && nearbyResult.items.length > 0
-      ? nearbyResult.items
-      : allResult?.items || [];
-
-  const paginationData = (
-    nearbyResult?.items && nearbyResult.items.length > 0
-      ? nearbyResult.pagination
-      : allResult?.pagination
-  ) || {
+  const paginationData = nearbyResult?.pagination || {
     page,
     limit: pageSize,
     total: displayMaterials.length,
@@ -157,13 +134,6 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
         </div>
-
-        {isUsingFallback && (
-          <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
-            <span className="font-bold shrink-0">📍 Lưu ý phạm vi:</span>
-            <span>Không tìm thấy vật liệu trong bán kính {radiusKm}km quanh vị trí hiện tại của bạn. Đang hiển thị các nguồn vật liệu mới nhất trên toàn quốc.</span>
-          </div>
-        )}
 
         {isLoading ? (
           <div className="py-20 text-center text-slate-400 text-sm">

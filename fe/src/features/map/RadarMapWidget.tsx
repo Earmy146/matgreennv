@@ -216,6 +216,16 @@ export const RadarMapWidget: React.FC<RadarMapWidgetProps> = ({
                 <div>
                   <strong>Chủ công trình (Nhà A):</strong> {selectedMaterial.owner?.name}
                 </div>
+                {selectedMaterial.location?.coordinates?.length === 2 && (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedMaterial.location.coordinates[1]},${selectedMaterial.location.coordinates[0]}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block pt-1 font-bold text-emerald-700 hover:underline"
+                  >
+                    Mở bản đồ và chỉ đường
+                  </a>
+                )}
               </div>
 
               {/* Action Buttons */}

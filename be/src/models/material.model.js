@@ -54,10 +54,34 @@ const materialSchema = new mongoose.Schema(
       coordinates: {
         type: [Number],
         required: true,
+        validate: {
+          validator: (value) => {
+            if (!Array.isArray(value) || value.length !== 2) return false;
+            const [longitude, latitude] = value;
+            return (
+              Number.isFinite(longitude) &&
+              Number.isFinite(latitude) &&
+              longitude >= -180 &&
+              longitude <= 180 &&
+              latitude >= -90 &&
+              latitude <= 90
+            );
+          },
+          message: "Tọa độ GPS không hợp lệ",
+        },
       },
       address: {
         type: String,
         required: true,
+        trim: true,
+        minlength: 5,
+      },
+      accuracy: { type: Number, min: 0 },
+      capturedAt: { type: Date },
+      source: {
+        type: String,
+        enum: ["browser_gps", "verified", "seed"],
+        default: "browser_gps",
       },
     },
     contactPhone: {

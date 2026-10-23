@@ -5,20 +5,28 @@ export function useGeolocation() {
   const [error, setError] = useState<string | null>(null);
   const { setLocation, setIsLocating, isLocating } = useLocationStore();
 
-  const getCurrentLocation = useCallback(() => {
+  const getCurrentLocation = useCallback((): Promise<GeolocationPosition> => {
     if (!navigator.geolocation) {
       setError("Trình duyệt của bạn không hỗ trợ định vị Geolocation.");
-      return;
+      return Promise.reject(new Error("Geolocation không được hỗ trợ"));
     }
 
     setIsLocating(true);
     setError(null);
 
-    navigator.geolocation.getCurrentPosition(
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setLocation(latitude, longitude, "Vị trí thực tế của bạn");
+        setLocation(
+          latitude,
+          longitude,
+          `GPS (${latitude.toFixed(5)}, ${longitude.toFixed(5)})`,
+          position.coords.accuracy,
+          new Date(position.timestamp).toISOString()
+        );
         setIsLocating(false);
+        resolve(position);
       },
       (err) => {
         setIsLocating(false);
@@ -31,13 +39,15 @@ export function useGeolocation() {
           errorMsg = "Quá thời gian lấy vị trí.";
         }
         setError(errorMsg);
+        reject(new Error(errorMsg));
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 60000,
       }
-    );
+      );
+    });
   }, [setLocation, setIsLocating]);
 
   return { getCurrentLocation, isLocating, error };

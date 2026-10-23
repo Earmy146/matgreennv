@@ -24,6 +24,7 @@ class MaterialController {
         category,
         type,
         search,
+        status,
         page,
         limit,
       } = req.query;
@@ -36,6 +37,7 @@ class MaterialController {
         category,
         type,
         search,
+        status,
         page,
         limit,
       });
@@ -96,10 +98,7 @@ class MaterialController {
   async list(req, res, next) {
     try {
       const { category, type, page, limit } = req.query;
-      const result = await materialService.getNearbyMaterials({
-        latitude: 21.0285,
-        longitude: 105.8542,
-        radiusKm: 100,
+      const result = await materialService.getAllMaterials({
         category,
         type,
         page,

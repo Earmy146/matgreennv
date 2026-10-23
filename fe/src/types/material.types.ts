@@ -15,6 +15,9 @@ export interface MaterialLocation {
   type: "Point";
   coordinates: [number, number]; // [lng, lat]
   address: string;
+  accuracy?: number;
+  capturedAt?: string;
+  source?: "browser_gps" | "verified" | "seed";
 }
 
 export interface MaterialItem {
