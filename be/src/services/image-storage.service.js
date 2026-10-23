@@ -16,6 +16,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/webp",
   "image/heic",
   "image/heif",
+  "image/svg+xml",
 ]);
 
 function getUploadRootDir() {
@@ -132,7 +133,7 @@ async function uploadImage({
   const normalizedMime = String(mimetype || "").toLowerCase().trim();
   if (normalizedMime && !ALLOWED_MIME_TYPES.has(normalizedMime)) {
     throw new BadRequestError(
-      "Định dạng ảnh không được hỗ trợ. Chỉ chấp nhận JPG, PNG, WEBP, HEIC hoặc HEIF"
+      "Định dạng ảnh không được hỗ trợ. Chỉ chấp nhận JPG, PNG, SVG, WEBP, HEIC hoặc HEIF"
     );
   }
 

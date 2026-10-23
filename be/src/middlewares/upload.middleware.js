@@ -13,6 +13,7 @@ const fileFilter = (req, file, cb) => {
     "image/webp",
     "image/heic",
     "image/heif",
+    "image/svg+xml",
     "application/pdf",
     "text/plain",
     "application/zip",
