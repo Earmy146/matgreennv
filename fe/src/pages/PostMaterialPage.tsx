@@ -96,11 +96,13 @@ export const PostMaterialPage: React.FC = () => {
     setError(null);
 
     try {
-      if (latitude === null || longitude === null || !capturedAt || !accuracy) {
+      // Có GPS hợp lệ là đủ — address chỉ cần không trống HOẶC đã có GPS
+      const hasValidGps = formData.latitude && formData.longitude && formData.capturedAt;
+      if (!hasValidGps) {
         throw new Error("Vui lòng lấy GPS hiện tại trước khi đăng bài");
       }
       if (!formData.address.trim()) {
-        throw new Error("Vui lòng nhập địa chỉ chi tiết của công trình");
+        throw new Error("Vui lòng nhập địa chỉ hoặc mô tả vị trí công trình");
       }
 
       const payload = {
@@ -321,17 +323,18 @@ export const PostMaterialPage: React.FC = () => {
                 onClick={async () => {
                   try {
                     const position = await getCurrentLocation();
-                    const nextAddress = formData.address;
+                    const gpsLabel = `GPS (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
                     setLocation(
                       position.coords.latitude,
                       position.coords.longitude,
-                      `GPS (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`,
+                      gpsLabel,
                       position.coords.accuracy,
                       new Date(position.timestamp).toISOString()
                     );
                     setFormData((prev) => ({
                       ...prev,
-                      address: nextAddress,
+                      // Tự điền địa chỉ bằng tọa độ GPS nếu người dùng chưa nhập tay
+                      address: prev.address && !prev.address.startsWith("GPS (") ? prev.address : gpsLabel,
                       latitude: position.coords.latitude,
                       longitude: position.coords.longitude,
                       accuracy: position.coords.accuracy,
@@ -350,8 +353,7 @@ export const PostMaterialPage: React.FC = () => {
             </div>
             <input
               type="text"
-              required
-              placeholder="VD: Số 12 ngõ 85 đường Cầu Giấy, Ba Đình, Hà Nội"
+              placeholder="VD: Số 12 ngõ 85 đường Cầu Giấy, Ba Đình, Hà Nội (hoặc lấy GPS bên trên)"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
