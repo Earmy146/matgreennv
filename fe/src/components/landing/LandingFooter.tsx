@@ -197,7 +197,7 @@ export const LandingFooter: React.FC = () => {
 
         {/* Bottom Bar Copyright */}
         <div className="mt-12 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} MatGreen. Tất cả quyền được bảo lưu. Phong cách Solox index-3.</p>
+          <p>© {new Date().getFullYear()} MatGreen. Nền tảng kết nối tái sử dụng vật liệu xây dựng và tuần hoàn phế liệu.</p>
           <div className="flex items-center gap-6">
             <Link to="/about" className="hover:text-emerald-400 transition-colors">
               Chính sách bảo mật

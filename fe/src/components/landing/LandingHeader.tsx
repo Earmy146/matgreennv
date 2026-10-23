@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogIn,
   Search,
+  Shield,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -65,12 +66,21 @@ export const LandingHeader: React.FC = () => {
                 <span className="text-slate-300">
                   Xin chào, <strong className="text-emerald-400">{user.name}</strong>
                 </span>
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold"
-                >
-                  <LayoutDashboard className="w-3.5 h-3.5" /> Bảng điều khiển
-                </Link>
+                {user.role === "admin" || user.role === "moderator" ? (
+                  <Link
+                    to="/admin"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-bold border border-emerald-500/30 text-xs"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-emerald-400" /> Cổng Quản Trị
+                  </Link>
+                ) : (
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5" /> Bảng điều khiển
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-3">
@@ -176,21 +186,42 @@ export const LandingHeader: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all shadow-xs"
-            >
-              <Compass className="w-4 h-4 text-emerald-600" />
-              Bản Đồ Radar
-            </Link>
+            {isAuthenticated && (user?.role === "admin" || user?.role === "moderator") ? (
+              <>
+                <Link
+                  to="/admin"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-md border border-slate-700"
+                >
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  Cổng Quản Trị
+                </Link>
+                <Link
+                  to="/materials"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20"
+                >
+                  <Compass className="w-4 h-4" />
+                  Xem Sàn Vật Liệu
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all shadow-xs"
+                >
+                  <Compass className="w-4 h-4 text-emerald-600" />
+                  Bản Đồ Radar
+                </Link>
 
-            <Link
-              to="/post"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 active:scale-98"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Đăng Tin Vật Liệu
-            </Link>
+                <Link
+                  to="/post"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 active:scale-98"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  Đăng Tin Vật Liệu
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
