@@ -7,57 +7,56 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const location = useLocation();
 
   useEffect(() => {
+    // Không chạy Lenis trên phân hệ Quản trị Admin để giữ cuộn native 100% mượt mà cho bảng & form
+    if (location.pathname.startsWith("/admin")) {
+      if (lenisRef.current) {
+        lenisRef.current.destroy();
+        lenisRef.current = null;
+      }
+      document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-stopped");
+      document.body.classList.remove("lenis", "lenis-smooth", "lenis-stopped");
+      return;
+    }
+
     // Chỉ khởi tạo Lenis nếu không phải thiết bị giảm chuyển động (reduced-motion)
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
-    const lenis = new Lenis({
-      duration: 1.1,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.5,
-      prevent: (node) => {
-        // Cho phép cuộn native tức thì không bị Lenis chặn trên modal, form hoặc trang admin
-        return (
-          node.closest("[data-lenis-prevent]") !== null ||
-          node.closest(".admin-scrollable") !== null ||
-          window.location.pathname.startsWith("/admin")
-        );
-      },
-    });
+    if (!lenisRef.current) {
+      const lenis = new Lenis({
+        duration: 1.1,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: "vertical",
+        gestureOrientation: "vertical",
+        smoothWheel: true,
+        wheelMultiplier: 1,
+        touchMultiplier: 1.5,
+        prevent: (node) => {
+          return (
+            node.closest("[data-lenis-prevent]") !== null ||
+            node.closest(".admin-scrollable") !== null ||
+            window.location.pathname.startsWith("/admin")
+          );
+        },
+      });
 
-    lenisRef.current = lenis;
+      lenisRef.current = lenis;
 
-    // Tự động dừng Lenis trên trang Admin để con lăn chuột cuộn native mượt mà
-    if (window.location.pathname.startsWith("/admin")) {
-      lenis.stop();
-    }
-
-    let rafId: number;
-    function raf(time: number) {
-      lenis.raf(time);
+      let rafId: number;
+      function raf(time: number) {
+        lenis.raf(time);
+        rafId = requestAnimationFrame(raf);
+      }
       rafId = requestAnimationFrame(raf);
-    }
-    rafId = requestAnimationFrame(raf);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-      lenisRef.current = null;
-    };
-  }, []);
-
-  // Tạm dừng Lenis khi chuyển vào /admin hoặc bật lại khi ra ngoài
-  useEffect(() => {
-    if (!lenisRef.current) return;
-    if (location.pathname.startsWith("/admin")) {
-      lenisRef.current.stop();
-    } else {
-      lenisRef.current.start();
+      return () => {
+        cancelAnimationFrame(rafId);
+        lenis.destroy();
+        lenisRef.current = null;
+        document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-stopped");
+        document.body.classList.remove("lenis", "lenis-smooth", "lenis-stopped");
+      };
     }
   }, [location.pathname]);
 

@@ -56,8 +56,9 @@ html.lenis, html.lenis body {
   overscroll-behavior: contain;
 }
 
+/* Cho phép cuộn native bình thường khi dừng Lenis */
 .lenis.lenis-stopped {
-  overflow: hidden;
+  overflow: auto !important;
 }
 
 .lenis.lenis-smooth iframe {

@@ -66,12 +66,12 @@ export const AdminLayout: React.FC = () => {
 
       {/* Admin Dedicated Sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-72 bg-slate-900 text-white border-r border-slate-800 shadow-2xl transition-all duration-300 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-80 bg-slate-900 text-white border-r border-slate-800 shadow-2xl transition-all duration-300 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Brand & Portal Badge */}
-        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950/40">
+        <div className="h-20 shrink-0 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950/40">
           <Link to="/admin" className="flex items-center gap-3 group">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
               <Shield className="w-6 h-6" />
@@ -99,7 +99,7 @@ export const AdminLayout: React.FC = () => {
 
         {/* Navigation Section */}
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="px-3 text-[11px] font-bold tracking-wider uppercase text-slate-400 mb-2">
               Nghiệp Vụ Quản Trị
             </div>
@@ -118,7 +118,7 @@ export const AdminLayout: React.FC = () => {
                   key={item.href}
                   to={item.href}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`flex items-start gap-3.5 px-3.5 py-3 rounded-2xl transition-all duration-200 ${
+                  className={`flex items-start gap-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 ${
                     isActive
                       ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30"
                       : "text-slate-300 hover:text-white hover:bg-slate-800/80"
@@ -132,7 +132,7 @@ export const AdminLayout: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold leading-tight">{item.label}</div>
                     <div
-                      className={`text-[11px] truncate mt-0.5 ${
+                      className={`text-xs leading-normal mt-1 ${
                         isActive ? "text-emerald-100" : "text-slate-400"
                       }`}
                     >
@@ -146,7 +146,7 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           {/* Quick Shortcuts to Client View */}
-          <div className="pt-4 border-t border-slate-800 space-y-1">
+          <div className="pt-4 border-t border-slate-800 space-y-1.5">
             <div className="px-3 text-[11px] font-bold tracking-wider uppercase text-slate-400 mb-2">
               Trải Nghiệm Khách Hàng
             </div>
@@ -180,7 +180,7 @@ export const AdminLayout: React.FC = () => {
         </div>
 
         {/* Admin User Info & Logout Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/60">
+        <div className="p-4 shrink-0 border-t border-slate-800 bg-slate-950/60">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 font-black flex items-center justify-center text-sm shadow-sm shrink-0">
@@ -207,7 +207,7 @@ export const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Admin View Container */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-72 transition-all">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-80 transition-all">
         {/* Topbar for Admin Portal */}
         <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-4 sm:px-8 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">

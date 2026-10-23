@@ -151,34 +151,65 @@ export const AdminModerationPage: React.FC = () => {
   const Pager = ({
     page,
     totalPages,
+    totalCount,
     onChange,
   }: {
     page: number;
     totalPages?: number;
+    totalCount?: number;
     onChange: (p: number) => void;
-  }) => (
-    <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
-      <span>
-        Trang <strong>{page}</strong> trên <strong>{totalPages || 1}</strong>
-      </span>
-      <div className="flex gap-2">
-        <button
-          disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
-          className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold transition-colors cursor-pointer"
-        >
-          Trang trước
-        </button>
-        <button
-          disabled={!totalPages || page >= totalPages}
-          onClick={() => onChange(page + 1)}
-          className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold transition-colors cursor-pointer"
-        >
-          Trang sau
-        </button>
+  }) => {
+    const pages = totalPages || 1;
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-2 border-t border-slate-100 text-xs text-slate-500 gap-3">
+        <span className="font-medium">
+          Hiển thị trang <strong>{page}</strong> / <strong>{pages}</strong>
+          {totalCount !== undefined && (
+            <span> (Tổng cộng <strong>{totalCount}</strong> mục)</span>
+          )}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => onChange(page - 1)}
+            className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold transition-colors cursor-pointer"
+          >
+            Trang trước
+          </button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: pages }).map((_, idx) => {
+              const pageNum = idx + 1;
+              return (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => onChange(pageNum)}
+                  className={`w-7 h-7 rounded-xl font-bold transition-all cursor-pointer ${
+                    pageNum === page
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "border border-slate-200 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            disabled={page >= pages}
+            onClick={() => onChange(page + 1)}
+            className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold transition-colors cursor-pointer"
+          >
+            Trang sau
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6 animate-fadeIn" data-lenis-prevent>
@@ -556,6 +587,7 @@ export const AdminModerationPage: React.FC = () => {
                   <Pager
                     page={materialPage}
                     totalPages={materialsData?.pagination?.totalPages}
+                    totalCount={materialsData?.pagination?.total}
                     onChange={setMaterialPage}
                   />
                 </div>
@@ -711,6 +743,7 @@ export const AdminModerationPage: React.FC = () => {
                   <Pager
                     page={reportPage}
                     totalPages={reportsData?.pagination?.totalPages}
+                    totalCount={reportsData?.pagination?.total}
                     onChange={setReportPage}
                   />
                 </div>
@@ -916,6 +949,7 @@ export const AdminModerationPage: React.FC = () => {
                   <Pager
                     page={userPage}
                     totalPages={usersData?.pagination?.totalPages}
+                    totalCount={usersData?.pagination?.total}
                     onChange={setUserPage}
                   />
                 </div>

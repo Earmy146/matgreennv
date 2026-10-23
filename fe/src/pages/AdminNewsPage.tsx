@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import {
   Newspaper,
@@ -398,30 +399,42 @@ export const AdminNewsPage: React.FC = () => {
         </div>
 
       {/* Modal Tạo/Sửa Bài Viết */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
-          data-lenis-prevent
-        >
+      {isModalOpen &&
+        createPortal(
           <div
-            className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative overscroll-contain"
+            className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-fadeIn"
             data-lenis-prevent
           >
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+            <div
+              className="bg-white rounded-3xl border border-slate-200 w-full max-w-4xl max-h-[90vh] shadow-2xl relative flex flex-col overflow-hidden"
+              data-lenis-prevent
             >
-              <X className="w-5 h-5" />
-            </button>
+              {/* Header Cố Định */}
+              <div className="px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-black text-slate-900">
+                    {editingArticle ? "Chỉnh Sửa Bài Viết" : "Tạo Bài Viết Mới"}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Điền đầy đủ thông tin để bài viết được hiển thị lên trang tin tức và trang chủ.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            <h2 className="text-xl font-black text-slate-900 mb-1">
-              {editingArticle ? "Chỉnh Sửa Bài Viết" : "Tạo Bài Viết Mới"}
-            </h2>
-            <p className="text-xs text-slate-500 mb-6">
-              Điền đầy đủ thông tin để bài viết được hiển thị lên trang tin tức và trang chủ.
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              {/* Form Body Cuộn Độc Lập */}
+              <form
+                id="admin-news-article-form"
+                onSubmit={handleSubmit}
+                className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4 text-xs"
+                data-lenis-prevent
+              >
               <div>
                 <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Tiêu đề bài viết *
@@ -635,26 +648,30 @@ export const AdminNewsPage: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              </form>
+
+              {/* Footer Cố Định */}
+              <div className="px-6 py-4 sm:px-8 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50/90">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-white transition-colors cursor-pointer"
                 >
                   Hủy Bỏ
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer active:scale-98"
+                  form="admin-news-article-form"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer active:scale-98 transition-all"
                 >
                   <Save className="w-4 h-4" />
                   {editingArticle ? "Lưu Thay Đổi" : "Đăng Bài Viết"}
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

@@ -20,6 +20,8 @@ import {
   ExternalLink,
   Eye,
   Tag,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { adminApi } from "@/services/api";
@@ -29,6 +31,7 @@ import { CATEGORY_LABELS, formatPrice } from "@/lib/utils";
 export const AdminHubPage: React.FC = () => {
   const { user } = useAuthStore();
   const [selectedMaterial, setSelectedMaterial] = useState<any | null>(null);
+  const [materialPage, setMaterialPage] = useState(1);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-stats"],
@@ -41,8 +44,8 @@ export const AdminHubPage: React.FC = () => {
     isLoading: materialsLoading,
     refetch: refetchMaterials,
   } = useQuery({
-    queryKey: ["admin-hub-materials"],
-    queryFn: () => adminApi.materials({ page: 1, limit: 6 }),
+    queryKey: ["admin-hub-materials", materialPage],
+    queryFn: () => adminApi.materials({ page: materialPage, limit: 6 }),
     retry: 1,
   });
 
@@ -325,6 +328,59 @@ export const AdminHubPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
+
+            {/* Thanh Phân Trang Bài Đăng */}
+            <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="text-slate-500 font-medium">
+                Hiển thị trang <strong>{materialsData?.pagination?.page || materialPage}</strong> /{" "}
+                <strong>{materialsData?.pagination?.totalPages || 1}</strong> (Tổng cộng{" "}
+                <strong>{materialsData?.pagination?.total || stats?.materials || 12}</strong> bài đăng trên sàn)
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={materialPage <= 1 || materialsLoading}
+                  onClick={() => setMaterialPage((p) => Math.max(1, p - 1))}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Trang Trước</span>
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: materialsData?.pagination?.totalPages || 1 }).map((_, idx) => {
+                    const pageNum = idx + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => setMaterialPage(pageNum)}
+                        className={`w-8 h-8 rounded-xl font-bold transition-all cursor-pointer ${
+                          pageNum === materialPage
+                            ? "bg-emerald-600 text-white shadow-xs"
+                            : "border border-slate-200 text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={
+                    materialPage >= (materialsData?.pagination?.totalPages || 1) || materialsLoading
+                  }
+                  onClick={() => setMaterialPage((p) => p + 1)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all flex items-center gap-1"
+                >
+                  <span>Trang Sau</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   X,
@@ -107,23 +108,23 @@ export const AdminEditMaterialModal: React.FC<AdminEditMaterialModalProps> = ({
 
   if (!isOpen || !material) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+      className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-fadeIn"
       data-lenis-prevent
     >
       <div
-        className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative overscroll-contain flex flex-col space-y-6"
+        className="bg-white rounded-3xl border border-slate-200 w-full max-w-4xl max-h-[90vh] shadow-2xl relative flex flex-col overflow-hidden"
         data-lenis-prevent
       >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        {/* Header - Cố định ở đỉnh modal */}
+        <div className="px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
               <Edit3 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
                 Chỉnh Sửa Bài Viết Người Đăng
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -136,32 +137,21 @@ export const AdminEditMaterialModal: React.FC<AdminEditMaterialModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {success && (
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>Đã lưu thành công các thay đổi bài đăng!</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
+        {/* Body Form - Cuộn độc lập */}
         <form
+          id="admin-edit-material-form"
           onSubmit={(e) => {
             e.preventDefault();
             updateMutation.mutate();
           }}
-          className="space-y-5 text-xs"
+          className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 text-xs"
+          data-lenis-prevent
         >
           {/* Tiêu đề & Danh mục */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -307,36 +297,38 @@ export const AdminEditMaterialModal: React.FC<AdminEditMaterialModalProps> = ({
               className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm"
             />
           </div>
-
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
-            >
-              Hủy Bỏ
-            </button>
-            <button
-              type="submit"
-              disabled={updateMutation.isPending}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
-            >
-              {updateMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Đang Lưu...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span>Lưu Thay Đổi Bài Đăng</span>
-                </>
-              )}
-            </button>
-          </div>
         </form>
+
+        {/* Footer Actions - Cố định ở đáy modal, không bao giờ bị cắt */}
+        <div className="px-6 py-4 sm:px-8 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50/90">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-white transition-colors cursor-pointer"
+          >
+            Hủy Bỏ
+          </button>
+          <button
+            type="submit"
+            form="admin-edit-material-form"
+            disabled={updateMutation.isPending}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {updateMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang Lưu...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Lưu Thay Đổi Bài Đăng</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
