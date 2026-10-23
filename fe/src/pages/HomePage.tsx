@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Recycle, Sparkles, MapPin, Search, PlusCircle, ArrowRight, Layers } from "lucide-react";
 import { MaterialFilter } from "@/features/materials/MaterialFilter";
 import { MaterialCard } from "@/features/materials/MaterialCard";
+import { MaterialGridSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import { useLocationStore } from "@/stores/location.store";
 import { materialsApi } from "@/services/api";
@@ -65,6 +67,13 @@ export const HomePage: React.FC = () => {
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCategory("");
+    setSelectedType("");
+    setSearchTerm("");
     setPage(1);
   };
 
@@ -130,25 +139,28 @@ export const HomePage: React.FC = () => {
               Vật Liệu Khả Dụng Quanh Vị Trí Của Bạn
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tìm thấy {paginationData.total} nguồn vật liệu trong bán kính {radiusKm}km
+              {isLoading
+                ? "Đang quét các công trình quanh vị trí của bạn..."
+                : `Tìm thấy ${paginationData.total} nguồn vật liệu trong bán kính ${radiusKm}km`}
             </p>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="py-20 text-center text-slate-400 text-sm">
-            Đang tìm kiếm vật liệu quanh khu vực của bạn...
-          </div>
+          /* Skeleton Grid hiển thị chính xác 12 ô card - Layout Shift = 0 */
+          <MaterialGridSkeleton count={pageSize} />
         ) : displayMaterials.length === 0 ? (
-          <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-2">
-            <MapPin className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-            <h3 className="text-base font-bold text-slate-700">Không có vật liệu nào quanh đây</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Hãy thử nới rộng bán kính tìm kiếm (ví dụ lên 10km hoặc 20km) hoặc chọn danh mục khác.
-            </p>
-          </div>
+          <EmptyState
+            icon={<MapPin className="w-8 h-8 text-emerald-600 stroke-[1.75]" />}
+            title={`Không tìm thấy vật liệu nào trong bán kính ${radiusKm}km`}
+            description="Chưa có công trình nào đăng vật liệu phù hợp với bộ lọc hiện tại của bạn. Bạn có thể nới rộng bán kính quét, chọn danh mục khác hoặc là người đầu tiên đăng tin."
+            actionText="Xóa tất cả bộ lọc"
+            onAction={handleResetFilters}
+            secondaryActionText="Đăng tin cho / bán vật liệu"
+            secondaryActionHref="/post"
+          />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fadeIn">
             {displayMaterials.map((mat) => (
               <MaterialCard key={mat._id} material={mat} />
             ))}
@@ -156,10 +168,12 @@ export const HomePage: React.FC = () => {
         )}
 
         {/* Phân Trang (Pagination) */}
-        <Pagination
-          pagination={paginationData}
-          onPageChange={(newPage) => setPage(newPage)}
-        />
+        {!isLoading && displayMaterials.length > 0 && (
+          <Pagination
+            pagination={paginationData}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
+        )}
       </section>
     </div>
   );

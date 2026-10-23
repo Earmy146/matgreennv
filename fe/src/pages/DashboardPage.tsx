@@ -20,6 +20,8 @@ import {
 import { RadarMapWidget } from "@/features/map/RadarMapWidget";
 import { MaterialCard } from "@/features/materials/MaterialCard";
 import { MaterialFilter } from "@/features/materials/MaterialFilter";
+import { MaterialGridSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import { useLocationStore } from "@/stores/location.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -91,6 +93,13 @@ export const DashboardPage: React.FC = () => {
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCategory("");
+    setSelectedType("");
+    setSearchTerm("");
     setPage(1);
   };
 
@@ -258,11 +267,22 @@ export const DashboardPage: React.FC = () => {
               <MapPin className="w-4 h-4 text-emerald-600" />
               Các Công Trình Gần Vị Trí Của Bạn Nhất
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {displayMaterials.slice(0, 4).map((mat) => (
-                <MaterialCard key={mat._id} material={mat} />
-              ))}
-            </div>
+            {isLoading ? (
+              <MaterialGridSkeleton
+                count={4}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+              />
+            ) : displayMaterials.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200 p-6">
+                Chưa có công trình nào trong bán kính {radiusKm}km. Hãy thử nới rộng bán kính quét.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fadeIn">
+                {displayMaterials.slice(0, 4).map((mat) => (
+                  <MaterialCard key={mat._id} material={mat} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -281,19 +301,20 @@ export const DashboardPage: React.FC = () => {
 
           {/* Grid */}
           {isLoading ? (
-            <div className="py-20 text-center text-slate-400 text-sm">
-              Đang quét các công trình trong bán kính {radiusKm} km...
-            </div>
+            /* Skeleton chiếm đúng diện tích 8 card - không giật layout */
+            <MaterialGridSkeleton count={pageSize} />
           ) : displayMaterials.length === 0 ? (
-            <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-2">
-              <MapPin className="w-10 h-10 text-slate-300 mx-auto" />
-              <h4 className="font-bold text-slate-700 text-sm">Không có vật liệu nào trong bán kính {radiusKm}km</h4>
-              <p className="text-xs text-slate-400">
-                Hãy thử tăng bán kính quét lên (ví dụ: 10km hoặc 20km) hoặc xóa từ khóa tìm kiếm.
-              </p>
-            </div>
+            <EmptyState
+              icon={<MapPin className="w-8 h-8 text-emerald-600 stroke-[1.75]" />}
+              title={`Không có vật liệu nào trong bán kính ${radiusKm}km`}
+              description="Hãy thử tăng bán kính quét (ví dụ lên 10km hoặc 20km) hoặc xóa từ khóa tìm kiếm để khám phá nhiều nguồn cung hơn."
+              actionText="Xóa tất cả bộ lọc"
+              onAction={handleResetFilters}
+              secondaryActionText="Đăng tin công trình mới"
+              secondaryActionHref="/post"
+            />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fadeIn">
               {displayMaterials.map((mat) => (
                 <MaterialCard key={mat._id} material={mat} />
               ))}
@@ -301,10 +322,12 @@ export const DashboardPage: React.FC = () => {
           )}
 
           {/* Phân Trang (Pagination Controls) */}
-          <Pagination
-            pagination={paginationData}
-            onPageChange={(newPage) => setPage(newPage)}
-          />
+          {!isLoading && displayMaterials.length > 0 && (
+            <Pagination
+              pagination={paginationData}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
+          )}
         </div>
       )}
     </div>

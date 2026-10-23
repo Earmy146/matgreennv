@@ -16,12 +16,15 @@ import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { useNewsStore } from "@/stores/news.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { NewsGridSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const NewsPage: React.FC = () => {
   const { user } = useAuthStore();
   const { articles } = useNewsStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Tất cả");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const categories = [
     "Tất cả",
@@ -30,6 +33,23 @@ export const NewsPage: React.FC = () => {
     "Vật Liệu Xanh",
     "Hướng Dẫn & Mẹo",
   ];
+
+  const handleCategoryChange = (cat: string) => {
+    setIsSearching(true);
+    setSelectedCategory(cat);
+    setTimeout(() => setIsSearching(false), 200);
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setIsSearching(true);
+    setTimeout(() => setIsSearching(false), 200);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCategory("Tất cả");
+    setSearchQuery("");
+  };
 
   const filteredNews = articles.filter((article) => {
     const matchesCategory =
@@ -87,7 +107,7 @@ export const NewsPage: React.FC = () => {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => handleCategoryChange(cat)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   selectedCategory === cat
                     ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
@@ -106,25 +126,25 @@ export const NewsPage: React.FC = () => {
               type="text"
               placeholder="Tìm kiếm bài viết..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         </div>
 
-        {/* Articles Grid */}
-        {filteredNews.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
-            <Newspaper className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-800">
-              Không tìm thấy bài viết phù hợp
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Vui lòng thử tìm kiếm với từ khóa khác hoặc chọn chuyên mục "Tất cả".
-            </p>
-          </div>
+        {/* Articles Grid / Skeleton / Empty State */}
+        {isSearching ? (
+          <NewsGridSkeleton count={6} />
+        ) : filteredNews.length === 0 ? (
+          <EmptyState
+            icon={<Newspaper className="w-8 h-8 text-emerald-600 stroke-[1.75]" />}
+            title="Không tìm thấy bài viết phù hợp"
+            description="Không có cẩm nang hay bài viết nào khớp với chuyên mục hoặc từ khóa bạn vừa nhập. Hãy thử xóa bộ lọc hoặc tìm kiếm từ khóa ngắn gọn hơn."
+            actionText="Xem tất cả bài viết"
+            onAction={handleResetFilters}
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fadeIn">
             {filteredNews.map((article) => (
               <article
                 key={article.id}

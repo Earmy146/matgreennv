@@ -17,6 +17,8 @@ import { formatCurrency, CATEGORY_LABELS } from "@/lib/utils";
 import type { MaterialItem } from "@/types/material.types";
 import { materialRequestsApi, materialsApi, type MaterialRequest } from "@/services/api";
 import { reviewsApi } from "@/services/api";
+import { HorizontalItemSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const MyPostsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -84,25 +86,23 @@ export const MyPostsPage: React.FC = () => {
 
       {/* Listing Cards */}
       {isLoading ? (
-        <div className="py-16 text-center text-slate-500">Đang tải bài đăng của bạn...</div>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <HorizontalItemSkeleton key={i} />
+          ))}
+        </div>
       ) : isError ? (
         <div className="py-16 text-center text-rose-600">Không thể tải bài đăng. Vui lòng thử lại.</div>
       ) : myPosts.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
-          <FolderOpen className="w-12 h-12 text-slate-300 mx-auto" />
-          <h3 className="font-bold text-slate-800 text-base">Bạn chưa có bài đăng nào</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Khi công trình của bạn bắt đầu tháo dỡ, hãy đăng thông tin và ảnh vật liệu lên để người dân quanh khu vực có thể hỗ trợ dọn dẹp hoặc mua lại.
-          </p>
-          <Link
-            to="/post"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs mt-2"
-          >
-            <PlusCircle className="w-4 h-4" /> Đăng bài ngay
-          </Link>
-        </div>
+        <EmptyState
+          icon={<FolderOpen className="w-8 h-8 text-emerald-600 stroke-[1.75]" />}
+          title="Bạn chưa có bài đăng vật liệu nào"
+          description="Khi công trình của bạn chuẩn bị tháo dỡ, hãy đăng thông tin và ảnh vật liệu lên để người dân quanh khu vực có thể hỗ trợ dọn dẹp hoặc mua lại nhanh chóng."
+          actionText="Đăng tin vật liệu ngay"
+          onAction={() => window.location.href = "/post"}
+        />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fadeIn">
           {myPosts.map((post) => {
             const isFree = post.type === "free";
             return (

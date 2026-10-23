@@ -1,9 +1,11 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Heart, Loader2, MapPin, Trash2 } from "lucide-react";
+import { Heart, MapPin, Trash2, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { favoritesApi } from "@/services/api";
 import { formatCurrency, CATEGORY_LABELS } from "@/lib/utils";
+import { HorizontalItemSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const SavedMaterialsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -26,13 +28,23 @@ export const SavedMaterialsPage: React.FC = () => {
         <p className="text-sm text-slate-500 mt-1">Lưu lại các bài đăng bạn muốn xem hoặc liên hệ sau.</p>
       </div>
       {isLoading ? (
-        <div className="py-16 flex justify-center text-emerald-700"><Loader2 className="animate-spin" /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <HorizontalItemSkeleton key={i} />
+          ))}
+        </div>
       ) : isError ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800">Không thể tải danh sách đã lưu.</div>
       ) : favorites.length === 0 ? (
-        <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500">Bạn chưa lưu bài vật liệu nào.</div>
+        <EmptyState
+          icon={<Heart className="w-8 h-8 text-rose-500 stroke-[1.75]" />}
+          title="Bạn chưa lưu bài đăng vật liệu nào"
+          description="Khi lướt tìm nguồn cung vật liệu quanh bạn, hãy bấm biểu tượng trái tim để lưu lại và theo dõi trước khi có người khác nhận."
+          secondaryActionText="Khám phá sàn vật liệu ngay"
+          secondaryActionHref="/materials"
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
           {favorites.map((favorite) => {
             const material = favorite.material;
             return (

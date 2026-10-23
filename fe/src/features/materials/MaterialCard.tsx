@@ -16,11 +16,15 @@ export const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
       {/* Thumbnail or placeholder */}
       <div className="h-44 bg-slate-100 relative overflow-hidden flex items-center justify-center">
         {material.images && material.images.length > 0 ? (
-          <img
-            src={material.images[0]}
-            alt={material.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          <>
+            <div className="absolute inset-0 bg-slate-200/80 animate-shimmer" />
+            <img
+              src={material.images[0]}
+              alt={material.title}
+              loading="lazy"
+              className="relative z-10 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </>
         ) : (
           <div className="text-slate-400 text-xs flex flex-col items-center gap-1">
             <Tag className="w-8 h-8 stroke-1 text-slate-300" />
