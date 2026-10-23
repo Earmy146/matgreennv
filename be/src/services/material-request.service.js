@@ -36,8 +36,10 @@ class MaterialRequestService {
   }
 
   async listForUser(userId, role) {
-    const filter = role === "owner" ? { "material.owner": userId } : { requester: userId };
-    const requests = await MaterialRequest.find()
+    const query = role === "owner"
+      ? { material: { $in: await Material.find({ owner: userId }).distinct("_id") } }
+      : { requester: userId };
+    return MaterialRequest.find(query)
       .populate({
         path: "material",
         select: "title type status location images owner",
@@ -46,11 +48,6 @@ class MaterialRequestService {
       .populate("requester", "name phone email")
       .sort({ createdAt: -1 })
       .lean();
-
-    return requests.filter((request) => {
-      if (role === "owner") return request.material?.owner?._id?.toString() === userId.toString();
-      return request.requester?._id?.toString() === userId.toString();
-    });
   }
 
   async updateStatus(userId, requestId, status) {
@@ -69,6 +66,17 @@ class MaterialRequestService {
     }
     if (isOwner && !["approved", "rejected", "completed"].includes(status)) {
       throw new ForbiddenError("Người đăng chỉ được duyệt, từ chối hoặc hoàn tất yêu cầu");
+    }
+    if (status === "approved" || status === "rejected") {
+      if (!isOwner || request.status !== "pending") {
+        throw new BadRequestError("Yêu cầu này không còn chờ duyệt");
+      }
+    }
+    if (status === "cancelled" && !["pending", "approved"].includes(request.status)) {
+      throw new BadRequestError("Yêu cầu này không thể hủy ở trạng thái hiện tại");
+    }
+    if (status === "completed" && request.status !== "approved") {
+      throw new BadRequestError("Chỉ có thể hoàn tất yêu cầu đã được duyệt");
     }
     if (status === "approved" && request.material.status !== "available") {
       throw new BadRequestError("Bài đăng không còn sẵn sàng để duyệt yêu cầu");

@@ -16,6 +16,7 @@ import {
   Layers,
   PhoneCall,
   ShieldCheck,
+  ClipboardList,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLocationStore } from "@/stores/location.store";
@@ -94,6 +95,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: "Quản Lý Tin Của Tôi",
           href: "/my-posts",
           icon: FolderOpen,
+        },
+        {
+          label: "Yêu Cầu Nhận Của Tôi",
+          href: "/requests",
+          icon: ClipboardList,
         },
       ],
     },
