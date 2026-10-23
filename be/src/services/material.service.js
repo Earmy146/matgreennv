@@ -1,25 +1,14 @@
 const Material = require("../models/material.model");
 const { calculateHaversineDistance } = require("../utils/haversine");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../core/error.response");
+const {
+  parseAccuracy,
+  parseCapturedAt,
+  parseCoordinate,
+  parsePositiveNumber,
+} = require("../utils/location-validation");
 
 const EARTH_RADIUS_KM = 6371;
-
-function parseCoordinate(value, name, min, max) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
-    throw new BadRequestError(`${name} không hợp lệ`);
-  }
-  return parsed;
-}
-
-function parsePositiveNumber(value, name, fallback) {
-  if (value === undefined || value === null || value === "") return fallback;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    throw new BadRequestError(`${name} phải là số lớn hơn 0`);
-  }
-  return parsed;
-}
 
 class MaterialService {
   /**
@@ -57,18 +46,8 @@ class MaterialService {
 
     const parsedLatitude = parseCoordinate(latitude, "Vĩ độ", -90, 90);
     const parsedLongitude = parseCoordinate(longitude, "Kinh độ", -180, 180);
-    const parsedAccuracy =
-      accuracy === undefined ? undefined : parsePositiveNumber(accuracy, "Độ chính xác GPS");
-    const parsedCapturedAt = capturedAt ? new Date(capturedAt) : new Date();
-    if (Number.isNaN(parsedCapturedAt.getTime())) {
-      throw new BadRequestError("Thời điểm lấy GPS không hợp lệ");
-    }
-    if (Date.now() - parsedCapturedAt.getTime() > 15 * 60 * 1000) {
-      throw new BadRequestError("Vị trí GPS đã quá cũ, vui lòng lấy lại vị trí hiện tại");
-    }
-    if (parsedCapturedAt.getTime() > Date.now() + 60 * 1000) {
-      throw new BadRequestError("Thời điểm lấy GPS không hợp lệ");
-    }
+    const parsedAccuracy = parseAccuracy(accuracy);
+    const parsedCapturedAt = parseCapturedAt(capturedAt);
 
     if (!contactPhone) {
       throw new BadRequestError("Vui lòng cung cấp số điện thoại liên hệ");

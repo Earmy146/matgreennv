@@ -27,6 +27,7 @@ const materialRequestSchema = new mongoose.Schema(
       default: Date.now,
     },
     scheduledAt: Date,
+    completedAt: Date,
   },
   { timestamps: true }
 );

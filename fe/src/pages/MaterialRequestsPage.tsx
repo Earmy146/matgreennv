@@ -22,6 +22,7 @@ const statusClasses: Record<MaterialRequest["status"], string> = {
 
 export const MaterialRequestsPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const [scheduleValues, setScheduleValues] = React.useState<Record<string, string>>({});
   const { data: requests = [], isLoading, isError } = useQuery({
     queryKey: ["material-requests", "requester"],
     queryFn: () => materialRequestsApi.listMine("requester"),
@@ -29,6 +30,11 @@ export const MaterialRequestsPage: React.FC = () => {
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: MaterialRequest["status"] }) =>
       materialRequestsApi.updateStatus(id, status),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] }),
+  });
+  const schedule = useMutation({
+    mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt: string }) =>
+      materialRequestsApi.schedule(id, scheduledAt),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] }),
   });
 
@@ -70,7 +76,26 @@ export const MaterialRequestsPage: React.FC = () => {
               </div>
               {request.status === "approved" && (
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-emerald-50 p-3">
-                  <span className="text-xs text-emerald-900 flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Hãy liên hệ người đăng để thống nhất thời gian lấy.</span>
+                  <div className="space-y-2">
+                    <span className="text-xs text-emerald-900 flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Hãy liên hệ người đăng để thống nhất thời gian lấy.</span>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <input
+                        type="datetime-local"
+                        value={scheduleValues[request._id] || ""}
+                        onChange={(event) => setScheduleValues((current) => ({ ...current, [request._id]: event.target.value }))}
+                        className="rounded-lg border border-emerald-200 bg-white px-2 py-1.5 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => schedule.mutate({ id: request._id, scheduledAt: scheduleValues[request._id] })}
+                        disabled={schedule.isPending || !scheduleValues[request._id]}
+                        className="px-3 py-2 rounded-xl border border-emerald-300 text-emerald-800 text-xs font-bold disabled:opacity-50"
+                      >
+                        Đặt lịch
+                      </button>
+                    </div>
+                    {request.scheduledAt && <div className="text-xs font-bold text-emerald-800">Lịch nhận: {new Date(request.scheduledAt).toLocaleString("vi-VN")}</div>}
+                  </div>
                   <button type="button" onClick={() => updateStatus.mutate({ id: request._id, status: "completed" })} disabled={updateStatus.isPending} className="px-3 py-2 rounded-xl bg-emerald-700 text-white text-xs font-bold disabled:opacity-50">Xác nhận đã nhận</button>
                 </div>
               )}

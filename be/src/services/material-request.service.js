@@ -83,12 +83,36 @@ class MaterialRequestService {
     }
 
     request.status = status;
+    if (status === "completed") request.completedAt = new Date();
     await request.save();
     if (status === "approved") {
       await Material.findByIdAndUpdate(request.material._id, { status: "reserved" });
     } else if (status === "completed") {
       await Material.findByIdAndUpdate(request.material._id, { status: "completed" });
     }
+    return this.populateRequest(request._id);
+  }
+
+  async scheduleRequest(userId, requestId, scheduledAt) {
+    const parsedDate = new Date(scheduledAt);
+    if (Number.isNaN(parsedDate.getTime()) || parsedDate.getTime() <= Date.now()) {
+      throw new BadRequestError("Thời gian nhận phải là thời điểm hợp lệ trong tương lai");
+    }
+    if (parsedDate.getTime() > Date.now() + 90 * 24 * 60 * 60 * 1000) {
+      throw new BadRequestError("Không thể đặt lịch quá 90 ngày kể từ hôm nay");
+    }
+
+    const request = await MaterialRequest.findById(requestId).populate("material", "owner status");
+    if (!request) throw new NotFoundError("Không tìm thấy yêu cầu nhận vật liệu");
+    const isOwner = request.material.owner.toString() === userId.toString();
+    const isRequester = request.requester.toString() === userId.toString();
+    if (!isOwner && !isRequester) throw new ForbiddenError("Bạn không có quyền đặt lịch cho yêu cầu này");
+    if (request.status !== "approved") {
+      throw new BadRequestError("Chỉ yêu cầu đã được duyệt mới có thể đặt lịch");
+    }
+
+    request.scheduledAt = parsedDate;
+    await request.save();
     return this.populateRequest(request._id);
   }
 

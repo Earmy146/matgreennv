@@ -72,6 +72,8 @@ export interface MaterialRequest {
   _id: string;
   message?: string;
   status: "pending" | "approved" | "rejected" | "cancelled" | "completed";
+  scheduledAt?: string;
+  completedAt?: string;
   material: MaterialItem;
   requester: { _id: string; name: string; phone?: string; email?: string };
   createdAt: string;
@@ -95,6 +97,12 @@ export const materialRequestsApi = {
   updateStatus: async (id: string, status: MaterialRequest["status"]) => {
     const res = await api.patch<{ data: MaterialRequest }>(`/material-requests/${id}/status`, {
       status,
+    });
+    return res.data.data;
+  },
+  schedule: async (id: string, scheduledAt: string) => {
+    const res = await api.patch<{ data: MaterialRequest }>(`/material-requests/${id}/schedule`, {
+      scheduledAt,
     });
     return res.data.data;
   },

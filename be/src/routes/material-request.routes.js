@@ -8,5 +8,6 @@ router.use(authenticate);
 router.get("/", materialRequestController.listMine);
 router.post("/", materialRequestController.create);
 router.patch("/:id/status", materialRequestController.updateStatus);
+router.patch("/:id/schedule", materialRequestController.schedule);
 
 module.exports = router;
