@@ -46,6 +46,7 @@ class MaterialController {
         status,
         page,
         limit,
+        excludeUserId: req.user?.id || null,
       });
 
       new OK({

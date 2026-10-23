@@ -121,6 +121,7 @@ class MaterialService {
     status = "available",
     page = 1,
     limit = 12,
+    excludeUserId = null,
   }) {
     const lat = parseCoordinate(latitude, "Vĩ độ", -90, 90);
     const lng = parseCoordinate(longitude, "Kinh độ", -180, 180);
@@ -161,6 +162,11 @@ class MaterialService {
         { description: { $regex: term, $options: "i" } },
         { "location.address": { $regex: term, $options: "i" } },
       ];
+    }
+
+    // Loại trừ bài của chính người đang đăng nhập
+    if (excludeUserId) {
+      query.owner = { $ne: excludeUserId };
     }
 
     // Đếm tổng số bài đăng trong bán kính để làm phân trang

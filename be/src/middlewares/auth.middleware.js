@@ -22,6 +22,24 @@ async function authenticate(req, res, next) {
   }
 }
 
+/**
+ * Middleware optional: gắn req.user nếu có token hợp lệ, không throw nếu không có.
+ * Dùng cho route public nhưng cần biết user là ai nếu đã đăng nhập.
+ */
+async function optionalAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return next();
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, env.JWT_SECRET);
+    req.user = decoded;
+  } catch (_) {
+    // Token invalid/expired — bỏ qua, tiếp tục như khách
+  }
+  return next();
+}
+
 module.exports = {
   authenticate,
+  optionalAuth,
 };
