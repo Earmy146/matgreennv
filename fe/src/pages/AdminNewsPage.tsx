@@ -212,6 +212,13 @@ export const AdminNewsPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const thumbnail = formData.thumbnail.trim();
+    if (!thumbnail) {
+      setUploadError("Vui lòng tải lên hoặc nhập URL ảnh đại diện.");
+      return;
+    }
+    setUploadError(null);
+
     const tagsArray = formData.tags
       .split(",")
       .map((t) => t.trim())
@@ -229,7 +236,7 @@ export const AdminNewsPage: React.FC = () => {
           role: formData.authorRole,
           avatar: formData.authorAvatar,
         },
-        thumbnail: formData.thumbnail,
+        thumbnail,
         bannerImage: formData.bannerImage,
         readTimeMinutes: Number(formData.readTimeMinutes) || 5,
         tags: tagsArray,
@@ -247,7 +254,7 @@ export const AdminNewsPage: React.FC = () => {
           role: formData.authorRole,
           avatar: formData.authorAvatar,
         },
-        thumbnail: formData.thumbnail,
+        thumbnail,
         bannerImage: formData.bannerImage,
         readTimeMinutes: Number(formData.readTimeMinutes) || 5,
         tags: tagsArray,
@@ -546,11 +553,15 @@ export const AdminNewsPage: React.FC = () => {
                     </div>
 
                     <input
-                      type="url"
+                      type="text"
+                      inputMode="url"
                       required
-                      placeholder="Hoặc dán URL ảnh trực tiếp..."
+                      placeholder="Hoặc dán URL ảnh trực tiếp (https://... hoặc /uploads/...)"
                       value={formData.thumbnail}
-                      onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                      onChange={(e) => {
+                        setUploadError(null);
+                        setFormData({ ...formData, thumbnail: e.target.value });
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
@@ -591,8 +602,9 @@ export const AdminNewsPage: React.FC = () => {
                     Ảnh bìa lớn (Banner Header URL)
                   </label>
                   <input
-                    type="url"
-                    placeholder="https://..."
+                    type="text"
+                    inputMode="url"
+                    placeholder="https://... hoặc /uploads/..."
                     value={formData.bannerImage}
                     onChange={(e) => setFormData({ ...formData, bannerImage: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
