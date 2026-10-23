@@ -16,6 +16,7 @@ import {
 import { formatCurrency, CATEGORY_LABELS } from "@/lib/utils";
 import type { MaterialItem } from "@/types/material.types";
 import { materialRequestsApi, materialsApi, type MaterialRequest } from "@/services/api";
+import { reviewsApi } from "@/services/api";
 
 export const MyPostsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -41,6 +42,8 @@ export const MyPostsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["my-materials"] });
     },
   });
+  const [reviewValues, setReviewValues] = React.useState<Record<string, { rating: number; comment: string }>>({});
+  const review = useMutation({ mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment: string }) => reviewsApi.create(id, rating, comment) });
   const verifyLocation = useMutation({
     mutationFn: (id: string) => materialsApi.verifyLocation(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-materials"] }),
@@ -259,6 +262,14 @@ export const MyPostsPage: React.FC = () => {
                       <button type="button" onClick={() => updateRequest.mutate({ id: request._id, status: "approved" })} className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">Duyệt nhận</button>
                       <button type="button" onClick={() => updateRequest.mutate({ id: request._id, status: "rejected" })} className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-bold">Từ chối</button>
                     </>
+                  )}
+                  {request.status === "completed" && (
+                    <div className="w-full mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                      <div className="text-xs font-bold text-amber-900 mb-2">Đánh giá người nhận</div>
+                      <select value={reviewValues[request._id]?.rating || 5} onChange={(e) => setReviewValues((v) => ({ ...v, [request._id]: { rating: Number(e.target.value), comment: v[request._id]?.comment || "" } }))} className="rounded-lg border border-amber-200 px-2 py-1 text-xs">{[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} sao</option>)}</select>
+                      <input value={reviewValues[request._id]?.comment || ""} onChange={(e) => setReviewValues((v) => ({ ...v, [request._id]: { rating: v[request._id]?.rating || 5, comment: e.target.value } }))} placeholder="Nhận xét..." className="ml-2 rounded-lg border border-amber-200 px-2 py-1 text-xs" />
+                      <button type="button" onClick={() => review.mutate({ id: request._id, rating: reviewValues[request._id]?.rating || 5, comment: reviewValues[request._id]?.comment || "" })} className="ml-2 rounded-lg bg-amber-600 text-white px-3 py-1 text-xs font-bold">Gửi</button>
+                    </div>
                   )}
                 </div>
               </div>

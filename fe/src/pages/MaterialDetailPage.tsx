@@ -197,6 +197,7 @@ export const MaterialDetailPage: React.FC = () => {
               <div className="rounded-2xl border border-slate-200 p-3 space-y-2">
                 <input value={reportReason} onChange={(e) => setReportReason(e.target.value)} placeholder="Nếu có vấn đề, nhập lý do báo cáo..." className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs" />
                 <button type="button" disabled={!reportReason.trim() || reportMutation.isPending} onClick={() => reportMutation.mutate()} className="text-xs font-bold text-rose-700 disabled:opacity-50">Báo cáo bài đăng</button>
+                <button type="button" disabled={!reportReason.trim() || reportMutation.isPending} onClick={() => reportsApi.create({ targetType: "user", targetUserId: material.owner._id, reason: reportReason }).then(() => setReportReason(""))} className="ml-3 text-xs font-bold text-rose-700 disabled:opacity-50">Báo cáo người đăng</button>
                 {reportMutation.isSuccess && <span className="ml-2 text-xs text-emerald-700">Đã gửi báo cáo.</span>}
               </div>
             )}
