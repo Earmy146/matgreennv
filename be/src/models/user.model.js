@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    isSuspended: { type: Boolean, default: false },
     // Xác thực tài khoản qua Gmail / SMTP
     isVerified: {
       type: Boolean,

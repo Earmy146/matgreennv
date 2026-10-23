@@ -39,6 +39,7 @@ router.post(
 
 // Cập nhật trạng thái bài đăng (available -> reserved -> completed)
 router.patch("/:id/status", authenticate, materialController.updateStatus);
+router.patch("/:id", authenticate, materialController.update);
 
 // Xóa bài đăng
 router.delete("/:id", authenticate, materialController.delete);

@@ -2,6 +2,12 @@ const materialService = require("../services/material.service");
 const { OK, CREATED } = require("../core/success.response");
 
 class MaterialController {
+  async update(req, res, next) {
+    try {
+      const result = await materialService.updateMaterial(req.params.id, req.user.id, req.body);
+      new OK({ message: "Cập nhật bài đăng thành công", data: result }).send(res);
+    } catch (err) { next(err); }
+  }
   async create(req, res, next) {
     try {
       const result = await materialService.createMaterial(req.user.id, req.body);

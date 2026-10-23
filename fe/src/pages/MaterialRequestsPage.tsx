@@ -2,7 +2,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ClipboardList, Loader2, MapPin, XCircle, CheckCircle2, MessageSquare } from "lucide-react";
-import { materialRequestsApi, type MaterialRequest } from "@/services/api";
+import { materialRequestsApi, reviewsApi, type MaterialRequest } from "@/services/api";
 
 const statusLabels: Record<MaterialRequest["status"], string> = {
   pending: "Đang chờ người đăng duyệt",
@@ -36,6 +36,10 @@ export const MaterialRequestsPage: React.FC = () => {
     mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt: string }) =>
       materialRequestsApi.schedule(id, scheduledAt),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] }),
+  });
+  const [reviewValues, setReviewValues] = React.useState<Record<string, { rating: number; comment: string }>>({});
+  const review = useMutation({
+    mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment: string }) => reviewsApi.create(id, rating, comment),
   });
 
   return (
@@ -105,6 +109,16 @@ export const MaterialRequestsPage: React.FC = () => {
                     {request.scheduledAt && <div className="text-xs font-bold text-emerald-800">Lịch nhận: {new Date(request.scheduledAt).toLocaleString("vi-VN")}</div>}
                   </div>
                   <button type="button" onClick={() => updateStatus.mutate({ id: request._id, status: "completed" })} disabled={updateStatus.isPending} className="px-3 py-2 rounded-xl bg-emerald-700 text-white text-xs font-bold disabled:opacity-50">Xác nhận đã nhận</button>
+                </div>
+              )}
+              {request.status === "completed" && (
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+                  <div className="text-xs font-bold text-amber-900">Đánh giá giao dịch</div>
+                  <select value={reviewValues[request._id]?.rating || 5} onChange={(e) => setReviewValues((v) => ({ ...v, [request._id]: { rating: Number(e.target.value), comment: v[request._id]?.comment || "" } }))} className="rounded-lg border border-amber-200 px-2 py-1 text-xs">
+                    {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} sao</option>)}
+                  </select>
+                  <input value={reviewValues[request._id]?.comment || ""} onChange={(e) => setReviewValues((v) => ({ ...v, [request._id]: { rating: v[request._id]?.rating || 5, comment: e.target.value } }))} placeholder="Nhận xét ngắn..." className="ml-2 rounded-lg border border-amber-200 px-2 py-1 text-xs" />
+                  <button type="button" onClick={() => review.mutate({ id: request._id, rating: reviewValues[request._id]?.rating || 5, comment: reviewValues[request._id]?.comment || "" })} className="ml-2 rounded-lg bg-amber-600 text-white px-3 py-1 text-xs font-bold">Gửi đánh giá</button>
                 </div>
               )}
               {request.status === "pending" && (

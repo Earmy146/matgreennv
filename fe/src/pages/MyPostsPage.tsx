@@ -205,6 +205,7 @@ export const MyPostsPage: React.FC = () => {
                   >
                     <Eye className="w-4 h-4" />
                   </Link>
+                  <Link to={`/materials/${post._id}/edit`} className="px-2 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50">Sửa</Link>
                   <button
                     type="button"
                     onClick={() => verifyLocation.mutate(post._id)}

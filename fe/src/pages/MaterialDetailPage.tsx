@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   Heart,
 } from "lucide-react";
-import { favoritesApi, materialRequestsApi, materialsApi } from "@/services/api";
+import { favoritesApi, materialRequestsApi, materialsApi, reportsApi } from "@/services/api";
 import { useAuthStore } from "@/stores/auth.store";
 import { formatCurrency, formatDistance, CATEGORY_LABELS } from "@/lib/utils";
 import { useLocationStore } from "@/stores/location.store";
@@ -23,6 +23,7 @@ export const MaterialDetailPage: React.FC = () => {
   const { latitude, longitude } = useLocationStore();
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [requestMessage, setRequestMessage] = useState("");
+  const [reportReason, setReportReason] = useState("");
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuthStore();
   const favoriteStatus = useQuery({
@@ -34,6 +35,7 @@ export const MaterialDetailPage: React.FC = () => {
     mutationFn: () => favoriteStatus.data?.saved ? favoritesApi.remove(id as string) : favoritesApi.add(id as string),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorite-status", id] }),
   });
+  const reportMutation = useMutation({ mutationFn: () => reportsApi.create({ targetType: "material", materialId: material?._id, reason: reportReason }), onSuccess: () => setReportReason("") });
 
   const { data: material, isLoading, isError } = useQuery({
     queryKey: ["material-detail", id, latitude, longitude],
@@ -191,6 +193,13 @@ export const MaterialDetailPage: React.FC = () => {
               <a href={`tel:${cleanPhone}`} className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-600 text-white text-xs font-bold"><Phone className="w-4 h-4" /> Gọi điện</a>
               <a href={`https://zalo.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-600 text-white text-xs font-bold"><MessageCircle className="w-4 h-4" /> Nhắn Zalo</a>
             </div>
+            {isAuthenticated && (
+              <div className="rounded-2xl border border-slate-200 p-3 space-y-2">
+                <input value={reportReason} onChange={(e) => setReportReason(e.target.value)} placeholder="Nếu có vấn đề, nhập lý do báo cáo..." className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs" />
+                <button type="button" disabled={!reportReason.trim() || reportMutation.isPending} onClick={() => reportMutation.mutate()} className="text-xs font-bold text-rose-700 disabled:opacity-50">Báo cáo bài đăng</button>
+                {reportMutation.isSuccess && <span className="ml-2 text-xs text-emerald-700">Đã gửi báo cáo.</span>}
+              </div>
+            )}
             <Link to={`/chat?partnerId=${material.owner._id}&materialId=${material._id}`} className="flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl bg-emerald-50 text-emerald-800 text-xs font-bold"><MessageSquare className="w-4 h-4" /> Chat trực tiếp trên MatGreen</Link>
           </div>
         </div>

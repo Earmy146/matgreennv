@@ -11,6 +11,18 @@ const {
 const EARTH_RADIUS_KM = 6371;
 
 class MaterialService {
+  async updateMaterial(id, userId, data) {
+    const material = await Material.findOne({ _id: id, owner: userId });
+    if (!material) throw new NotFoundError("Không tìm thấy bài đăng hoặc bạn không có quyền sửa");
+    const allowed = ["title", "description", "category", "type", "price", "unit", "images", "address", "contactPhone", "contactZalo", "contactName", "contactHours"];
+    for (const key of allowed) if (data[key] !== undefined) {
+      if (key === "address") material.location.address = String(data[key]).trim();
+      else material[key] = data[key];
+    }
+    if (material.type === "free") material.price = 0;
+    await material.save();
+    return material;
+  }
   /**
    * Tạo bài đăng vật liệu mới (Nhà A)
    */

@@ -1,0 +1,11 @@
+const express = require("express");
+const adminController = require("../controllers/admin.controller");
+const { authenticate } = require("../middlewares/auth.middleware");
+const { requireAdmin } = require("../middlewares/admin.middleware");
+const router = express.Router();
+router.use(authenticate, requireAdmin);
+router.get("/users", adminController.users);
+router.patch("/users/:id/suspend", adminController.suspendUser);
+router.get("/materials", adminController.materials);
+router.patch("/materials/:id/status", adminController.moderateMaterial);
+module.exports = router;

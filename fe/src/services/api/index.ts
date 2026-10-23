@@ -39,6 +39,10 @@ export const materialsApi = {
     const res = await api.delete<{ data: { success: boolean; message: string } }>(`/materials/${id}`);
     return res.data.data;
   },
+  update: async (id: string, data: Partial<MaterialItem>) => {
+    const res = await api.patch<{ data: MaterialItem }>(`/materials/${id}`, data);
+    return res.data.data;
+  },
   verifyLocation: async (id: string) => {
     const res = await api.post<{ data: MaterialItem }>(`/materials/${id}/verify-location`);
     return res.data.data;
@@ -208,6 +212,33 @@ export const favoritesApi = {
     const res = await api.delete<{ data: { materialId: string; saved: boolean } }>(`/favorites/${materialId}`);
     return res.data.data;
   },
+};
+
+export const reviewsApi = {
+  list: async (requestId: string) => {
+    const res = await api.get(`/reviews/${requestId}`);
+    return res.data.data;
+  },
+  create: async (requestId: string, rating: number, comment: string) => {
+    const res = await api.post(`/reviews/${requestId}`, { rating, comment });
+    return res.data.data;
+  },
+};
+
+export const reportsApi = {
+  create: async (payload: { targetType: "material" | "user"; materialId?: string; targetUserId?: string; reason: string }) => {
+    const res = await api.post("/reports", payload);
+    return res.data.data;
+  },
+  list: async () => (await api.get("/reports")).data.data,
+  update: async (id: string, status: string, resolution: string) => (await api.patch(`/reports/${id}`, { status, resolution })).data.data,
+};
+
+export const adminApi = {
+  users: async () => (await api.get("/admin/users")).data.data,
+  suspendUser: async (id: string, suspended: boolean) => (await api.patch(`/admin/users/${id}/suspend`, { suspended })).data.data,
+  materials: async () => (await api.get("/admin/materials")).data.data,
+  moderateMaterial: async (id: string, status: string) => (await api.patch(`/admin/materials/${id}/status`, { status })).data.data,
 };
 
 export const aiMaterialsApi = {

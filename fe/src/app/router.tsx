@@ -17,6 +17,8 @@ import { ChatPage } from "@/pages/ChatPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { MaterialRequestsPage } from "@/pages/MaterialRequestsPage";
 import { SavedMaterialsPage } from "@/pages/SavedMaterialsPage";
+import { EditMaterialPage } from "@/pages/EditMaterialPage";
+import { AdminModerationPage } from "@/pages/AdminModerationPage";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -54,6 +56,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  {
+    path: "/admin/moderation",
+    element: <ProtectedRoute requiredRole="admin"><AdminModerationPage /></ProtectedRoute>,
+  },
   // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
   {
     path: "/",
@@ -87,6 +93,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      { path: "materials/:id/edit", element: <ProtectedRoute><EditMaterialPage /></ProtectedRoute> },
       {
         path: "requests",
         element: (

@@ -8,6 +8,9 @@ const uploadRoutes = require("./upload.routes");
 const materialRequestRoutes = require("./material-request.routes");
 const notificationRoutes = require("./notification.routes");
 const favoriteRoutes = require("./favorite.routes");
+const reviewRoutes = require("./review.routes");
+const reportRoutes = require("./report.routes");
+const adminRoutes = require("./admin.routes");
 
 router.get("/health", (req, res) => {
   res.json({
@@ -24,5 +27,8 @@ router.use("/upload", uploadRoutes);
 router.use("/material-requests", materialRequestRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/favorites", favoriteRoutes);
+router.use("/reviews", reviewRoutes);
+router.use("/reports", reportRoutes);
+router.use("/admin", adminRoutes);
 
 module.exports = router;
