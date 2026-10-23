@@ -113,9 +113,17 @@ export const AdminSettingsPage: React.FC = () => {
         body,
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.data?.url) {
-        throw new Error(json.message || "Tải ảnh lên Cloudinary không thành công");
+      const contentType = res.headers.get("content-type") || "";
+      const json = contentType.includes("application/json")
+        ? await res.json()
+        : null;
+      if (!res.ok || !json?.data?.url) {
+        const message =
+          json?.message ||
+          (res.status === 413
+            ? "Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 10MB."
+            : "Tải ảnh lên Cloudinary không thành công");
+        throw new Error(message);
       }
 
       onSuccess(json.data.url);
