@@ -77,6 +77,30 @@ const featureItemSchema = new mongoose.Schema({
   desc: { type: String, default: "" },
 }, { _id: false });
 
+const offerCardSchema = new mongoose.Schema({
+  badge: { type: String, default: "" },
+  title: { type: String, default: "" },
+  desc: { type: String, default: "" },
+  bgImage: { type: String, default: "" },
+  shapeImage: { type: String, default: "" },
+  buttonText: { type: String, default: "" },
+  buttonLink: { type: String, default: "" },
+  subText: { type: String, default: "" },
+}, { _id: false });
+
+const productSampleSchema = new mongoose.Schema({
+  id: { type: String, default: "" },
+  title: { type: String, default: "" },
+  category: { type: String, default: "" },
+  price: { type: String, default: "" },
+  isFree: { type: Boolean, default: false },
+  unit: { type: String, default: "" },
+  distance: { type: String, default: "" },
+  address: { type: String, default: "" },
+  image: { type: String, default: "" },
+  rating: { type: Number, default: 5 },
+}, { _id: false });
+
 const siteConfigSchema = new mongoose.Schema(
   {
     key: { type: String, default: "default", unique: true },
@@ -99,6 +123,10 @@ const siteConfigSchema = new mongoose.Schema(
         type: String,
         default:
           "Nền tảng công nghệ tiên phong tuần hoàn vật liệu xây dựng tháo dỡ tại Việt Nam. Kết nối cung cầu theo bán kính định vị GPS, giảm thiểu phế thải đô thị.",
+      },
+      footerBgPattern: {
+        type: String,
+        default: "/assets/images/shapes/footer-bg-1-1.png",
       },
       copyrightText: {
         type: String,
@@ -410,6 +438,104 @@ const siteConfigSchema = new mongoose.Schema(
           ],
         },
       },
+      offers: {
+        card1: {
+          type: offerCardSchema,
+          default: {
+            badge: "Miễn Phí 100% (0đ)",
+            title: "Nhận Vật Liệu Thừa Cho & Tặng Công Trình",
+            desc: "Hàng ngàn tấn xà bần, gạch cũ nguyên vẹn, ván cốp pha và đất đá tôn nền từ các công trình đập phá đang chờ bạn đến chở miễn phí.",
+            bgImage: "/assets/images/backgrounds/offer-1-1-bg.png",
+            shapeImage: "/assets/images/shapes/offer-s-1-1.png",
+            buttonText: "Tìm Tin Cho Tặng Gần Bạn",
+            buttonLink: "/dashboard?type=free",
+            subText: "Tự điều xe chở",
+          },
+        },
+        card2: {
+          type: offerCardSchema,
+          default: {
+            badge: "Tiết Kiệm Tới 40%",
+            title: "Thanh Lý Kho & Thu Hồi Vốn Tháo Dỡ",
+            desc: "Sắt hộp, xà gồ thép, cửa nhôm kính Xingfa và thiết bị vệ sinh tháo dỡ còn đẹp 85-95% với mức giá chỉ bằng một nửa vật liệu mới.",
+            bgImage: "/assets/images/backgrounds/offer-1-2-bg.png",
+            shapeImage: "/assets/images/shapes/offer-s-1-1.png",
+            buttonText: "Xem Vật Tư Thanh Lý",
+            buttonLink: "/dashboard?type=sell",
+            subText: "Bốc dỡ ngay tại bãi",
+          },
+        },
+      },
+      products: {
+        badge: { type: String, default: "Nguồn Cung Cập Nhật Mới Nhất" },
+        title: { type: String, default: "Vật Liệu Đang Chờ Bốc Dỡ" },
+        desc: {
+          type: String,
+          default: "Xem nhanh các lô vật liệu tháo dỡ còn nguyên vẹn trong khu vực bạn sinh sống và làm việc.",
+        },
+        items: {
+          type: [productSampleSchema],
+          default: [
+            {
+              id: "mat-prod-1",
+              title: "Gạch Đỏ Đặc Cũ Tháo Dỡ Nhà Phố",
+              category: "Gạch & Bê tông",
+              price: "0đ (Cho Tặng)",
+              isFree: true,
+              unit: "viên",
+              distance: "1.2 km",
+              address: "Đống Đa, Hà Nội",
+              image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=600&q=80",
+              rating: 5,
+            },
+            {
+              id: "mat-prod-2",
+              title: "Sắt Hộp 40x80 & Xà Gồ Mạ Kẽm 1.8mm",
+              category: "Sắt thép",
+              price: "45.000đ",
+              isFree: false,
+              unit: "cây",
+              distance: "2.8 km",
+              address: "Thanh Xuân, Hà Nội",
+              image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80",
+              rating: 5,
+            },
+            {
+              id: "mat-prod-3",
+              title: "Bộ Cửa Đi Nhôm Kính Xingfa 4 Cánh",
+              category: "Cửa & Nhôm kính",
+              price: "1.800.000đ",
+              isFree: false,
+              unit: "bộ",
+              distance: "3.5 km",
+              address: "Cầu Giấy, Hà Nội",
+              image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80",
+              rating: 5,
+            },
+            {
+              id: "mat-prod-4",
+              title: "Ván Cốp Pha Phủ Phim 15mm Còn Đẹp",
+              category: "Gỗ & Ván sàn",
+              price: "60.000đ",
+              isFree: false,
+              unit: "tấm",
+              distance: "4.1 km",
+              address: "Nam Từ Liêm, Hà Nội",
+              image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=600&q=80",
+              rating: 5,
+            },
+          ],
+        },
+      },
+      newsSection: {
+        badge: { type: String, default: "Cẩm Nang & Xu Hướng" },
+        title: { type: String, default: "Tin Tức & Bài Viết Mới Nhất" },
+        desc: {
+          type: String,
+          default:
+            "Cập nhật xu hướng kinh tế tuần hoàn, kinh nghiệm tháo dỡ công trình và giải pháp xử lý phế phẩm xây dựng tối ưu.",
+        },
+      },
     },
 
     // 2. CẤU HÌNH TRANG GIỚI THIỆU (About Page)
@@ -583,6 +709,22 @@ const siteConfigSchema = new mongoose.Schema(
               a: "Mô hình AI của MatGreen được huấn luyện dựa trên định mức xây dựng Việt Nam, độ chính xác đạt khoảng 85-92% đối với các công trình nhà phố, nhà cấp 4 và biệt thự.",
             },
           ],
+        },
+      },
+    },
+
+    // 5. CẤU HÌNH TRANG TIN TỨC (News Page)
+    newsPage: {
+      header: {
+        title: { type: String, default: "Tin Tức & Cẩm Nang Tái Sinh Vật Liệu" },
+        subtitle: {
+          type: String,
+          default:
+            "Nơi chia sẻ kiến thức thực tế về tháo dỡ công trình, kỹ thuật thu hồi vật tư nguyên vẹn và các giải pháp xây dựng bền vững vì môi trường.",
+        },
+        bgImageUrl: {
+          type: String,
+          default: "/assets/images/backgrounds/page-header-bg-1-1.jpg",
         },
       },
     },

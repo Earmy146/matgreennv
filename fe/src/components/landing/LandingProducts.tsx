@@ -1,9 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Star, MapPin, Eye, Heart, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Star, MapPin, Eye, Heart, ArrowRight } from "lucide-react";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const LandingProducts: React.FC = () => {
-  const products = [
+  const { config } = useSiteConfigStore();
+  const productsConfig = config.homePage?.products;
+
+  const defaultProducts = [
     {
       id: "mat-prod-1",
       title: "Gạch Đỏ Đặc Cũ Tháo Dỡ Nhà Phố",
@@ -54,6 +58,11 @@ export const LandingProducts: React.FC = () => {
     },
   ];
 
+  const products = productsConfig?.items?.length ? productsConfig.items : defaultProducts;
+  const badge = productsConfig?.badge || "Nguồn Cung Cập Nhật Mới Nhất";
+  const title = productsConfig?.title || "Vật Liệu Đang Chờ Bốc Dỡ";
+  const desc = productsConfig?.desc || "Xem nhanh các lô vật liệu tháo dỡ còn nguyên vẹn trong khu vực bạn sinh sống và làm việc.";
+
   return (
     <section className="py-20 bg-stone-50 relative z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -65,21 +74,21 @@ export const LandingProducts: React.FC = () => {
             className="mx-auto mb-3 h-5 w-auto object-contain"
           />
           <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
-            Nguồn Cung Cập Nhật Mới Nhất
+            {badge}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-            Vật Liệu Đang Chờ Bốc Dỡ
+            {title}
           </h2>
           <p className="mt-3 text-sm text-slate-600">
-            Xem nhanh các lô vật liệu tháo dỡ còn nguyên vẹn trong khu vực bạn sinh sống và làm việc.
+            {desc}
           </p>
         </div>
 
         {/* 4-column Product Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
-          {products.map((item) => (
+          {products.map((item, index) => (
             <div
-              key={item.id}
+              key={item.id || index}
               className="bg-white rounded-3xl overflow-hidden shadow-md border border-stone-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group"
             >
               {/* Product Image + Floating Actions */}
@@ -127,7 +136,7 @@ export const LandingProducts: React.FC = () => {
                 <div>
                   {/* Rating Stars */}
                   <div className="flex items-center gap-1 mb-2">
-                    {[...Array(item.rating)].map((_, i) => (
+                    {[...Array(item.rating || 5)].map((_, i) => (
                       <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
                     ))}
                     <span className="text-[10px] text-slate-400 ml-1 font-medium">(Đã kiểm định)</span>
@@ -144,7 +153,7 @@ export const LandingProducts: React.FC = () => {
 
                   {/* Price Tag */}
                   <div className="mt-3 text-base font-extrabold text-amber-600">
-                    {item.price} {!item.isFree && <span className="text-xs text-slate-400 font-normal">/ {item.unit}</span>}
+                    {item.price} {!item.isFree && item.unit && <span className="text-xs text-slate-400 font-normal">/ {item.unit}</span>}
                   </div>
                 </div>
 

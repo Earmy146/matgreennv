@@ -35,7 +35,7 @@ export const LandingFooter: React.FC = () => {
       {/* Background Shape Pattern */}
       <div
         className="absolute inset-0 bg-repeat opacity-10 pointer-events-none"
-        style={{ backgroundImage: "url('/assets/images/shapes/footer-bg-1-1.png')" }}
+        style={{ backgroundImage: `url('${config.general?.footerBgPattern || "/assets/images/shapes/footer-bg-1-1.png"}')` }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 pt-16 pb-12">

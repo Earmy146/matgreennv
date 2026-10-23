@@ -28,6 +28,10 @@ import {
   Award,
   ChevronRight,
   Eye,
+  Newspaper,
+  Gift,
+  Tag,
+  ShoppingBag,
 } from "lucide-react";
 import {
   useSiteConfigStore,
@@ -44,13 +48,15 @@ import {
   type StepItem,
   type PackageItem,
   type FaqItem,
+  type OfferCardItem,
+  type ProductItem,
 } from "@/stores/site-config.store";
 import { siteConfigApi } from "@/services/api";
 
 export const AdminSettingsPage: React.FC = () => {
   const { config, updateConfig } = useSiteConfigStore();
   const [activeTab, setActiveTab] = useState<
-    "general" | "home" | "about" | "contact" | "services"
+    "general" | "home" | "about" | "contact" | "services" | "news"
   >("home");
 
   // State form lưu cấu hình
@@ -64,7 +70,7 @@ export const AdminSettingsPage: React.FC = () => {
 
   // Sub-tab cho Trang Chủ để phân tách nội dung dễ quản lý
   const [homeSubTab, setHomeSubTab] = useState<
-    "hero" | "about" | "services" | "why" | "gallery" | "stats" | "partners" | "testimonials"
+    "hero" | "offers" | "about" | "services" | "products" | "why" | "gallery" | "stats" | "news" | "partners" | "testimonials"
   >("hero");
 
   // Đồng bộ form khi store có dữ liệu mới
@@ -389,6 +395,19 @@ export const AdminSettingsPage: React.FC = () => {
           <Briefcase className="w-4 h-4" />
           <span>5. Cấu Hình Trang Dịch Vụ & Bảng Giá</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("news")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${
+            activeTab === "news"
+              ? "bg-emerald-700 text-white shadow-md shadow-emerald-700/20"
+              : "bg-white text-slate-600 hover:bg-stone-100 border border-stone-200"
+          }`}
+        >
+          <Newspaper className="w-4 h-4 text-emerald-400" />
+          <span>6. Cấu Hình Trang Tin Tức (News Page)</span>
+        </button>
       </div>
 
       {/* ========================================================================= */}
@@ -587,6 +606,18 @@ export const AdminSettingsPage: React.FC = () => {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
+
+            {renderImageUploader(
+              "Ảnh Họa Tiết Nền Chân Trang (Footer Background Pattern)",
+              formData.general?.footerBgPattern || "/assets/images/shapes/footer-bg-1-1.png",
+              (url) =>
+                setFormData({
+                  ...formData,
+                  general: { ...formData.general, footerBgPattern: url },
+                }),
+              "general-footer-bg",
+              "Ảnh hoa văn đồ họa lặp lại ở nền Chân trang Footer (/assets/images/shapes/footer-bg-1-1.png)"
+            )}
           </div>
         </div>
       )}
@@ -600,11 +631,14 @@ export const AdminSettingsPage: React.FC = () => {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 bg-stone-100 p-1.5 rounded-2xl border border-stone-200">
             {[
               { id: "hero", label: "Hero Banner & Video" },
+              { id: "offers", label: "2 Thẻ Ưu Đãi (Offers)" },
               { id: "about", label: "Khối Giới Thiệu (About)" },
               { id: "services", label: "4 Dịch Vụ Cốt Lõi" },
+              { id: "products", label: "Nguồn Cung Mẫu (4 Sản Phẩm)" },
               { id: "why", label: "Lợi Thế (Why Choose Parallax)" },
               { id: "gallery", label: "Thư Viện Công Trình (Gallery)" },
               { id: "stats", label: "Thống Kê (Funfacts)" },
+              { id: "news", label: "Khối Tin Tức (Trang Chủ)" },
               { id: "partners", label: "Carousel Đối Tác" },
               { id: "testimonials", label: "Đánh Giá Khách Hàng" },
             ].map((sub) => (
@@ -798,6 +832,386 @@ export const AdminSettingsPage: React.FC = () => {
                   }
                   className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                 />
+              </div>
+            </div>
+          )}
+
+          {/* SUB-TAB: OFFERS */}
+          {homeSubTab === "offers" && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-8">
+              <div className="border-b border-stone-100 pb-4">
+                <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-emerald-600" />
+                  2 Thẻ Ưu Đãi Trang Chủ (Offers: Cho Nhận 0đ & Thanh Lý)
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Chỉnh sửa hình ảnh nền, ảnh hoa văn trang trí góc, huy hiệu, tiêu đề và nút kêu gọi hành động của 2 thẻ ưu đãi nổi bật.
+                </p>
+              </div>
+
+              {/* Grid 2 Thẻ */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Thẻ 1 */}
+                <div className="p-6 rounded-2xl border-2 border-emerald-200/80 bg-emerald-50/20 space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b border-emerald-100">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold uppercase">
+                      Thẻ 1: Cho Tặng 0đ
+                    </span>
+                  </div>
+
+                  {renderImageUploader(
+                    "Ảnh Nền Thẻ 1 (Background Image)",
+                    formData.homePage?.offers?.card1?.bgImage || "/assets/images/backgrounds/offer-1-1-bg.png",
+                    (url) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          offers: {
+                            ...formData.homePage?.offers,
+                            card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), bgImage: url },
+                            card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                          },
+                        },
+                      }),
+                    "offer-card1-bg",
+                    "Khuyên dùng kích thước ~600x400px hoặc ảnh hoa văn nền"
+                  )}
+
+                  {renderImageUploader(
+                    "Ảnh Trang Trí Góc (Shape Image)",
+                    formData.homePage?.offers?.card1?.shapeImage || "/assets/images/shapes/offer-s-1-1.png",
+                    (url) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          offers: {
+                            ...formData.homePage?.offers,
+                            card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), shapeImage: url },
+                            card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                          },
+                        },
+                      }),
+                    "offer-card1-shape",
+                    "Ảnh đồ họa trong suốt PNG đặt ở góc dưới phải"
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Huy Hiệu (Badge)</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card1?.badge || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), badge: e.target.value },
+                                card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Ghi Chú Phụ</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card1?.subText || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), subText: e.target.value },
+                                card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Tiêu Đề Thẻ</label>
+                    <input
+                      type="text"
+                      value={formData.homePage?.offers?.card1?.title || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          homePage: {
+                            ...formData.homePage,
+                            offers: {
+                              ...formData.homePage?.offers,
+                              card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), title: e.target.value },
+                              card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                            },
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Mô Tả Thẻ</label>
+                    <textarea
+                      rows={3}
+                      value={formData.homePage?.offers?.card1?.desc || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          homePage: {
+                            ...formData.homePage,
+                            offers: {
+                              ...formData.homePage?.offers,
+                              card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), desc: e.target.value },
+                              card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                            },
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Chữ Nút Bấm</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card1?.buttonText || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), buttonText: e.target.value },
+                                card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Liên Kết (Link)</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card1?.buttonLink || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: { ...(formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1), buttonLink: e.target.value },
+                                card2: formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Thẻ 2 */}
+                <div className="p-6 rounded-2xl border-2 border-amber-200/80 bg-amber-50/20 space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b border-amber-100">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-extrabold uppercase">
+                      Thẻ 2: Thanh Lý Dọn Kho
+                    </span>
+                  </div>
+
+                  {renderImageUploader(
+                    "Ảnh Nền Thẻ 2 (Background Image)",
+                    formData.homePage?.offers?.card2?.bgImage || "/assets/images/backgrounds/offer-1-2-bg.png",
+                    (url) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          offers: {
+                            ...formData.homePage?.offers,
+                            card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                            card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), bgImage: url },
+                          },
+                        },
+                      }),
+                    "offer-card2-bg",
+                    "Khuyên dùng kích thước ~600x400px hoặc ảnh hoa văn nền"
+                  )}
+
+                  {renderImageUploader(
+                    "Ảnh Trang Trí Góc (Shape Image)",
+                    formData.homePage?.offers?.card2?.shapeImage || "/assets/images/shapes/offer-s-1-1.png",
+                    (url) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          offers: {
+                            ...formData.homePage?.offers,
+                            card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                            card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), shapeImage: url },
+                          },
+                        },
+                      }),
+                    "offer-card2-shape",
+                    "Ảnh đồ họa trong suốt PNG đặt ở góc dưới phải"
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Huy Hiệu (Badge)</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card2?.badge || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                                card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), badge: e.target.value },
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Ghi Chú Phụ</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card2?.subText || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                                card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), subText: e.target.value },
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Tiêu Đề Thẻ</label>
+                    <input
+                      type="text"
+                      value={formData.homePage?.offers?.card2?.title || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          homePage: {
+                            ...formData.homePage,
+                            offers: {
+                              ...formData.homePage?.offers,
+                              card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                              card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), title: e.target.value },
+                            },
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Mô Tả Thẻ</label>
+                    <textarea
+                      rows={3}
+                      value={formData.homePage?.offers?.card2?.desc || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          homePage: {
+                            ...formData.homePage,
+                            offers: {
+                              ...formData.homePage?.offers,
+                              card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                              card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), desc: e.target.value },
+                            },
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Chữ Nút Bấm</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card2?.buttonText || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                                card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), buttonText: e.target.value },
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Liên Kết (Link)</label>
+                      <input
+                        type="text"
+                        value={formData.homePage?.offers?.card2?.buttonLink || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            homePage: {
+                              ...formData.homePage,
+                              offers: {
+                                ...formData.homePage?.offers,
+                                card1: formData.homePage?.offers?.card1 || DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                                card2: { ...(formData.homePage?.offers?.card2 || DEFAULT_SITE_CONFIG.homePage.offers.card2), buttonLink: e.target.value },
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1220,6 +1634,319 @@ export const AdminSettingsPage: React.FC = () => {
             </div>
           )}
 
+          {/* SUB-TAB: PRODUCTS SAMPLE */}
+          {homeSubTab === "products" && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-8">
+              <div className="border-b border-stone-100 pb-4">
+                <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                  Nguồn Cung Mẫu - Vật Liệu Đang Chờ Bốc Dỡ (Products)
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Chỉnh sửa 4 sản phẩm mẫu thực tế hiển thị trên Trang Chủ. Có thể tải ảnh thật từ công trình, đổi tên, giá, khoảng cách GPS và địa chỉ.
+                </p>
+              </div>
+
+              {/* Tiêu đề & mô tả khối */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-stone-50 p-5 rounded-2xl border border-stone-200">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Huy Hiệu (Badge Nhỏ)</label>
+                  <input
+                    type="text"
+                    value={formData.homePage?.products?.badge || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          products: {
+                            ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                            badge: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Tiêu Đề Khối</label>
+                  <input
+                    type="text"
+                    value={formData.homePage?.products?.title || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          products: {
+                            ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                            title: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Mô Tả Ngắn</label>
+                  <input
+                    type="text"
+                    value={formData.homePage?.products?.desc || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          products: {
+                            ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                            desc: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* 4 Cards Sản Phẩm */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items).map((prod, idx) => (
+                  <div
+                    key={prod.id || idx}
+                    className="p-5 rounded-2xl border border-stone-200 bg-stone-50/50 space-y-4 relative"
+                  >
+                    <div className="flex items-center justify-between border-b border-stone-200/60 pb-2">
+                      <span className="text-xs font-extrabold text-emerald-800">
+                        Sản Phẩm #{idx + 1}: {prod.title || "Chưa đặt tên"}
+                      </span>
+                      {prod.isFree ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold">
+                          Cho 0đ
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-extrabold">
+                          Thanh lý
+                        </span>
+                      )}
+                    </div>
+
+                    {renderImageUploader(
+                      `Ảnh Sản Phẩm #${idx + 1}`,
+                      prod.image || "",
+                      (url) => {
+                        const items = [
+                          ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                        ];
+                        items[idx] = { ...items[idx], image: url };
+                        setFormData({
+                          ...formData,
+                          homePage: {
+                            ...formData.homePage,
+                            products: {
+                              ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                              items,
+                            },
+                          },
+                        });
+                      },
+                      `prod-sample-${idx + 1}`,
+                      "Ảnh chụp hiện trường lô vật liệu tại công trình"
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Tên Vật Liệu</label>
+                        <input
+                          type="text"
+                          value={prod.title}
+                          onChange={(e) => {
+                            const items = [
+                              ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                            ];
+                            items[idx] = { ...items[idx], title: e.target.value };
+                            setFormData({
+                              ...formData,
+                              homePage: {
+                                ...formData.homePage,
+                                products: {
+                                  ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                  items,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Danh Mục</label>
+                        <input
+                          type="text"
+                          value={prod.category}
+                          onChange={(e) => {
+                            const items = [
+                              ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                            ];
+                            items[idx] = { ...items[idx], category: e.target.value };
+                            setFormData({
+                              ...formData,
+                              homePage: {
+                                ...formData.homePage,
+                                products: {
+                                  ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                  items,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Giá Hiển Thị</label>
+                        <input
+                          type="text"
+                          value={prod.price}
+                          onChange={(e) => {
+                            const items = [
+                              ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                            ];
+                            items[idx] = { ...items[idx], price: e.target.value };
+                            setFormData({
+                              ...formData,
+                              homePage: {
+                                ...formData.homePage,
+                                products: {
+                                  ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                  items,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white font-bold text-amber-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Đơn Vị Tính</label>
+                        <input
+                          type="text"
+                          value={prod.unit}
+                          onChange={(e) => {
+                            const items = [
+                              ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                            ];
+                            items[idx] = { ...items[idx], unit: e.target.value };
+                            setFormData({
+                              ...formData,
+                              homePage: {
+                                ...formData.homePage,
+                                products: {
+                                  ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                  items,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                          placeholder="viên / cây / m2 / xe"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Khoảng Cách GPS</label>
+                        <input
+                          type="text"
+                          value={prod.distance}
+                          onChange={(e) => {
+                            const items = [
+                              ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                            ];
+                            items[idx] = { ...items[idx], distance: e.target.value };
+                            setFormData({
+                              ...formData,
+                              homePage: {
+                                ...formData.homePage,
+                                products: {
+                                  ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                  items,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                          placeholder="1.2 km"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Địa Chỉ / Khu Vực</label>
+                        <input
+                          type="text"
+                          value={prod.address}
+                          onChange={(e) => {
+                            const items = [
+                              ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                            ];
+                            items[idx] = { ...items[idx], address: e.target.value };
+                            setFormData({
+                              ...formData,
+                              homePage: {
+                                ...formData.homePage,
+                                products: {
+                                  ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                  items,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-white"
+                          placeholder="Cầu Giấy, Hà Nội"
+                        />
+                      </div>
+                      <div className="pt-4">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={prod.isFree}
+                            onChange={(e) => {
+                              const items = [
+                                ...(formData.homePage?.products?.items || DEFAULT_SITE_CONFIG.homePage.products.items),
+                              ];
+                              items[idx] = {
+                                ...items[idx],
+                                isFree: e.target.checked,
+                                price: e.target.checked ? "0đ (Cho Tặng)" : items[idx].price,
+                              };
+                              setFormData({
+                                ...formData,
+                                homePage: {
+                                  ...formData.homePage,
+                                  products: {
+                                    ...(formData.homePage?.products || DEFAULT_SITE_CONFIG.homePage.products),
+                                    items,
+                                  },
+                                },
+                              });
+                            }}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span className="text-xs font-bold text-slate-700">Đánh dấu miễn phí (Cho tặng 0đ)</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* SUB-TAB: WHY CHOOSE PARALLAX */}
           {homeSubTab === "why" && (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-6">
@@ -1536,6 +2263,105 @@ export const AdminSettingsPage: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* SUB-TAB: NEWS SECTION ON HOME */}
+          {homeSubTab === "news" && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-6">
+              <div className="border-b border-stone-100 pb-4">
+                <h3 className="text-base font-black text-slate-900 font-display flex items-center gap-2">
+                  <Newspaper className="w-4 h-4 text-emerald-600" />
+                  Khối Tin Tức & Cẩm Nang Trên Trang Chủ
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Chỉnh sửa tiêu đề, khẩu hiệu của khối 3 bài viết tin tức mới nhất hiển thị trên Trang Chủ. (Quản trị nội dung và ảnh từng bài viết tại Tab 6 hoặc trang Tin Tức).
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                    Huy Hiệu (Badge Nhỏ)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.homePage?.newsSection?.badge || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          newsSection: {
+                            ...(formData.homePage?.newsSection || DEFAULT_SITE_CONFIG.homePage.newsSection),
+                            badge: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                    Tiêu Đề Khối
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.homePage?.newsSection?.title || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        homePage: {
+                          ...formData.homePage,
+                          newsSection: {
+                            ...(formData.homePage?.newsSection || DEFAULT_SITE_CONFIG.homePage.newsSection),
+                            title: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                  Đoạn Văn Mô Tả Khối Tin Tức
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.homePage?.newsSection?.desc || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      homePage: {
+                        ...formData.homePage,
+                        newsSection: {
+                          ...(formData.homePage?.newsSection || DEFAULT_SITE_CONFIG.homePage.newsSection),
+                          desc: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-emerald-900 block">Quản lý nội dung và hình ảnh bài viết</span>
+                  <span className="text-[11px] text-emerald-700">Thêm, xóa, chỉnh sửa ảnh thumbnail và nội dung chi tiết bài viết tại Bảng Quản Trị Tin Tức.</span>
+                </div>
+                <a
+                  href="/admin/news"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Mở Trang Quản Trị Tin Tức
+                </a>
               </div>
             </div>
           )}
@@ -2723,6 +3549,100 @@ export const AdminSettingsPage: React.FC = () => {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 6: CẤU HÌNH TRANG TIN TỨC (NEWS PAGE) */}
+      {/* ========================================================================= */}
+      {activeTab === "news" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 font-display flex items-center gap-2">
+                  <Newspaper className="w-5 h-5 text-emerald-600" />
+                  Banner Đầu Trang Tin Tức & Cẩm Nang (/news)
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Tùy chỉnh hình ảnh nền lớn đầu trang, tiêu đề và phần mô tả giới thiệu của trang danh sách tin tức và chi tiết bài viết.
+                </p>
+              </div>
+
+              <a
+                href="/admin/news"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 shadow-md shadow-emerald-600/20 transition-all"
+              >
+                <Settings className="w-3.5 h-3.5" /> Quản Trị Bài Viết Tin Tức
+              </a>
+            </div>
+
+            {renderImageUploader(
+              "Ảnh Nền Banner Trang Tin Tức (Header Background Image)",
+              formData.newsPage?.header?.bgImageUrl || "/assets/images/backgrounds/page-header-bg-1-1.jpg",
+              (url) =>
+                setFormData({
+                  ...formData,
+                  newsPage: {
+                    ...formData.newsPage,
+                    header: {
+                      ...(formData.newsPage?.header || DEFAULT_SITE_CONFIG.newsPage.header),
+                      bgImageUrl: url,
+                    },
+                  },
+                }),
+              "news-banner-bg",
+              "Khuyên dùng ảnh phong cảnh công trình sắc nét độ phân giải 1920x600px"
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                  Tiêu Đề Banner Trang Tin Tức
+                </label>
+                <input
+                  type="text"
+                  value={formData.newsPage?.header?.title || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      newsPage: {
+                        ...formData.newsPage,
+                        header: {
+                          ...(formData.newsPage?.header || DEFAULT_SITE_CONFIG.newsPage.header),
+                          title: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                  Đoạn Mô Tả Ngắn Dưới Tiêu Đề
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.newsPage?.header?.subtitle || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      newsPage: {
+                        ...formData.newsPage,
+                        header: {
+                          ...(formData.newsPage?.header || DEFAULT_SITE_CONFIG.newsPage.header),
+                          subtitle: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
             </div>
           </div>
         </div>

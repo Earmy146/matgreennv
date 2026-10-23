@@ -2,9 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, MessageSquare, User, Eye } from "lucide-react";
 import { useNewsStore } from "@/stores/news.store";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const LandingNewsSection: React.FC = () => {
   const { articles } = useNewsStore();
+  const { config } = useSiteConfigStore();
+  const newsSec = config.homePage?.newsSection;
+  const badge = newsSec?.badge || "Cẩm Nang & Xu Hướng";
+  const title = newsSec?.title || "Tin Tức & Bài Viết Mới Nhất";
+  const desc = newsSec?.desc || "Cập nhật xu hướng kinh tế tuần hoàn, kinh nghiệm tháo dỡ công trình và giải pháp xử lý phế phẩm xây dựng tối ưu.";
+
   // Lấy 3 bài viết mới nhất
   const latestArticles = articles.slice(0, 3);
 
@@ -19,13 +26,13 @@ export const LandingNewsSection: React.FC = () => {
             className="mx-auto mb-3 h-5 w-auto object-contain"
           />
           <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
-            Cẩm Nang & Xu Hướng
+            {badge}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-            Tin Tức & Bài Viết Mới Nhất
+            {title}
           </h2>
           <p className="mt-3 text-sm text-slate-600">
-            Cập nhật xu hướng kinh tế tuần hoàn, kinh nghiệm tháo dỡ công trình và giải pháp xử lý phế phẩm xây dựng tối ưu.
+            {desc}
           </p>
         </div>
 

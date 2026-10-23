@@ -16,15 +16,22 @@ import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { useNewsStore } from "@/stores/news.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 import { NewsGridSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export const NewsPage: React.FC = () => {
   const { user } = useAuthStore();
   const { articles } = useNewsStore();
+  const { config } = useSiteConfigStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Tất cả");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
+
+  const newsHeader = config.newsPage?.header;
+  const headerBg = newsHeader?.bgImageUrl || "/assets/images/backgrounds/page-header-bg-1-1.jpg";
+  const headerTitle = newsHeader?.title || "Tin Tức & Cẩm Nang Tái Sinh Vật Liệu";
+  const headerSubtitle = newsHeader?.subtitle || "Nơi chia sẻ kiến thức thực tế về tháo dỡ công trình, kỹ thuật thu hồi vật tư nguyên vẹn và các giải pháp xây dựng bền vững vì môi trường.";
 
   const categories = [
     "Tất cả",
@@ -67,7 +74,7 @@ export const NewsPage: React.FC = () => {
       {/* Page Header Banner phong cách Solox */}
       <section
         className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
-        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+        style={{ backgroundImage: `url('${headerBg}')` }}
       >
         <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
@@ -82,10 +89,10 @@ export const NewsPage: React.FC = () => {
             <li><span>Tin Tức</span></li>
           </ul>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
-            Tin Tức & Cẩm Nang Tái Sinh Vật Liệu
+            {headerTitle}
           </h1>
           <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mx-auto mt-3 leading-relaxed">
-            Nơi chia sẻ kiến thức thực tế về tháo dỡ công trình, kỹ thuật thu hồi vật tư nguyên vẹn và các giải pháp xây dựng bền vững vì môi trường.
+            {headerSubtitle}
           </p>
           <div className="mt-5">
             <Link

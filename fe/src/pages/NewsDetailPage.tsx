@@ -15,11 +15,16 @@ import {
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { useNewsStore } from "@/stores/news.store";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { articles, getArticleBySlugOrId, incrementViews } = useNewsStore();
+  const { config } = useSiteConfigStore();
+
+  const headerBg =
+    config.newsPage?.header?.bgImageUrl || "/assets/images/backgrounds/page-header-bg-1-1.jpg";
 
   const article = getArticleBySlugOrId(id || "");
 
@@ -65,7 +70,7 @@ export const NewsDetailPage: React.FC = () => {
       <section className="relative py-16 lg:py-20 bg-slate-900 text-white overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{ backgroundImage: `url('/assets/images/backgrounds/page-header-bg-1-1.jpg')` }}
+          style={{ backgroundImage: `url('${headerBg}')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-slate-900/80 to-slate-900/90" />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">

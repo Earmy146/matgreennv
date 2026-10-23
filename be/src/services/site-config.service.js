@@ -24,10 +24,17 @@ class SiteConfigService {
 
     // Đảm bảo các field trang mới luôn có giá trị defaults nếu DB là bản ghi cũ
     const defaults = new SiteConfig().toObject();
-    if (!config.homePage) config.homePage = defaults.homePage;
+    if (!config.homePage) {
+      config.homePage = defaults.homePage;
+    } else {
+      if (!config.homePage.offers) config.homePage.offers = defaults.homePage.offers;
+      if (!config.homePage.products) config.homePage.products = defaults.homePage.products;
+      if (!config.homePage.newsSection) config.homePage.newsSection = defaults.homePage.newsSection;
+    }
     if (!config.aboutPage) config.aboutPage = defaults.aboutPage;
     if (!config.contactPage) config.contactPage = defaults.contactPage;
     if (!config.servicesPage) config.servicesPage = defaults.servicesPage;
+    if (!config.newsPage) config.newsPage = defaults.newsPage;
     if (!config.general) config.general = defaults.general;
     if (!config.contact) config.contact = defaults.contact;
 
@@ -82,6 +89,10 @@ class SiteConfigService {
     if (data.servicesPage) {
       config.servicesPage = data.servicesPage;
       config.markModified("servicesPage");
+    }
+    if (data.newsPage) {
+      config.newsPage = data.newsPage;
+      config.markModified("newsPage");
     }
 
     await config.save();

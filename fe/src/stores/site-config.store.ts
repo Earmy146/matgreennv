@@ -78,6 +78,30 @@ export interface FeatureItem {
   desc: string;
 }
 
+export interface OfferCardItem {
+  badge: string;
+  title: string;
+  desc: string;
+  bgImage: string;
+  shapeImage: string;
+  buttonText: string;
+  buttonLink: string;
+  subText: string;
+}
+
+export interface ProductItem {
+  id: string;
+  title: string;
+  category: string;
+  price: string;
+  isFree: boolean;
+  unit: string;
+  distance: string;
+  address: string;
+  image: string;
+  rating: number;
+}
+
 export interface SiteConfigData {
   general: {
     siteName: string;
@@ -89,6 +113,7 @@ export interface SiteConfigData {
     socialZalo?: string;
     socialInstagram?: string;
     footerDesc?: string;
+    footerBgPattern?: string;
     copyrightText?: string;
   };
   contact: {
@@ -149,6 +174,21 @@ export interface SiteConfigData {
       bgImageUrl: string;
       items: StatItem[];
     };
+    offers: {
+      card1: OfferCardItem;
+      card2: OfferCardItem;
+    };
+    products: {
+      badge: string;
+      title: string;
+      desc: string;
+      items: ProductItem[];
+    };
+    newsSection: {
+      badge: string;
+      title: string;
+      desc: string;
+    };
   };
   aboutPage: {
     header: {
@@ -198,6 +238,13 @@ export interface SiteConfigData {
       items: FaqItem[];
     };
   };
+  newsPage: {
+    header: {
+      title: string;
+      subtitle: string;
+      bgImageUrl: string;
+    };
+  };
 }
 
 // Dữ liệu dự phòng mặc định (Offline Fallback & Mẫu chuẩn)
@@ -213,6 +260,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
     socialInstagram: "https://instagram.com",
     footerDesc:
       "Nền tảng công nghệ tiên phong tuần hoàn vật liệu xây dựng tháo dỡ tại Việt Nam. Kết nối cung cầu theo bán kính định vị GPS, giảm thiểu phế thải đô thị.",
+    footerBgPattern: "/assets/images/shapes/footer-bg-1-1.png",
     copyrightText: "© 2026 MatGreen Platform. All rights reserved. Tiên phong tuần hoàn vật liệu xây dựng số.",
   },
   contact: {
@@ -446,6 +494,88 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
         { num: "98.6%", label: "Đánh Giá 5 Sao Hài Lòng", sub: "Từ chủ nhà & đội thợ thi công" },
       ],
     },
+    offers: {
+      card1: {
+        badge: "Miễn Phí 100% (0đ)",
+        title: "Nhận Vật Liệu Thừa Cho & Tặng Công Trình",
+        desc: "Hàng ngàn tấn xà bần, gạch cũ nguyên vẹn, ván cốp pha và đất đá tôn nền từ các công trình đập phá đang chờ bạn đến chở miễn phí.",
+        bgImage: "/assets/images/backgrounds/offer-1-1-bg.png",
+        shapeImage: "/assets/images/shapes/offer-s-1-1.png",
+        buttonText: "Tìm Tin Cho Tặng Gần Bạn",
+        buttonLink: "/dashboard?type=free",
+        subText: "Tự điều xe chở",
+      },
+      card2: {
+        badge: "Tiết Kiệm Tới 40%",
+        title: "Thanh Lý Kho & Thu Hồi Vốn Tháo Dỡ",
+        desc: "Sắt hộp, xà gồ thép, cửa nhôm kính Xingfa và thiết bị vệ sinh tháo dỡ còn đẹp 85-95% với mức giá chỉ bằng một nửa vật liệu mới.",
+        bgImage: "/assets/images/backgrounds/offer-1-2-bg.png",
+        shapeImage: "/assets/images/shapes/offer-s-1-1.png",
+        buttonText: "Xem Vật Tư Thanh Lý",
+        buttonLink: "/dashboard?type=sell",
+        subText: "Bốc dỡ ngay tại bãi",
+      },
+    },
+    products: {
+      badge: "Nguồn Cung Cập Nhật Mới Nhất",
+      title: "Vật Liệu Đang Chờ Bốc Dỡ",
+      desc: "Xem nhanh các lô vật liệu tháo dỡ còn nguyên vẹn trong khu vực bạn sinh sống và làm việc.",
+      items: [
+        {
+          id: "mat-prod-1",
+          title: "Gạch Đỏ Đặc Cũ Tháo Dỡ Nhà Phố",
+          category: "Gạch & Bê tông",
+          price: "0đ (Cho Tặng)",
+          isFree: true,
+          unit: "viên",
+          distance: "1.2 km",
+          address: "Đống Đa, Hà Nội",
+          image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=600&q=80",
+          rating: 5,
+        },
+        {
+          id: "mat-prod-2",
+          title: "Sắt Hộp 40x80 & Xà Gồ Mạ Kẽm 1.8mm",
+          category: "Sắt thép",
+          price: "45.000đ",
+          isFree: false,
+          unit: "cây",
+          distance: "2.8 km",
+          address: "Thanh Xuân, Hà Nội",
+          image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80",
+          rating: 5,
+        },
+        {
+          id: "mat-prod-3",
+          title: "Bộ Cửa Đi Nhôm Kính Xingfa 4 Cánh",
+          category: "Cửa & Nhôm kính",
+          price: "1.800.000đ",
+          isFree: false,
+          unit: "bộ",
+          distance: "3.5 km",
+          address: "Cầu Giấy, Hà Nội",
+          image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80",
+          rating: 5,
+        },
+        {
+          id: "mat-prod-4",
+          title: "Ván Cốp Pha Phủ Phim 15mm Còn Đẹp",
+          category: "Gỗ & Ván sàn",
+          price: "60.000đ",
+          isFree: false,
+          unit: "tấm",
+          distance: "4.1 km",
+          address: "Nam Từ Liêm, Hà Nội",
+          image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=600&q=80",
+          rating: 5,
+        },
+      ],
+    },
+    newsSection: {
+      badge: "Cẩm Nang & Xu Hướng",
+      title: "Tin Tức & Bài Viết Mới Nhất",
+      desc: "Cập nhật xu hướng kinh tế tuần hoàn, kinh nghiệm tháo dỡ công trình và giải pháp xử lý phế phẩm xây dựng tối ưu.",
+    },
   },
   aboutPage: {
     header: {
@@ -586,6 +716,14 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
       ],
     },
   },
+  newsPage: {
+    header: {
+      title: "Tin Tức & Cẩm Nang Tái Sinh Vật Liệu",
+      subtitle:
+        "Nơi chia sẻ kiến thức thực tế về tháo dỡ công trình, kỹ thuật thu hồi vật tư nguyên vẹn và các giải pháp xây dựng bền vững vì môi trường.",
+      bgImageUrl: "/assets/images/backgrounds/page-header-bg-1-1.jpg",
+    },
+  },
 };
 
 // Cập nhật Favicon động theo logo/favicon URL
@@ -652,6 +790,33 @@ export const useSiteConfigStore = create<SiteConfigState>((set, get) => ({
                 items: data.homePage?.stats?.items?.length
                   ? data.homePage.stats.items
                   : DEFAULT_SITE_CONFIG.homePage.stats.items,
+              },
+              offers: {
+                card1: {
+                  ...DEFAULT_SITE_CONFIG.homePage.offers.card1,
+                  ...(data.homePage?.offers?.card1 || {}),
+                },
+                card2: {
+                  ...DEFAULT_SITE_CONFIG.homePage.offers.card2,
+                  ...(data.homePage?.offers?.card2 || {}),
+                },
+              },
+              products: {
+                ...DEFAULT_SITE_CONFIG.homePage.products,
+                ...(data.homePage?.products || {}),
+                items: data.homePage?.products?.items?.length
+                  ? data.homePage.products.items
+                  : DEFAULT_SITE_CONFIG.homePage.products.items,
+              },
+              newsSection: {
+                ...DEFAULT_SITE_CONFIG.homePage.newsSection,
+                ...(data.homePage?.newsSection || {}),
+              },
+            },
+            newsPage: {
+              header: {
+                ...DEFAULT_SITE_CONFIG.newsPage.header,
+                ...(data.newsPage?.header || {}),
               },
             },
             aboutPage: {
