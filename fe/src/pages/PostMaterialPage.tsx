@@ -49,7 +49,7 @@ export const PostMaterialPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Upload ảnh thực tế từ thiết bị lên Cloudinary
+  // Upload ảnh thực tế từ thiết bị lên máy chủ
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -67,7 +67,7 @@ export const PostMaterialPage: React.FC = () => {
         }));
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Lỗi khi tải ảnh lên Cloudinary");
+      setError(err?.response?.data?.message || "Lỗi khi tải ảnh lên máy chủ");
     } finally {
       setUploadingImage(false);
     }
@@ -246,10 +246,10 @@ export const PostMaterialPage: React.FC = () => {
             </div>
           )}
 
-          {/* Section: Upload Nhiều Ảnh Làm Tin (Cloudinary) */}
+          {/* Section: Upload nhiều ảnh làm tin lên máy chủ */}
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Chụp / Tải nhiều ảnh vật liệu làm tin (Cloudinary CDN)
+              Chụp / Tải nhiều ảnh vật liệu làm tin lên máy chủ
             </label>
 
             {/* Image Preview Grid */}

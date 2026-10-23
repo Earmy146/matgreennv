@@ -177,7 +177,7 @@ export const AdminNewsPage: React.FC = () => {
           json?.message ||
           (res.status === 413
             ? "Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 10MB."
-            : "Tải ảnh lên máy chủ Cloudinary thất bại");
+            : "Tải ảnh lên máy chủ thất bại");
         throw new Error(message);
       }
 
@@ -191,7 +191,7 @@ export const AdminNewsPage: React.FC = () => {
       } else {
         setFormData((prev) => ({ ...prev, bannerImage: uploadedUrl }));
       }
-      showToast("Tải ảnh lên Cloudinary thành công!");
+      showToast("Tải ảnh lên máy chủ thành công!");
     } catch (err: any) {
       setUploadError(err.message || "Lỗi tải ảnh");
     } finally {
@@ -501,15 +501,15 @@ export const AdminNewsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Khu vực Upload Thumbnail lên Cloudinary */}
+              {/* Khu vực upload thumbnail lên máy chủ */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px]">
-                    Ảnh đại diện (Thumbnail & Cloudinary) *
+                    Ảnh đại diện (Thumbnail) *
                   </label>
                   {uploadingTarget === "thumbnail" && (
                     <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Đang tải lên Cloudinary...
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Đang tải lên máy chủ...
                     </span>
                   )}
                 </div>
@@ -541,7 +541,7 @@ export const AdminNewsPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <label className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs cursor-pointer transition-colors">
                         <UploadCloud className="w-4 h-4 text-emerald-600" />
-                        {uploadingTarget === "thumbnail" ? "Đang đẩy lên Cloudinary..." : "Tải ảnh từ máy tính (Cloudinary)"}
+                        {uploadingTarget === "thumbnail" ? "Đang tải lên máy chủ..." : "Tải ảnh từ máy tính"}
                         <input
                           type="file"
                           accept="image/*"

@@ -88,7 +88,7 @@ export const AdminSettingsPage: React.FC = () => {
     }
   }, [saveToast]);
 
-  // Upload ảnh lên Cloudinary qua API
+  // Upload ảnh lên máy chủ qua API
   const handleUploadImage = async (
     file: File,
     onSuccess: (url: string) => void,
@@ -122,14 +122,14 @@ export const AdminSettingsPage: React.FC = () => {
           json?.message ||
           (res.status === 413
             ? "Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 10MB."
-            : "Tải ảnh lên Cloudinary không thành công");
+            : "Tải ảnh lên máy chủ không thành công");
         throw new Error(message);
       }
 
       onSuccess(json.data.url);
       setSaveToast({
         type: "success",
-        message: "Đã tải ảnh lên Cloudinary thành công!",
+        message: "Đã tải ảnh lên máy chủ thành công!",
       });
     } catch (err: any) {
       setSaveToast({
@@ -237,7 +237,7 @@ export const AdminSettingsPage: React.FC = () => {
           <div className="flex-1 w-full space-y-2">
             <input
               type="text"
-              placeholder="Dán đường dẫn ảnh (URL hoặc Cloudinary)..."
+              placeholder="Dán đường dẫn ảnh (URL hoặc /uploads/)..."
               value={currentUrl || ""}
               onChange={(e) => onUrlChange(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"

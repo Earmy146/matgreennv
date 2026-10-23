@@ -168,7 +168,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }
     } catch (err) {
       console.error("Upload image error:", err);
-      alert("Không thể tải ảnh lên Cloudinary. Vui lòng thử lại!");
+      alert("Không thể tải ảnh lên máy chủ. Vui lòng thử lại!");
     } finally {
       setIsUploading(false);
     }
@@ -944,7 +944,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                     Bấm để chọn file ảnh hoặc kéo thả vào đây
                   </p>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Hỗ trợ JPG, PNG, WEBP (Tự động tải lên Cloudinary)
+                    Hỗ trợ JPG, PNG, WEBP (Tự động tải lên máy chủ)
                   </p>
                 </div>
               </div>
@@ -955,7 +955,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 </label>
                 <input
                   type="url"
-                  placeholder="https://res.cloudinary.com/.../image.jpg"
+                  placeholder="https://... hoặc /uploads/..."
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"

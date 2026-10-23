@@ -99,7 +99,7 @@ export const AdminEditMaterialModal: React.FC<AdminEditMaterialModalProps> = ({
         setImages((prev) => [...prev, res.url]);
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Không thể tải ảnh lên Cloudinary");
+      setError(err?.response?.data?.message || err?.message || "Không thể tải ảnh lên máy chủ");
     } finally {
       setUploadingImage(false);
       e.target.value = "";
@@ -404,9 +404,9 @@ export const AdminEditMaterialModal: React.FC<AdminEditMaterialModalProps> = ({
               </div>
             )}
 
-            {/* Công cụ thêm ảnh: Tải lên Cloudinary & Nhập URL */}
+            {/* Công cụ thêm ảnh: Tải lên máy chủ & Nhập URL */}
             <div className="pt-2 border-t border-emerald-200/50 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-              {/* Nút Upload Cloudinary */}
+              {/* Nút upload lên máy chủ */}
               <label className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-800 font-bold text-xs shadow-2xs cursor-pointer transition-colors shrink-0">
                 {uploadingImage ? (
                   <>
