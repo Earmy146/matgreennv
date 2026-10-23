@@ -105,7 +105,7 @@ export const AboutPage: React.FC = () => {
               <div className="relative mx-auto max-w-lg">
                 <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                   <img
-                    src="https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728313/finance-lite/banners/mat-mvkg5d78-9782a01c0068.jpg"
+                    src="https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80"
                     alt="Công trình xây dựng tuần hoàn MatGreen"
                     className="w-full h-80 sm:h-96 object-cover"
                   />

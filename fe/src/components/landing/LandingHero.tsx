@@ -142,42 +142,14 @@ export const LandingHero: React.FC = () => {
           {/* Cột Phải (5 Cột): Thumb nghệ thuật Solox với viền hoa văn, lá trang trí & vòng chữ xoay */}
           <div className="lg:col-span-5 relative flex justify-center">
             <div className="relative max-w-[340px] sm:max-w-[420px] w-full">
-              {/* Hình ảnh chính bo góc nghệ thuật Solox (slider-3-1.jpg) */}
-              <div className="relative rounded-[48px] overflow-hidden shadow-2xl border-4 border-white bg-emerald-950/20 z-10">
+              {/* Hình ảnh chính bo góc nghệ thuật */}
+              <div className="relative rounded-[48px] overflow-hidden shadow-2xl border-4 border-white bg-slate-900 z-10">
                 <img
-                  src="https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728315/finance-lite/banners/mat-mvkg5f9e-80722a7f09b5.jpg"
+                  src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80"
                   alt="Tuần hoàn vật liệu xây dựng MatGreen"
                   className="w-full h-[400px] sm:h-[480px] object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
-
-              {/* Viền hoa văn nghệ thuật Solox (slider-3-shape-3.png) */}
-              <img
-                src="/assets/images/shapes/slider-3-shape-3.png"
-                alt="Decorative frame"
-                className="absolute -top-6 -left-6 w-full h-full pointer-events-none z-0 opacity-80"
-              />
-
-              {/* Lá trang trí số 1 (slider-3-shape-4.png) */}
-              <img
-                src="/assets/images/shapes/slider-3-shape-4.png"
-                alt="Leaf 1"
-                className="absolute -top-8 -left-8 w-20 h-20 sm:w-24 sm:h-24 object-contain pointer-events-none z-20 animate-float"
-              />
-
-              {/* Lá trang trí số 2 (slider-3-shape-5.png) */}
-              <img
-                src="/assets/images/shapes/slider-3-shape-5.png"
-                alt="Leaf 2"
-                className="absolute bottom-10 -right-6 w-16 h-16 sm:w-20 sm:h-20 object-contain pointer-events-none z-20"
-              />
-
-              {/* Bông hoa Solox (slider-3-shape-6.png) */}
-              <img
-                src="/assets/images/shapes/slider-3-shape-6.png"
-                alt="Flower"
-                className="absolute -bottom-6 -left-4 w-20 h-20 sm:w-24 sm:h-24 object-contain pointer-events-none z-20 animate-spin-slow"
-              />
 
               {/* Vòng chữ xoay nghệ thuật quanh nút Play (Curved Circle Solox) */}
               <div className="absolute -bottom-6 -right-6 sm:-bottom-8 sm:-right-8 w-32 h-32 sm:w-36 sm:h-36 z-30 flex items-center justify-center">

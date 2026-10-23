@@ -42,19 +42,21 @@ export const LandingFooter: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
           {/* Cột 1 (4 Cột): Logo & Newsletter */}
           <div className="lg:col-span-4 space-y-5">
-            <Link to="/" className="inline-flex items-center gap-2.5">
+            <Link to="/" className="inline-flex items-center gap-3 group">
               {config.general?.logoUrl ? (
-                <img
-                  src={config.general.logoUrl}
-                  alt={config.general.siteName || "MatGreen"}
-                  className="w-10 h-10 rounded-2xl object-contain shadow-md shadow-emerald-500/10"
-                />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white p-1 flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/10">
+                  <img
+                    src={config.general.logoUrl}
+                    alt={config.general.siteName || "MatGreen"}
+                    className="w-full h-full object-contain rounded-xl"
+                  />
+                </div>
               ) : (
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                  <Recycle className="w-6 h-6 animate-spin-slow" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
+                  <Recycle className="w-7 h-7 sm:w-8 sm:h-8 animate-spin-slow" />
                 </div>
               )}
-              <span className="text-2xl font-black tracking-tight text-white font-display">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
                 {config.general?.siteName || (
                   <>Mat<span className="text-emerald-400">Green</span></>
                 )}

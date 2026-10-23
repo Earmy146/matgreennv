@@ -108,25 +108,27 @@ export const LandingHeader: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
+          <Link to="/" className="flex items-center gap-3 sm:gap-3.5 group">
             {config.general?.logoUrl ? (
-              <img
-                src={config.general.logoUrl}
-                alt={config.general.siteName || "MatGreen"}
-                className="w-10 h-10 rounded-xl object-contain shadow-md shadow-emerald-600/10 group-hover:scale-105 transition-transform"
-              />
+              <div className="w-13 h-13 sm:w-14 sm:h-14 md:w-15 md:h-15 rounded-2xl bg-white border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
+                <img
+                  src={config.general.logoUrl}
+                  alt={config.general.siteName || "MatGreen"}
+                  className="w-full h-full object-contain rounded-xl"
+                />
+              </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-                <Recycle className="w-6 h-6 animate-spin-slow" />
+              <div className="w-13 h-13 sm:w-14 sm:h-14 md:w-15 md:h-15 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform shrink-0">
+                <Recycle className="w-7 h-7 sm:w-8 sm:h-8 animate-spin-slow" />
               </div>
             )}
-            <div>
-              <span className="text-2xl font-black tracking-tight text-slate-900 block leading-tight">
+            <div className="flex flex-col justify-center min-w-0">
+              <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-slate-900 block leading-tight">
                 {config.general?.siteName || (
                   <>Mat<span className="text-emerald-600">Green</span></>
                 )}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block -mt-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5 sm:mt-2">
                 {config.general?.siteTagline || "Vật Liệu Tuần Hoàn"}
               </span>
             </div>
