@@ -1,6 +1,8 @@
 const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
 const logger = require("../utils/logger");
 const chatService = require("../services/chat.service");
+const env = require("../config/env");
 
 function initSocket(server, allowedOrigins = ["*"]) {
   const io = new Server(server, {
@@ -11,34 +13,34 @@ function initSocket(server, allowedOrigins = ["*"]) {
     },
   });
 
-  const onlineUsers = new Map(); // userId -> socketId
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Vui lòng đăng nhập để sử dụng chat"));
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET);
+      socket.userId = decoded.id;
+      return next();
+    } catch (err) {
+      return next(new Error("Phiên đăng nhập không hợp lệ"));
+    }
+  });
 
   io.on("connection", (socket) => {
     logger.info(`Client đã kết nối Socket: ${socket.id}`);
-
-    socket.on("join", (userId) => {
-      onlineUsers.set(userId, socket.id);
-      logger.info(`User ${userId} đã online (socket: ${socket.id})`);
-    });
+    socket.join(`user:${socket.userId}`);
 
     socket.on("send_message", async (data) => {
       try {
-        const { senderId, receiverId, materialId, content } = data;
+        const { receiverId, materialId, content } = data;
         const savedMsg = await chatService.saveMessage({
-          senderId,
+          senderId: socket.userId,
           receiverId,
           materialId,
           content,
         });
 
-        // Gửi cho người nhận nếu đang online
-        const receiverSocketId = onlineUsers.get(receiverId);
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("new_message", savedMsg);
-        }
-
-        // Phản hồi lại cho người gửi
-        socket.emit("message_sent", savedMsg);
+        io.to(`user:${receiverId}`).emit("new_message", savedMsg);
+        io.to(`user:${socket.userId}`).emit("message_sent", savedMsg);
       } catch (err) {
         logger.error({ err }, "Lỗi khi xử lý realtime message");
         socket.emit("error", { message: "Không thể gửi tin nhắn" });
@@ -46,13 +48,7 @@ function initSocket(server, allowedOrigins = ["*"]) {
     });
 
     socket.on("disconnect", () => {
-      for (const [userId, sockId] of onlineUsers.entries()) {
-        if (sockId === socket.id) {
-          onlineUsers.delete(userId);
-          logger.info(`User ${userId} đã ngắt kết nối socket`);
-          break;
-        }
-      }
+      logger.info(`User ${socket.userId} đã ngắt kết nối socket`);
     });
   });
 

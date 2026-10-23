@@ -246,12 +246,20 @@ export const MyPostsPage: React.FC = () => {
                   {request.message && <div className="text-xs text-slate-500 mt-1">“{request.message}”</div>}
                   <div className="text-xs mt-1 text-emerald-700">Trạng thái: {request.status}</div>
                 </div>
-                {request.status === "pending" && (
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => updateRequest.mutate({ id: request._id, status: "approved" })} className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">Duyệt nhận</button>
-                    <button type="button" onClick={() => updateRequest.mutate({ id: request._id, status: "rejected" })} className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-bold">Từ chối</button>
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    to={`/chat?partnerId=${request.requester?._id}&materialId=${request.material?._id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-50"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" /> Nhắn tin
+                  </Link>
+                  {request.status === "pending" && (
+                    <>
+                      <button type="button" onClick={() => updateRequest.mutate({ id: request._id, status: "approved" })} className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">Duyệt nhận</button>
+                      <button type="button" onClick={() => updateRequest.mutate({ id: request._id, status: "rejected" })} className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-bold">Từ chối</button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>

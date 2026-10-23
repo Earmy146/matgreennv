@@ -1,7 +1,7 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ClipboardList, Loader2, MapPin, XCircle, CheckCircle2 } from "lucide-react";
+import { ClipboardList, Loader2, MapPin, XCircle, CheckCircle2, MessageSquare } from "lucide-react";
 import { materialRequestsApi, type MaterialRequest } from "@/services/api";
 
 const statusLabels: Record<MaterialRequest["status"], string> = {
@@ -71,6 +71,14 @@ export const MaterialRequestsPage: React.FC = () => {
                   <Link to={`/materials/${request.material?._id}`} className="font-bold text-slate-900 hover:text-emerald-700">{request.material?.title}</Link>
                   <div className="text-xs text-slate-600 flex items-start gap-1.5"><MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />{request.material?.location?.address}</div>
                   {request.message && <p className="text-xs text-slate-500">“{request.message}”</p>}
+                  {request.material?.owner?._id && (
+                    <Link
+                      to={`/chat?partnerId=${request.material.owner._id}&materialId=${request.material._id}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" /> Nhắn với người đăng
+                    </Link>
+                  )}
                 </div>
                 <span className={`inline-flex self-start px-2.5 py-1 rounded-full border text-xs font-bold ${statusClasses[request.status]}`}>{statusLabels[request.status]}</span>
               </div>

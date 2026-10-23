@@ -112,6 +112,46 @@ export const materialRequestsApi = {
   },
 };
 
+export interface ChatMessage {
+  _id: string;
+  content: string;
+  sender: { _id: string; name: string; avatar?: string };
+  receiver: { _id: string; name: string; avatar?: string };
+  material?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface ChatMessagesPage {
+  items: ChatMessage[];
+  pagination: { page: number; limit: number; total: number; hasMore: boolean };
+}
+
+export interface ChatConversation {
+  partner: { _id: string; name: string; avatar?: string };
+  materialId?: string;
+  lastMessage: { _id: string; content: string; createdAt: string };
+  unreadCount: number;
+}
+
+export const chatApi = {
+  getConversations: async () => {
+    const res = await api.get<{ data: ChatConversation[] }>("/chat/conversations");
+    return res.data.data;
+  },
+  getMessages: async (params: { partnerId: string; materialId?: string; page?: number; limit?: number }) => {
+    const res = await api.get<{ data: ChatMessagesPage }>("/chat/messages", { params });
+    return res.data.data;
+  },
+  sendMessage: async (payload: { receiverId: string; materialId?: string; content: string }) => {
+    const res = await api.post<{ data: ChatMessage }>("/chat/messages", payload);
+    return res.data.data;
+  },
+  markRead: async (payload: { partnerId: string; materialId?: string }) => {
+    await api.patch("/chat/messages/read", payload);
+  },
+};
+
 export const aiMaterialsApi = {
   analyzeDemolition: async (description: string, address?: string) => {
     const res = await aiApi.post("/ai/materials/analyze-demolition", {
