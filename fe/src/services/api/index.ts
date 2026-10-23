@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import aiApi from "@/lib/ai-api";
 import type { MaterialItem, NearbyMaterialsResult } from "@/types/material.types";
+import type { NewsArticle } from "@/types/news.types";
 
 export const materialsApi = {
   getNearby: async (params: {
@@ -377,3 +378,31 @@ export const authApi = {
     return res.data;
   },
 };
+
+export const articlesApi = {
+  getAll: async (params?: { category?: string; tag?: string; search?: string }) => {
+    const res = await api.get<{ data: NewsArticle[] }>("/articles", { params });
+    return res.data.data;
+  },
+  getBySlugOrId: async (slugOrId: string) => {
+    const res = await api.get<{ data: NewsArticle }>(`/articles/${slugOrId}`);
+    return res.data.data;
+  },
+  create: async (data: Partial<NewsArticle>) => {
+    const res = await api.post<{ data: NewsArticle }>("/articles", data);
+    return res.data.data;
+  },
+  update: async (id: string, data: Partial<NewsArticle>) => {
+    const res = await api.put<{ data: NewsArticle }>(`/articles/${id}`, data);
+    return res.data.data;
+  },
+  delete: async (id: string) => {
+    const res = await api.delete<{ data: NewsArticle }>(`/articles/${id}`);
+    return res.data.data;
+  },
+  incrementViews: async (id: string) => {
+    const res = await api.post<{ data: NewsArticle }>(`/articles/${id}/views`);
+    return res.data.data;
+  },
+};
+

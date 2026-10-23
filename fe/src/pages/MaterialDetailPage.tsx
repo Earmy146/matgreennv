@@ -17,6 +17,7 @@ import { favoritesApi, materialRequestsApi, materialsApi, reportsApi } from "@/s
 import { useAuthStore } from "@/stores/auth.store";
 import { formatCurrency, formatDistance, CATEGORY_LABELS } from "@/lib/utils";
 import { useLocationStore } from "@/stores/location.store";
+import { MaterialMap } from "@/components/map/MaterialMap";
 
 export const MaterialDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -113,7 +114,7 @@ export const MaterialDetailPage: React.FC = () => {
               ))}
             </div>
           )}
-          <iframe title="Bản đồ vị trí công trình" src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01}%2C${lat - 0.01}%2C${lng + 0.01}%2C${lat + 0.01}&layer=mapnik&marker=${lat}%2C${lng}`} className="w-full h-56 rounded-2xl border-0" loading="lazy" />
+          <MaterialMap lat={lat} lng={lng} className="h-56" />
           <div className="flex gap-2">
             <a href={mapUrl} target="_blank" rel="noreferrer" className="flex-1 text-center py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-white">Xem bản đồ</a>
             <a href={directionsUrl} target="_blank" rel="noreferrer" className="flex-1 text-center py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700">Chỉ đường</a>

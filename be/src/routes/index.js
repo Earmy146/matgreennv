@@ -31,6 +31,10 @@ router.use("/reviews", reviewRoutes);
 router.use("/reports", reportRoutes);
 router.use("/admin", adminRoutes);
 
+// Articles / News
+const articleRoutes = require("./article.routes");
+router.use("/articles", articleRoutes);
+
 // Public Site Config endpoint
 const siteConfigController = require("../controllers/site-config.controller");
 router.get("/site-config", siteConfigController.get);

@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const connectDB = require("../src/config/db");
 const User = require("../src/models/user.model");
 const Material = require("../src/models/material.model");
+const Article = require("../src/models/article.model");
 
 async function seedData() {
   console.log("🌱 Bắt đầu quá trình SEED DỮ LIỆU THẬT vào MongoDB Atlas...");
@@ -357,6 +358,15 @@ async function seedData() {
     }))
   );
   console.log(`   ✅ Đã seed thành công ${realMaterials.length} bài đăng vật liệu thật vào MongoDB Atlas!`);
+
+  // 3. Khởi tạo danh sách bài viết tin tức chuẩn Rich Text
+  console.log("\n3️⃣ Khởi tạo bài viết tin tức chuẩn Rich Text HTML...");
+  const { richTextNewsArticles } = require("./seed-news-data");
+  if (richTextNewsArticles && richTextNewsArticles.length > 0) {
+    await Article.deleteMany({});
+    await Article.insertMany(richTextNewsArticles);
+    console.log(`   ✅ Đã seed thành công ${richTextNewsArticles.length} bài viết tin tức chuẩn Rich Text vào MongoDB Atlas!`);
+  }
 
   console.log("\n🎉 HOÀN TẤT SEED DỮ LIỆU: Toàn bộ database đã sẵn sàng cho trải nghiệm thực tế 100%!");
   process.exit(0);

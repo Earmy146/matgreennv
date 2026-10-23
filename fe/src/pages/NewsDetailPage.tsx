@@ -148,10 +148,11 @@ export const NewsDetailPage: React.FC = () => {
               {article.excerpt}
             </div>
 
-            {/* Main Content Body */}
-            <div className="mt-8 space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line font-normal">
-              {article.content}
-            </div>
+            {/* Main Content Body (Rich Text Render) */}
+            <div
+              className="mt-8 news-rich-text font-normal"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
 
             {/* Tags */}
             <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-2">
