@@ -11,13 +11,20 @@ const {
 const EARTH_RADIUS_KM = 6371;
 
 class MaterialService {
-  async updateMaterial(id, userId, data) {
-    const material = await Material.findOne({ _id: id, owner: userId });
+  async updateMaterial(id, userId, data, userRole = "user") {
+    const isStaff = userRole === "admin" || userRole === "moderator";
+    const material = isStaff
+      ? await Material.findById(id)
+      : await Material.findOne({ _id: id, owner: userId });
     if (!material) throw new NotFoundError("Không tìm thấy bài đăng hoặc bạn không có quyền sửa");
-    const allowed = ["title", "description", "category", "type", "price", "unit", "images", "address", "contactPhone", "contactZalo", "contactName", "contactHours"];
+    const allowed = ["title", "description", "category", "type", "price", "unit", "images", "address", "contactPhone", "contactZalo", "contactName", "contactHours", "status"];
     for (const key of allowed) if (data[key] !== undefined) {
-      if (key === "address") material.location.address = String(data[key]).trim();
-      else material[key] = data[key];
+      if (key === "address") {
+        if (!material.location) material.location = { type: "Point", coordinates: [105.8542, 21.0285] };
+        material.location.address = String(data[key]).trim();
+      } else {
+        material[key] = data[key];
+      }
     }
     if (material.type === "free") material.price = 0;
     await material.save();

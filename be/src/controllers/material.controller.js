@@ -4,7 +4,7 @@ const { OK, CREATED } = require("../core/success.response");
 class MaterialController {
   async update(req, res, next) {
     try {
-      const result = await materialService.updateMaterial(req.params.id, req.user.id, req.body);
+      const result = await materialService.updateMaterial(req.params.id, req.user.id, req.body, req.user.role);
       new OK({ message: "Cập nhật bài đăng thành công", data: result }).send(res);
     } catch (err) { next(err); }
   }
