@@ -1,6 +1,7 @@
 const Message = require("../models/message.model");
 const mongoose = require("mongoose");
 const { BadRequestError } = require("../core/error.response");
+const notificationService = require("./notification.service");
 
 class ChatService {
   async getMessagesBetweenUsers(user1Id, user2Id, materialId, page = 1, limit = 30) {
@@ -60,10 +61,20 @@ class ChatService {
       content: normalizedContent,
     });
 
-    return Message.findById(msg._id)
+    const savedMessage = await Message.findById(msg._id)
       .populate("sender", "name avatar")
       .populate("receiver", "name avatar")
       .lean();
+
+    await notificationService.create({
+      recipient: receiverId,
+      type: "chat",
+      title: "Tin nhắn mới",
+      message: `${savedMessage.sender.name}: ${normalizedContent.slice(0, 120)}`,
+      link: `/chat?partnerId=${senderId}${materialId ? `&materialId=${materialId}` : ""}`,
+    });
+
+    return savedMessage;
   }
 
   async markMessagesRead(userId, partnerId, materialId) {

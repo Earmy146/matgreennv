@@ -1,12 +1,13 @@
 const MaterialRequest = require("../models/material-request.model");
 const Material = require("../models/material.model");
 const { BadRequestError, ForbiddenError, NotFoundError } = require("../core/error.response");
+const notificationService = require("./notification.service");
 
 const REQUEST_STATUSES = ["pending", "approved", "rejected", "cancelled", "completed"];
 
 class MaterialRequestService {
   async createRequest(requesterId, materialId, message) {
-    const material = await Material.findById(materialId).select("owner status");
+    const material = await Material.findById(materialId).select("owner title status");
     if (!material) throw new NotFoundError("Không tìm thấy bài đăng vật liệu");
     if (material.owner.toString() === requesterId.toString()) {
       throw new BadRequestError("Bạn không thể gửi yêu cầu nhận bài đăng của chính mình");
@@ -32,6 +33,13 @@ class MaterialRequestService {
           message: message?.trim(),
         });
 
+    await notificationService.create({
+      recipient: material.owner,
+      type: "request_created",
+      title: "Có yêu cầu nhận vật liệu mới",
+      message: `Có người muốn nhận bài "${material.title}".`,
+      link: "/requests",
+    });
     return this.populateRequest(request._id);
   }
 
@@ -55,7 +63,7 @@ class MaterialRequestService {
       throw new BadRequestError("Trạng thái yêu cầu không hợp lệ");
     }
 
-    const request = await MaterialRequest.findById(requestId).populate("material", "owner status");
+    const request = await MaterialRequest.findById(requestId).populate("material", "owner title status");
     if (!request) throw new NotFoundError("Không tìm thấy yêu cầu nhận vật liệu");
 
     const isOwner = request.material.owner.toString() === userId.toString();
@@ -90,6 +98,14 @@ class MaterialRequestService {
     } else if (status === "completed") {
       await Material.findByIdAndUpdate(request.material._id, { status: "completed" });
     }
+    const recipient = isOwner ? request.requester : request.material.owner;
+    await notificationService.create({
+      recipient,
+      type: "request_status",
+      title: "Cập nhật yêu cầu nhận vật liệu",
+      message: `Yêu cầu cho bài "${request.material.title || "vật liệu"}" đã chuyển sang trạng thái ${status}.`,
+      link: "/requests",
+    });
     return this.populateRequest(request._id);
   }
 
@@ -102,7 +118,7 @@ class MaterialRequestService {
       throw new BadRequestError("Không thể đặt lịch quá 90 ngày kể từ hôm nay");
     }
 
-    const request = await MaterialRequest.findById(requestId).populate("material", "owner status");
+    const request = await MaterialRequest.findById(requestId).populate("material", "owner title status");
     if (!request) throw new NotFoundError("Không tìm thấy yêu cầu nhận vật liệu");
     const isOwner = request.material.owner.toString() === userId.toString();
     const isRequester = request.requester.toString() === userId.toString();
@@ -113,6 +129,14 @@ class MaterialRequestService {
 
     request.scheduledAt = parsedDate;
     await request.save();
+    const recipient = isOwner ? request.requester : request.material.owner;
+    await notificationService.create({
+      recipient,
+      type: "request_scheduled",
+      title: "Lịch nhận vật liệu đã được cập nhật",
+      message: `Lịch nhận bài "${request.material.title || "vật liệu"}": ${parsedDate.toLocaleString("vi-VN")}.`,
+      link: "/requests",
+    });
     return this.populateRequest(request._id);
   }
 

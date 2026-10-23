@@ -152,6 +152,31 @@ export const chatApi = {
   },
 };
 
+export interface NotificationItem {
+  _id: string;
+  type: "chat" | "request_created" | "request_status" | "request_scheduled";
+  title: string;
+  message: string;
+  link?: string;
+  readAt?: string;
+  createdAt: string;
+}
+
+export const notificationsApi = {
+  list: async (limit = 30) => {
+    const res = await api.get<{ data: { items: NotificationItem[]; unreadCount: number } }>("/notifications", {
+      params: { limit },
+    });
+    return res.data.data;
+  },
+  markRead: async (id: string) => {
+    await api.patch(`/notifications/${id}/read`);
+  },
+  markAllRead: async () => {
+    await api.patch("/notifications/read-all");
+  },
+};
+
 export const aiMaterialsApi = {
   analyzeDemolition: async (description: string, address?: string) => {
     const res = await aiApi.post("/ai/materials/analyze-demolition", {

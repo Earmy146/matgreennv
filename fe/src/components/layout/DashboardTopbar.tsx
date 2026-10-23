@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Menu,
   Search,
@@ -14,6 +15,7 @@ import {
 import { useLocationStore } from "@/stores/location.store";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useAuthStore } from "@/stores/auth.store";
+import { notificationsApi } from "@/services/api";
 
 interface DashboardTopbarProps {
   onToggleMobileMenu: () => void;
@@ -29,6 +31,23 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
   const { radiusKm, setRadius, address } = useLocationStore();
   const { getCurrentLocation, isLocating } = useGeolocation();
   const { user, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const { data: notifications } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => notificationsApi.list(),
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  });
+  const markAllRead = useMutation({
+    mutationFn: notificationsApi.markAllRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+  const markRead = useMutation({
+    mutationFn: notificationsApi.markRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
   const radiusList = [1, 3, 5, 10, 20];
 
@@ -116,6 +135,59 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
           <MessageSquare className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
         </Link>
+
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setNotificationsOpen((open) => !open)}
+            className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+            title="Thông báo"
+          >
+            <Bell className="w-4 h-4" />
+            {(notifications?.unreadCount || 0) > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">
+                {notifications?.unreadCount}
+              </span>
+            )}
+          </button>
+          {notificationsOpen && (
+            <div className="absolute right-0 top-11 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden z-50">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-100">
+                <strong className="text-sm text-slate-900">Thông báo</strong>
+                {(notifications?.unreadCount || 0) > 0 && (
+                  <button type="button" onClick={() => markAllRead.mutate()} className="text-[11px] font-bold text-emerald-700 hover:underline">
+                    Đánh dấu đã đọc
+                  </button>
+                )}
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {!notifications?.items.length ? (
+                  <p className="px-4 py-8 text-center text-xs text-slate-500">Chưa có thông báo.</p>
+                ) : notifications.items.map((notification) => (
+                  <button
+                    type="button"
+                    key={notification._id}
+                    onClick={() => {
+                      if (!notification.readAt) markRead.mutate(notification._id);
+                      setNotificationsOpen(false);
+                      if (notification.link) navigate(notification.link);
+                    }}
+                    className={`w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 ${notification.readAt ? "bg-white" : "bg-emerald-50/60"}`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${notification.readAt ? "bg-slate-300" : "bg-emerald-600"}`} />
+                      <span className="min-w-0">
+                        <span className="block text-xs font-bold text-slate-800">{notification.title}</span>
+                        <span className="block mt-1 text-xs text-slate-600">{notification.message}</span>
+                        <span className="block mt-1 text-[10px] text-slate-400">{new Date(notification.createdAt).toLocaleString("vi-VN")}</span>
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Post Button (Nhà A) */}
         <Link
