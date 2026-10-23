@@ -34,17 +34,18 @@ class MaterialRequestController {
       next(err);
     }
 
-    async schedule(req, res, next) {
-      try {
-        const result = await materialRequestService.scheduleRequest(
-          req.user.id,
-          req.params.id,
-          req.body.scheduledAt
-        );
-        new OK({ message: "Đặt lịch nhận vật liệu thành công", data: result }).send(res);
-      } catch (err) {
-        next(err);
-      }
+  }
+
+  async schedule(req, res, next) {
+    try {
+      const result = await materialRequestService.scheduleRequest(
+        req.user.id,
+        req.params.id,
+        req.body.scheduledAt
+      );
+      new OK({ message: "Đặt lịch nhận vật liệu thành công", data: result }).send(res);
+    } catch (err) {
+      next(err);
     }
   }
 }

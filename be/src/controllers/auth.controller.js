@@ -59,49 +59,49 @@ class AuthController {
     } catch (err) {
       next(err);
     }
+  }
 
-    async updateProfile(req, res, next) {
+  async updateProfile(req, res, next) {
       try {
         const data = await authService.updateProfile(req.user.id, req.body);
         new OK({ message: "Cập nhật hồ sơ thành công", data }).send(res);
       } catch (err) { next(err); }
     }
 
-    async changePassword(req, res, next) {
+  async changePassword(req, res, next) {
       try {
         const data = await authService.changePassword(req.user.id, req.body);
         new OK({ message: data.message, data }).send(res);
       } catch (err) { next(err); }
     }
 
-    async forgotPassword(req, res, next) {
+  async forgotPassword(req, res, next) {
       try {
         const data = await authService.forgotPassword(req.body);
         new OK({ message: data.message, data }).send(res);
       } catch (err) { next(err); }
     }
 
-    async resetPassword(req, res, next) {
+  async resetPassword(req, res, next) {
       try {
         const data = await authService.resetPassword(req.body);
         new OK({ message: data.message, data }).send(res);
       } catch (err) { next(err); }
     }
 
-    async requestPhoneVerification(req, res, next) {
+  async requestPhoneVerification(req, res, next) {
       try {
         const data = await authService.requestPhoneVerification(req.user.id, req.body.note);
         new OK({ message: "Đã gửi yêu cầu xác minh số điện thoại tới admin", data }).send(res);
       } catch (err) { next(err); }
     }
 
-    async publicProfile(req, res, next) {
+  async publicProfile(req, res, next) {
       try {
         const data = await authService.publicProfile(req.params.id);
         new OK({ message: "Lấy hồ sơ người dùng thành công", data }).send(res);
       } catch (err) { next(err); }
     }
-  }
 }
 
 module.exports = new AuthController();

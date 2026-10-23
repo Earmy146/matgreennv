@@ -98,17 +98,6 @@ class EmailService {
         throw new Error(`Không thể gửi email xác thực qua SMTP: ${err.message}`);
       }
 
-      async sendPasswordResetOtp({ toEmail, otpCode, userName = "Bạn" }) {
-        const from = process.env.SMTP_FROM || '"MatGreen" <no-reply@matgreen.vn>';
-        const subject = `[MatGreen] Mã đặt lại mật khẩu: ${otpCode}`;
-        const html = `<div style="font-family:Arial;max-width:580px;margin:auto"><h2>Xin chào ${userName},</h2><p>Mã OTP đặt lại mật khẩu MatGreen của bạn là:</p><p style="font-size:30px;font-weight:700;letter-spacing:8px;color:#047857">${otpCode}</p><p>Mã có hiệu lực trong 10 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.</p></div>`;
-        if (this.transporter) {
-          const info = await this.transporter.sendMail({ from, to: toEmail, subject, html });
-          return { success: true, messageId: info.messageId };
-        }
-        log.info(`[SIMULATION MODE] Mã OTP đặt lại mật khẩu gửi tới ${toEmail} là: [ ${otpCode} ]`);
-        return { success: true, simulated: true, otp: otpCode };
-      }
     }
 
     // Chế độ mô phỏng khi chưa nhập mật khẩu SMTP
@@ -118,6 +107,18 @@ class EmailService {
       simulated: true,
       otp: otpCode,
     };
+  }
+
+  async sendPasswordResetOtp({ toEmail, otpCode, userName = "Bạn" }) {
+    const from = process.env.SMTP_FROM || '"MatGreen" <no-reply@matgreen.vn>';
+    const subject = `[MatGreen] Mã đặt lại mật khẩu: ${otpCode}`;
+    const html = `<div style="font-family:Arial;max-width:580px;margin:auto"><h2>Xin chào ${userName},</h2><p>Mã OTP đặt lại mật khẩu MatGreen của bạn là:</p><p style="font-size:30px;font-weight:700;letter-spacing:8px;color:#047857">${otpCode}</p><p>Mã có hiệu lực trong 10 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.</p></div>`;
+    if (this.transporter) {
+      const info = await this.transporter.sendMail({ from, to: toEmail, subject, html });
+      return { success: true, messageId: info.messageId };
+    }
+    log.info(`[SIMULATION MODE] Mã OTP đặt lại mật khẩu gửi tới ${toEmail} là: [ ${otpCode} ]`);
+    return { success: true, simulated: true, otp: otpCode };
   }
 }
 

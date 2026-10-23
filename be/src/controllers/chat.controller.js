@@ -32,17 +32,18 @@ class ChatController {
       next(err);
     }
 
-    async markRead(req, res, next) {
-      try {
-        const { partnerId, materialId } = req.body;
-        const result = await chatService.markMessagesRead(req.user.id, partnerId, materialId);
-        new OK({
-          message: "Đã đánh dấu tin nhắn đã đọc",
-          data: result,
-        }).send(res);
-      } catch (err) {
-        next(err);
-      }
+  }
+
+  async markRead(req, res, next) {
+    try {
+      const { partnerId, materialId } = req.body;
+      const result = await chatService.markMessagesRead(req.user.id, partnerId, materialId);
+      new OK({
+        message: "Đã đánh dấu tin nhắn đã đọc",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
     }
   }
 
