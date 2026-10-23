@@ -1,4 +1,5 @@
 const Material = require("../models/material.model");
+const mongoose = require("mongoose");
 const { calculateHaversineDistance } = require("../utils/haversine");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../core/error.response");
 const {
@@ -165,8 +166,9 @@ class MaterialService {
     }
 
     // Loại trừ bài của chính người đang đăng nhập
-    if (excludeUserId) {
-      query.owner = { $ne: excludeUserId };
+    // JWT lưu id dạng string → phải convert sang ObjectId để so sánh đúng type
+    if (excludeUserId && mongoose.Types.ObjectId.isValid(excludeUserId)) {
+      query.owner = { $ne: new mongoose.Types.ObjectId(excludeUserId) };
     }
 
     // Đếm tổng số bài đăng trong bán kính để làm phân trang
