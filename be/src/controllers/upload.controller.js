@@ -1,4 +1,4 @@
-const { uploadImageBuffer, uploadAttachmentBuffer } = require("../services/cloudinary-upload.service");
+const { uploadImage, uploadAttachment } = require("../services/image-storage.service");
 const { CREATED } = require("../core/success.response");
 const { BadRequestError } = require("../core/error.response");
 
@@ -10,7 +10,7 @@ class UploadController {
       }
 
       const folder = req.body.folder || "materials";
-      const result = await uploadImageBuffer({
+      const result = await uploadImage({
         buffer: req.file.buffer,
         mimetype: req.file.mimetype,
         originalname: req.file.originalname,
@@ -19,7 +19,7 @@ class UploadController {
       });
 
       new CREATED({
-        message: "Tải ảnh lên Cloudinary thành công",
+        message: "Tải ảnh lên thành công",
         data: result,
       }).send(res);
     } catch (err) {
@@ -35,7 +35,7 @@ class UploadController {
 
       const folder = req.body.folder || "materials";
       const uploadPromises = req.files.map((file) =>
-        uploadImageBuffer({
+        uploadImage({
           buffer: file.buffer,
           mimetype: file.mimetype,
           originalname: file.originalname,
@@ -53,13 +53,12 @@ class UploadController {
     } catch (err) {
       next(err);
     }
-
   }
 
   async uploadAttachment(req, res, next) {
     try {
       if (!req.file) throw new BadRequestError("Vui lòng đính kèm file");
-      const result = await uploadAttachmentBuffer({
+      const result = await uploadAttachment({
         buffer: req.file.buffer,
         mimetype: req.file.mimetype,
         originalname: req.file.originalname,

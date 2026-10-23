@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const routes = require("./routes");
@@ -21,6 +22,19 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
+  })
+);
+
+// Phục vụ tệp tĩnh ảnh đã upload (có cache 30 ngày)
+const uploadRootDir = process.env.LOCAL_UPLOAD_DIR
+  ? path.resolve(process.env.LOCAL_UPLOAD_DIR)
+  : path.resolve(__dirname, "../uploads");
+
+app.use(
+  "/uploads",
+  express.static(uploadRootDir, {
+    maxAge: "30d",
+    immutable: true,
   })
 );
 
