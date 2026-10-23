@@ -100,18 +100,19 @@ export const ServicesPage: React.FC = () => {
     <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Page Header Banner phong cách Solox */}
+      {/* Page Header Banner */}
       <section
         className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
-        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80')",
+        }}
       >
-        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
+        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <img
-            src="/assets/images/shapes/page-header-s-1.png"
-            alt="Page header shape"
-            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
-          />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 mb-4 border border-emerald-500/30">
+            <Recycle className="w-6 h-6 animate-spin-slow" />
+          </div>
           <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
             <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
             <li>/</li>

@@ -10,13 +10,16 @@ import {
   Building,
   Truck,
   MessageCircle,
+  Recycle,
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingOpening } from "@/components/landing/LandingOpening";
 import { LandingBrands } from "@/components/landing/LandingBrands";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const ContactPage: React.FC = () => {
+  const { config } = useSiteConfigStore();
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -41,26 +44,28 @@ export const ContactPage: React.FC = () => {
     }, 4000);
   };
 
-  const offices = [
-    {
-      city: "Trụ Sở Hà Nội (Miền Bắc)",
-      address: "Tòa Nhà Innovation, Cầu Giấy, Hà Nội",
-      phone: "0988 776 655",
-      email: "hanoi@matgreen.vn",
-    },
-    {
-      city: "Chi Nhánh TP.HCM (Miền Nam)",
-      address: "Đường Nguyễn Hữu Thọ, Quận 7, TP. Hồ Chí Minh",
-      phone: "0912 345 678",
-      email: "hcm@matgreen.vn",
-    },
-    {
-      city: "Chi Nhánh Đà Nẵng (Miền Trung)",
-      address: "Đường Nguyễn Văn Linh, Quận Hải Châu, TP. Đà Nẵng",
-      phone: "0905 112 233",
-      email: "danang@matgreen.vn",
-    },
-  ];
+  const offices = config?.contact?.offices?.length
+    ? config.contact.offices
+    : [
+        {
+          city: "Trụ Sở Hà Nội (Miền Bắc)",
+          address: "Tòa Nhà Innovation, Cầu Giấy, Hà Nội",
+          phone: "0988 776 655",
+          email: "hanoi@matgreen.vn",
+        },
+        {
+          city: "Chi Nhánh TP.HCM (Miền Nam)",
+          address: "Đường Nguyễn Hữu Thọ, Quận 7, TP. Hồ Chí Minh",
+          phone: "0912 345 678",
+          email: "hcm@matgreen.vn",
+        },
+        {
+          city: "Chi Nhánh Đà Nẵng (Miền Trung)",
+          address: "Đường Nguyễn Văn Linh, Quận Hải Châu, TP. Đà Nẵng",
+          phone: "0905 112 233",
+          email: "danang@matgreen.vn",
+        },
+      ];
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
@@ -69,15 +74,16 @@ export const ContactPage: React.FC = () => {
       {/* Page Header Banner phong cách Solox */}
       <section
         className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
-        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=1600&q=80')",
+        }}
       >
         <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <img
-            src="/assets/images/shapes/page-header-s-1.png"
-            alt="Page header shape"
-            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
-          />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 mb-4 border border-emerald-500/30">
+            <Recycle className="w-6 h-6 animate-spin-slow" />
+          </div>
           <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
             <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
             <li>/</li>
@@ -235,10 +241,16 @@ export const ContactPage: React.FC = () => {
               </div>
 
               {/* Bản đồ định vị Google Maps */}
-              <div className="rounded-2xl overflow-hidden shadow-md border border-stone-200 h-52">
+              <div className="rounded-2xl overflow-hidden shadow-md border border-stone-200 h-56 bg-slate-100">
                 <iframe
                   title="Bản đồ MatGreen"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096814183571!2d105.78010887587002!3d21.02881188777717!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab86cece9f61%3A0x7720e5aab7a73b48!2zQ-G6p3UgR2nhuqV5LCBIw6AgTuG7mWksIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1700000000000!5m2!1svi!2s"
+                  src={
+                    config?.contact?.mapEmbedUrl &&
+                    !config.contact.mapEmbedUrl.includes("!3m") &&
+                    !config.contact.mapEmbedUrl.includes("pb=")
+                      ? config.contact.mapEmbedUrl
+                      : "https://maps.google.com/maps?q=C%E1%BA%A7u%20Gi%E1%BA%A5y%2C%20H%C3%A0%20N%E1%BB%99i%2C%20Vi%E1%BB%87t%20Nam&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                  }
                   className="w-full h-full border-0"
                   loading="lazy"
                 />

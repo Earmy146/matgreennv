@@ -5,22 +5,22 @@ import { ShieldCheck, Compass, ArrowRight, Eye } from "lucide-react";
 export const LandingGallery: React.FC = () => {
   const galleryItems = [
     {
-      image: "/assets/images/gallery/gallery-2-1.jpg",
+      image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=800&q=80",
       title: "Công trình tháo dỡ nhà phố Hoàng Mai",
       tag: "Thu hồi gạch cổ",
     },
     {
-      image: "/assets/images/gallery/gallery-2-2.jpg",
+      image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
       title: "Bốc dỡ sắt hộp & xà gồ C tại Cầu Giấy",
       tag: "Tái sử dụng thép",
     },
     {
-      image: "/assets/images/gallery/gallery-2-3.jpg",
+      image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
       title: "Tập kết cửa nhôm Xingfa còn mới 95%",
       tag: "Thanh lý cửa",
     },
     {
-      image: "/assets/images/gallery/gallery-2-4.jpg",
+      image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
       title: "Điều xe tải chở ván cốp pha tôn móng",
       tag: "Logistics xanh",
     },
@@ -61,21 +61,12 @@ export const LandingGallery: React.FC = () => {
             </div>
           </div>
 
-          {/* Cột 2 (4 Cột): Khung Thông Tin Niềm Tin Solox */}
+          {/* Cột 2 (4 Cột): Khung Thông Tin Niềm Tin */}
           <div className="lg:col-span-4 flex">
-            <div
-              className="w-full rounded-3xl p-8 sm:p-10 flex flex-col justify-between text-white bg-cover bg-center shadow-xl border border-stone-800 relative overflow-hidden"
-              style={{ backgroundImage: "url('/assets/images/shapes/gallery-info-bg.jpg')" }}
-            >
-              <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" />
-
+            <div className="w-full rounded-3xl p-8 sm:p-10 flex flex-col justify-between text-white bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950 shadow-xl border border-slate-800 relative overflow-hidden">
               <div className="relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mb-6">
-                  <img
-                    src="/assets/images/shapes/gallery-icon.png"
-                    alt="Gallery icon"
-                    className="w-8 h-8 object-contain"
-                  />
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mb-6 text-emerald-400">
+                  <ShieldCheck className="w-8 h-8" />
                 </div>
 
                 <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-2 font-sans">

@@ -14,8 +14,10 @@ import {
   Sparkles,
   ShieldCheck,
 } from "lucide-react";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const LandingFooter: React.FC = () => {
+  const { config } = useSiteConfigStore();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
@@ -41,15 +43,26 @@ export const LandingFooter: React.FC = () => {
           {/* Cột 1 (4 Cột): Logo & Newsletter */}
           <div className="lg:col-span-4 space-y-5">
             <Link to="/" className="inline-flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                <Recycle className="w-6 h-6 animate-spin-slow" />
-              </div>
+              {config.general?.logoUrl ? (
+                <img
+                  src={config.general.logoUrl}
+                  alt={config.general.siteName || "MatGreen"}
+                  className="w-10 h-10 rounded-2xl object-contain shadow-md shadow-emerald-500/10"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                  <Recycle className="w-6 h-6 animate-spin-slow" />
+                </div>
+              )}
               <span className="text-2xl font-black tracking-tight text-white font-display">
-                Mat<span className="text-emerald-400">Green</span>
+                {config.general?.siteName || (
+                  <>Mat<span className="text-emerald-400">Green</span></>
+                )}
               </span>
             </Link>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              {config.general?.siteTagline ? `${config.general.siteName || "MatGreen"} - ${config.general.siteTagline}. ` : ""}
               Nền tảng công nghệ tiên phong tuần hoàn vật liệu xây dựng tháo dỡ tại Việt Nam. Kết nối cung cầu theo bán kính định vị GPS, giảm thiểu phế thải đô thị.
             </p>
 
@@ -125,18 +138,18 @@ export const LandingFooter: React.FC = () => {
             <ul className="space-y-3 text-xs text-slate-400">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Trụ sở chính: Tầng 8, Tòa Nhà Innovation, Cầu Giấy, Hà Nội</span>
+                <span>{config.contact?.offices?.[0]?.address || "Trụ sở chính: Tầng 8, Tòa Nhà Innovation, Cầu Giấy, Hà Nội"}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <a href="tel:19008899" className="hover:text-emerald-400 transition-colors font-bold text-white">
-                  1900 8899 / 0988 776 655
+                <a href={`tel:${(config.contact?.hotline || "1900 8899").replace(/[^0-9]/g, "")}`} className="hover:text-emerald-400 transition-colors font-bold text-white">
+                  {config.contact?.hotline || "1900 8899 / 0988 776 655"}
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <a href="mailto:hotro@matgreen.vn" className="hover:text-emerald-400 transition-colors">
-                  hotro@matgreen.vn
+                <a href={`mailto:${config.contact?.email || "hotro@matgreen.vn"}`} className="hover:text-emerald-400 transition-colors">
+                  {config.contact?.email || "hotro@matgreen.vn"}
                 </a>
               </li>
             </ul>
@@ -148,8 +161,7 @@ export const LandingFooter: React.FC = () => {
               Thời Gian Hoạt Động
             </h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Thứ Hai – Thứ Bảy: <strong>07:00 – 19:00</strong> <br />
-              Chủ Nhật & Ngày Lễ: <strong>08:00 – 16:00</strong> <br />
+              {config.contact?.workingHours || "Thứ Hai – Thứ Bảy: 07:00 – 19:00 | Chủ Nhật & Ngày Lễ: 08:00 – 16:00"} <br />
               Hệ thống website & Radar định vị hoạt động <strong>24/7</strong>.
             </p>
 

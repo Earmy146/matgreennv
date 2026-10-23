@@ -15,11 +15,13 @@ import {
   Shield,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const LandingHeader: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
+  const { config } = useSiteConfigStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -50,13 +52,13 @@ export const LandingHeader: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-              <Phone className="w-3.5 h-3.5 text-emerald-400" /> Hotline: 1900 8899 / 0988 776 655
+              <Phone className="w-3.5 h-3.5 text-emerald-400" /> Hotline: {config.contact?.hotline || "1900 8899 / 0988 776 655"}
             </span>
             <span className="flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-slate-400" /> hotro@matgreen.vn
+              <Mail className="w-3.5 h-3.5 text-slate-400" /> {config.contact?.email || "hotro@matgreen.vn"}
             </span>
             <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" /> Kết nối toàn quốc (Hà Nội, TP.HCM, Đà Nẵng...)
+              <MapPin className="w-3.5 h-3.5 text-slate-400" /> {config.contact?.offices?.[0]?.address || "Kết nối toàn quốc (Hà Nội, TP.HCM, Đà Nẵng...)"}
             </span>
           </div>
 
@@ -107,15 +109,25 @@ export const LandingHeader: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-              <Recycle className="w-6 h-6 animate-spin-slow" />
-            </div>
+            {config.general?.logoUrl ? (
+              <img
+                src={config.general.logoUrl}
+                alt={config.general.siteName || "MatGreen"}
+                className="w-10 h-10 rounded-xl object-contain shadow-md shadow-emerald-600/10 group-hover:scale-105 transition-transform"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
+                <Recycle className="w-6 h-6 animate-spin-slow" />
+              </div>
+            )}
             <div>
               <span className="text-2xl font-black tracking-tight text-slate-900 block leading-tight">
-                Mat<span className="text-emerald-600">Green</span>
+                {config.general?.siteName || (
+                  <>Mat<span className="text-emerald-600">Green</span></>
+                )}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block -mt-1">
-                Vật Liệu Tuần Hoàn
+                {config.general?.siteTagline || "Vật Liệu Tuần Hoàn"}
               </span>
             </div>
           </Link>

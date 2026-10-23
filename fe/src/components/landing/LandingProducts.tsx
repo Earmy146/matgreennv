@@ -13,7 +13,7 @@ export const LandingProducts: React.FC = () => {
       unit: "viên",
       distance: "1.2 km",
       address: "Đống Đa, Hà Nội",
-      image: "/assets/images/products/product-1-1.jpg",
+      image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=600&q=80",
       rating: 5,
     },
     {
@@ -25,7 +25,7 @@ export const LandingProducts: React.FC = () => {
       unit: "cây",
       distance: "2.8 km",
       address: "Thanh Xuân, Hà Nội",
-      image: "/assets/images/products/product-1-2.jpg",
+      image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80",
       rating: 5,
     },
     {
@@ -37,7 +37,7 @@ export const LandingProducts: React.FC = () => {
       unit: "bộ",
       distance: "3.5 km",
       address: "Cầu Giấy, Hà Nội",
-      image: "/assets/images/products/product-1-3.jpg",
+      image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=600&q=80",
       rating: 5,
     },
     {
@@ -49,7 +49,7 @@ export const LandingProducts: React.FC = () => {
       unit: "tấm",
       distance: "4.1 km",
       address: "Nam Từ Liêm, Hà Nội",
-      image: "/assets/images/products/product-1-4.jpg",
+      image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=600&q=80",
       rating: 5,
     },
   ];

@@ -18,8 +18,10 @@ import { LandingWhyChoose } from "@/components/landing/LandingWhyChoose";
 import { LandingStats } from "@/components/landing/LandingStats";
 import { LandingTestimonials } from "@/components/landing/LandingTestimonials";
 import { LandingBrands } from "@/components/landing/LandingBrands";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const AboutPage: React.FC = () => {
+  const { config } = useSiteConfigStore();
   const steps = [
     {
       num: "01",
@@ -43,43 +45,46 @@ export const AboutPage: React.FC = () => {
     },
   ];
 
-  const team = [
-    {
-      name: "Nguyễn Văn Quân",
-      role: "Nhà Sáng Lập & Kỹ Sư Hệ Thống",
-      image: "/assets/images/team/team-1-1.jpg",
-      bio: "10 năm kinh nghiệm thi công & đam mê công nghệ tuần hoàn vật liệu.",
-    },
-    {
-      name: "TS. Lê Hoàng Mai",
-      role: "Cố Vấn Khoa Học & Môi Trường",
-      image: "/assets/images/team/team-1-2.jpg",
-      bio: "Chuyên gia nghiên cứu tái chế phế phẩm xây dựng hướng tới Net Zero.",
-    },
-    {
-      name: "Vũ Hải Đăng",
-      role: "Trưởng Nhóm Kỹ Thuật AI & Bản Đồ",
-      image: "/assets/images/team/team-1-3.jpg",
-      bio: "Phát triển thuật toán bóc tách khối lượng và radar cự ly gần.",
-    },
-  ];
+  const team = config?.teamMembers?.length
+    ? config.teamMembers
+    : [
+        {
+          name: "Nguyễn Văn Quân",
+          role: "Nhà Sáng Lập & Kỹ Sư Hệ Thống",
+          image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+          bio: "10 năm kinh nghiệm thi công & đam mê công nghệ tuần hoàn vật liệu.",
+        },
+        {
+          name: "TS. Lê Hoàng Mai",
+          role: "Cố Vấn Khoa Học & Môi Trường",
+          image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+          bio: "Chuyên gia nghiên cứu tái chế phế phẩm xây dựng hướng tới Net Zero.",
+        },
+        {
+          name: "Vũ Hải Đăng",
+          role: "Trưởng Nhóm Kỹ Thuật AI & Bản Đồ",
+          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+          bio: "Phát triển thuật toán bóc tách khối lượng và radar cự ly gần.",
+        },
+      ];
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Page Header Banner phong cách Solox about.html */}
+      {/* Page Header Banner */}
       <section
-        className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden"
-        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+        className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80')",
+        }}
       >
-        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
+        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-          <img
-            src="/assets/images/shapes/page-header-s-1.png"
-            alt="Page header shape"
-            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
-          />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 mb-4 border border-emerald-500/30">
+            <Recycle className="w-6 h-6 animate-spin-slow" />
+          </div>
           <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
             <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
             <li>/</li>
@@ -100,24 +105,18 @@ export const AboutPage: React.FC = () => {
               <div className="relative mx-auto max-w-lg">
                 <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                   <img
-                    src="/assets/images/resources/why-choose-2-1.jpg"
-                    alt="Công trình MatGreen"
+                    src="https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728313/finance-lite/banners/mat-mvkg5d78-9782a01c0068.jpg"
+                    alt="Công trình xây dựng tuần hoàn MatGreen"
                     className="w-full h-80 sm:h-96 object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-8 -right-4 sm:-right-8 w-48 sm:w-60 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                <div className="absolute -bottom-8 -right-4 sm:-right-8 w-48 sm:w-60 rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900">
                   <img
-                    src="/assets/images/resources/why-choose-2-2.jpg"
-                    alt="Tập kết vật liệu"
+                    src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80"
+                    alt="Kỹ sư kiểm định hiện trường"
                     className="w-full h-36 sm:h-44 object-cover"
                   />
                 </div>
-                {/* Decorative shape */}
-                <img
-                  src="/assets/images/shapes/why-choose-2-s-1.png"
-                  alt="Decorative shape"
-                  className="absolute -top-6 -left-6 w-20 h-20 object-contain pointer-events-none opacity-80 animate-float"
-                />
               </div>
             </div>
 

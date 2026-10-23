@@ -22,25 +22,9 @@ export const LandingAbout: React.FC = () => {
               {/* Hình ảnh chính bo góc nghệ thuật */}
               <div className="relative rounded-[40px] overflow-hidden shadow-2xl border-4 border-white bg-emerald-900/10 z-10">
                 <img
-                  src="/assets/images/resources/about-3-1.jpg"
+                  src="https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1000&q=80"
                   alt="Công trình tái chế vật liệu MatGreen"
                   className="w-full h-[420px] sm:h-[480px] object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-
-              {/* Viền hoa văn trang trí Solox (about-3-border.png) */}
-              <img
-                src="/assets/images/shapes/about-3-border.png"
-                alt="Decorative border"
-                className="absolute -top-6 -left-6 w-full h-full pointer-events-none z-0 opacity-80"
-              />
-
-              {/* Bông hoa/Lá nổi Solox (about-3-flower.png) */}
-              <div className="absolute -top-8 -right-8 w-24 h-24 sm:w-28 sm:h-28 z-20 animate-float pointer-events-none">
-                <img
-                  src="/assets/images/shapes/about-3-flower.png"
-                  alt="Decorative flower"
-                  className="w-full h-full object-contain drop-shadow-md"
                 />
               </div>
 
@@ -108,21 +92,16 @@ export const LandingAbout: React.FC = () => {
             {/* Khối chữ ký và Founder */}
             <div className="pt-5 border-t border-stone-100 flex items-center gap-3">
               <img
-                src="/assets/images/resources/about-author-2.png"
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
                 alt="Founder MatGreen"
                 className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500/20"
               />
               <div>
-                <img
-                  src="/assets/images/resources/about-sign-2.png"
-                  alt="Chữ ký sáng lập"
-                  className="h-7 w-auto object-contain mb-1 opacity-80"
-                />
-                <span className="block text-[11px] font-bold text-slate-800">
-                  Nguyễn Văn Quân - Đồng Sáng Lập
+                <span className="block text-sm font-bold text-slate-900 font-display">
+                  Nguyễn Văn Quân
                 </span>
-                <span className="block text-[10px] text-slate-400">
-                  MatGreen Circular Platform
+                <span className="block text-[11px] text-emerald-700 font-semibold">
+                  Đồng Sáng Lập & Kỹ Sư Hệ Thống MatGreen
                 </span>
               </div>
             </div>

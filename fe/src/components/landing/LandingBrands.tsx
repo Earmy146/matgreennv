@@ -1,36 +1,79 @@
 import React from "react";
+import { Building2, ShieldCheck } from "lucide-react";
+import { useSiteConfigStore } from "@/stores/site-config.store";
 
 export const LandingBrands: React.FC = () => {
-  const brands = [
-    { name: "Đại lý Xây Dựng Số 1", logo: "/assets/images/resources/brand-1-1.png" },
-    { name: "Hiệp Hội Tái Chế Xanh", logo: "/assets/images/resources/brand-2-1.png" },
-    { name: "Nhà Thầu Vận Tải Đô Thị", logo: "/assets/images/resources/brand-3-1.png" },
-    { name: "Vật Liệu Tháo Dỡ Hà Nội", logo: "/assets/images/resources/brand-3-2.png" },
-    { name: "Mạng Lưới Thợ Xây Việt", logo: "/assets/images/resources/brand-3-3.png" },
-    { name: "Công Nghệ Net Zero Eco", logo: "/assets/images/resources/brand-3-4.png" },
-    { name: "Logistics Xây Dựng 24/7", logo: "/assets/images/resources/brand-3-5.png" },
-  ];
+  const { config } = useSiteConfigStore();
+  const rawPartners = config?.partners?.length
+    ? config.partners
+    : [
+        {
+          name: "Hiệp Hội Bê Tông & Tái Chế Việt Nam",
+          logo: "https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          name: "Tập Đoàn Hạ Tầng Đô Thị Xanh",
+          logo: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          name: "Tổng Công Ty Vận Tải Công Trình 24/7",
+          logo: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          name: "Liên Minh Thầu Phá Dỡ & Tôn Nền",
+          logo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          name: "Mạng Lưới Thợ Xây Dựng Miền Bắc",
+          logo: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          name: "Viện Nghiên Cứu Vật Liệu Xanh Eco",
+          logo: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=200&q=80",
+        },
+      ];
+
+  // Nhân đôi mảng để tạo hiệu ứng Infinite Carousel cuộn vô tận
+  const carouselPartners = [...rawPartners, ...rawPartners, ...rawPartners];
+  const headline =
+    config?.partnersHeadline ||
+    "Được Đồng Hành & Tin Cậy Bởi Hơn 500+ Nhà Thầu & Đơn Vị Tái Chế";
 
   return (
-    <div className="py-10 bg-white border-y border-stone-200 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 font-sans">
-          Được Đồng Hành & Tin Cậy Bởi Hơn 500+ Nhà Thầu & Đơn Vị Tái Chế
+    <div className="py-12 bg-white border-y border-stone-200 overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6 text-center">
+        <p className="text-xs font-bold uppercase tracking-widest text-emerald-800 font-sans flex items-center justify-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span>{headline}</span>
         </p>
+      </div>
 
-        {/* Marquee / Brand Grid */}
-        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 lg:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
-          {brands.map((b, idx) => (
+      {/* Mask làm mờ 2 bên viền để tạo hiệu ứng mượt mà */}
+      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <div className="animate-marquee flex items-center gap-6 py-2">
+          {carouselPartners.map((b, idx) => (
             <div
               key={idx}
-              className="h-10 sm:h-12 flex items-center justify-center hover:scale-110 transition-transform duration-300"
+              className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-stone-50 border border-stone-200 hover:border-emerald-500 hover:bg-emerald-50/50 hover:shadow-md transition-all duration-300 shrink-0 group cursor-default select-none"
               title={b.name}
             >
-              <img
-                src={b.logo}
-                alt={b.name}
-                className="max-h-full max-w-[120px] object-contain"
-              />
+              <div className="w-9 h-9 rounded-xl overflow-hidden bg-white border border-stone-200 shrink-0 flex items-center justify-center p-1">
+                {b.logo ? (
+                  <img
+                    src={b.logo}
+                    alt={b.name}
+                    className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <Building2 className="w-5 h-5 text-emerald-600" />
+                )}
+              </div>
+              <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-800 transition-colors whitespace-nowrap">
+                {b.name}
+              </span>
             </div>
           ))}
         </div>

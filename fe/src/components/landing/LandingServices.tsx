@@ -7,7 +7,7 @@ export const LandingServices: React.FC = () => {
     {
       title: "Điều Phối Xà Bần & Tôn Nền",
       desc: "Giải phóng hàng trăm tấn gạch vỡ, bê tông và vữa cũ từ công trình đập phá đến các dự án san lấp mặt bằng trong bán kính 5km.",
-      image: "/assets/images/resources/service-2-1.jpg",
+      image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
       icon: <Truck className="w-5 h-5 text-emerald-600" />,
       tag: "Miễn Phí / Giá Rẻ",
       link: "/dashboard?category=Gạch & Bê tông",
@@ -15,7 +15,7 @@ export const LandingServices: React.FC = () => {
     {
       title: "Thu Hồi Nhôm Kính & Sắt Thép",
       desc: "Bảo toàn nguyên vẹn khung cửa nhôm Xingfa, cửa sắt lùa và xà gồ thép chữ C để gia chủ thu hồi vốn tới 40% chi phí tháo dỡ.",
-      image: "/assets/images/resources/service-2-2.jpg",
+      image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
       icon: <Hammer className="w-5 h-5 text-amber-600" />,
       tag: "Thanh Lý Thu Vốn",
       link: "/dashboard?category=Sắt thép",
@@ -23,7 +23,7 @@ export const LandingServices: React.FC = () => {
     {
       title: "Tái Sinh Gỗ Cốp Pha & Ván Sàn",
       desc: "Gỗ cốp pha phủ phim, xà gồ gỗ thông và ván ép còn tái sử dụng được luân chuyển ngay cho các đội thợ làm nhà tạm, bồn cây.",
-      image: "/assets/images/resources/service-2-3.jpg",
+      image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80",
       icon: <Layers className="w-5 h-5 text-emerald-600" />,
       tag: "Tuần Hoàn Gỗ",
       link: "/dashboard?category=Gỗ & Ván cốp pha",
@@ -31,7 +31,7 @@ export const LandingServices: React.FC = () => {
     {
       title: "Trợ Lý Bóc Tách Tự Động AI",
       desc: "Chụp một bức ảnh công trường đập phá, AI Advisor sẽ tự động nhận diện chủng loại vật liệu, ước tính khối lượng và gợi ý giá thanh lý.",
-      image: "/assets/images/resources/service-2-4.jpg",
+      image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
       icon: <Cpu className="w-5 h-5 text-indigo-600" />,
       tag: "Công Nghệ Độc Quyền",
       link: "/ai-advisor",
@@ -41,8 +41,7 @@ export const LandingServices: React.FC = () => {
   return (
     <section
       id="services"
-      className="py-20 lg:py-28 bg-stone-100 bg-cover bg-center relative"
-      style={{ backgroundImage: "url('/assets/images/shapes/service-bg-3.jpg')" }}
+      className="py-20 lg:py-28 bg-stone-100 relative"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Section Header Solox Style */}
