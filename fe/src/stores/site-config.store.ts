@@ -30,12 +30,66 @@ export interface Office {
   email: string;
 }
 
+export interface ServiceItem {
+  title: string;
+  desc: string;
+  image: string;
+  tag: string;
+  link: string;
+}
+
+export interface GalleryItem {
+  title: string;
+  tag: string;
+  image: string;
+}
+
+export interface StatItem {
+  num: string;
+  label: string;
+  sub: string;
+}
+
+export interface PackageItem {
+  name: string;
+  target: string;
+  price: string;
+  period: string;
+  badge?: string;
+  highlight?: boolean;
+  features: string[];
+  btnText: string;
+  btnLink: string;
+}
+
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
+export interface StepItem {
+  num: string;
+  title: string;
+  desc: string;
+}
+
+export interface FeatureItem {
+  title: string;
+  desc: string;
+}
+
 export interface SiteConfigData {
   general: {
     siteName: string;
     siteTagline: string;
     logoUrl: string;
     faviconUrl: string;
+    socialFacebook?: string;
+    socialYoutube?: string;
+    socialZalo?: string;
+    socialInstagram?: string;
+    footerDesc?: string;
+    copyrightText?: string;
   };
   contact: {
     hotline: string;
@@ -48,15 +102,118 @@ export interface SiteConfigData {
   partners: Partner[];
   partnersHeadline: string;
   testimonials: Testimonial[];
+  homePage: {
+    hero: {
+      badge: string;
+      titleLine1: string;
+      titleHighlight: string;
+      titleLine2: string;
+      subtitle: string;
+      imageUrl: string;
+      youtubeVideoUrl: string;
+      highlights: string[];
+    };
+    about: {
+      badge: string;
+      title: string;
+      descShort: string;
+      descLong: string;
+      imageUrl: string;
+      statNumber: string;
+      statLabel: string;
+      benefits: string[];
+      founderName: string;
+      founderRole: string;
+      founderAvatar: string;
+    };
+    services: {
+      badge: string;
+      title: string;
+      desc: string;
+      items: ServiceItem[];
+    };
+    whyChoose: {
+      badge: string;
+      title: string;
+      desc: string;
+      bgImageUrl: string;
+      items: FeatureItem[];
+    };
+    gallery: {
+      badge: string;
+      title: string;
+      desc: string;
+      items: GalleryItem[];
+    };
+    stats: {
+      bgImageUrl: string;
+      items: StatItem[];
+    };
+  };
+  aboutPage: {
+    header: {
+      title: string;
+      subtitle: string;
+      bgImageUrl: string;
+    };
+    story: {
+      badge: string;
+      title: string;
+      desc1: string;
+      desc2: string;
+      image1: string;
+      image2: string;
+    };
+    steps: {
+      badge: string;
+      title: string;
+      items: StepItem[];
+    };
+  };
+  contactPage: {
+    header: {
+      title: string;
+      subtitle: string;
+      bgImageUrl: string;
+    };
+    opening: {
+      badge: string;
+      title: string;
+      weekdayHours: string;
+      sundayHours: string;
+      hotlineNote: string;
+      slaText: string;
+    };
+  };
+  servicesPage: {
+    header: {
+      title: string;
+      subtitle: string;
+      bgImageUrl: string;
+    };
+    packages: {
+      items: PackageItem[];
+    };
+    faqs: {
+      items: FaqItem[];
+    };
+  };
 }
 
-// Dữ liệu dự phòng mặc định (Offline Fallback)
+// Dữ liệu dự phòng mặc định (Offline Fallback & Mẫu chuẩn)
 export const DEFAULT_SITE_CONFIG: SiteConfigData = {
   general: {
     siteName: "MatGreen - Vật Liệu Xây Dựng Tuần Hoàn",
     siteTagline: "Kết Nối Cung Cầu Vật Liệu & Tái Sử Dụng Tháo Dỡ Toàn Quốc",
     logoUrl: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728276/finance-lite/news/mat-mvkg4ktp-2a6bf9a482b9.png",
     faviconUrl: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728276/finance-lite/news/mat-mvkg4ktp-2a6bf9a482b9.png",
+    socialFacebook: "https://facebook.com",
+    socialYoutube: "https://youtube.com",
+    socialZalo: "https://zalo.me",
+    socialInstagram: "https://instagram.com",
+    footerDesc:
+      "Nền tảng công nghệ tiên phong tuần hoàn vật liệu xây dựng tháo dỡ tại Việt Nam. Kết nối cung cầu theo bán kính định vị GPS, giảm thiểu phế thải đô thị.",
+    copyrightText: "© 2026 MatGreen Platform. All rights reserved. Tiên phong tuần hoàn vật liệu xây dựng số.",
   },
   contact: {
     hotline: "1900 8899 / 0988 776 655",
@@ -102,7 +259,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
       name: "KTS. Vũ Hải Đăng",
       role: "Giám Đốc Kỹ Thuật & Giám Sát",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-      bio: "Kiến trúc sư trưởng với hơn 15 năm thiết kế kết cấu tái sử dụng vật liệu khung thép và gạch ngói cổ.",
+      bio: "Kiến trúc sư trưởng với hơn 15 năm thiết kế kết cấu tái sử dũng vật liệu khung thép và gạch ngói cổ.",
     },
   ],
   partners: [
@@ -149,7 +306,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
         "Tôi mua được hơn 30 cây sắt hộp 40x80 và 8 bộ cửa nhôm kính Xingfa của một ngôi nhà sắp cải tạo với giá chỉ bằng một nửa hàng mới. Cửa còn nguyên vẹn, sơn còn bóng loáng. MatGreen thực sự là cứu cánh giúp tiết kiệm ngân sách xây dựng!",
       rating: 5,
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
-      projectImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=500&q=80",
+      projectImage: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=500&q=80",
     },
     {
       name: "Bác Ba Thợ Nề",
@@ -158,9 +315,277 @@ export const DEFAULT_SITE_CONFIG: SiteConfigData = {
         "Trước đây nhận được tin báo gạch cũ toàn phải gọi điện hỏi quanh các bãi. Giờ mở bản đồ MatGreen ra là thấy ngay điểm nào gần, có ảnh thật, số điện thoại chủ nhà bấm gọi trực tiếp rất tiện lợi.",
       rating: 5,
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80",
-      projectImage: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=500&q=80",
+      projectImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=500&q=80",
     },
   ],
+  homePage: {
+    hero: {
+      badge: "Sàn Tuần Hoàn Vật Liệu Xây Dựng Số 1 Việt Nam",
+      titleLine1: "Khám Phá Nơi Biến",
+      titleHighlight: "Vật Liệu Tháo Dỡ",
+      titleLine2: "Thành Tài Nguyên Tái Sinh",
+      subtitle:
+        "Kết nối trực tiếp Nhà A (cần giải phóng mặt bằng, thừa xà bần, gạch, sắt thép tháo dỡ) với Nhà B (đang xây dựng cần mua rẻ hoặc nhận vật liệu miễn phí) theo bán kính định vị GPS gần bạn nhất.",
+      imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
+      youtubeVideoUrl: "https://www.youtube-nocookie.com/embed/h9MbznbxlLc?autoplay=1",
+      highlights: ["Cho nhận 0đ & Bán rẻ", "Radar GPS bán kính", "AI bóc tách tự động"],
+    },
+    about: {
+      badge: "Cân Bằng Sinh Thái & Kinh Tế",
+      title: "Giải Pháp Tuần Hoàn Tài Nguyên Xây Dựng Số 1",
+      descShort: "MatGreen sinh ra để nối liền khoảng cách giữa người thừa không biết bỏ đâu và người thiếu không biết tìm ở đâu.",
+      descLong:
+        "Tại các đô thị lớn, hàng ngàn ngôi nhà đập đi mỗi ngày tạo ra lượng xà bần khổng lồ gây áp lực lên bãi rác và môi trường. Trong khi đó, ngay tại các phường xã lân cận, nhiều gia đình đang cần đôn nền, làm nhà tạm, lót sân mà phải mua cát đá mới với giá đắt đỏ. Chúng tôi ứng dụng công nghệ định vị và mạng lưới vận chuyển địa phương để giải quyết bài toán này trong 15 phút.",
+      imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1000&q=80",
+      statNumber: "15k",
+      statLabel: "Tấn phế thải Được tái sinh mỗi ngày",
+      benefits: [
+        "Tiết kiệm 100% chi phí đổ xà bần",
+        "Minh bạch tọa độ vị trí công trình qua GPS",
+        "Xác thực chéo ảnh hiện trường công trường",
+        "Kết nối xe ba gác & xe tải chở hàng siêu tốc",
+        "Trợ lý AI bóc tách khối lượng và phân loại",
+        "Chung tay vì mục tiêu Net Zero & Giảm rác thải",
+      ],
+      founderName: "Nguyễn Văn Quân",
+      founderRole: "Nhà Sáng Lập & Kỹ Sư Hệ Thống",
+      founderAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    },
+    services: {
+      badge: "Dịch Vụ Tuần Hoàn Toàn Diện",
+      title: "Giải Pháp MatGreen Cung Cấp",
+      desc: "Hỗ trợ toàn diện từ khâu khảo sát, định vị GPS, bóc tách khối lượng đến điều phối đội xe vận chuyển tận chân công trình.",
+      items: [
+        {
+          title: "Điều Phối Xà Bần & Tôn Nền",
+          desc: "Giải phóng hàng trăm tấn gạch vỡ, bê tông và vữa cũ từ công trình đập phá đến các dự án san lấp mặt bằng trong bán kính 5km.",
+          image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+          tag: "Miễn Phí / Giá Rẻ",
+          link: "/dashboard?category=Gạch & Bê tông",
+        },
+        {
+          title: "Thu Hồi Nhôm Kính & Sắt Thép",
+          desc: "Bảo toàn nguyên vẹn khung cửa nhôm Xingfa, cửa sắt lùa và xà gồ thép chữ C để gia chủ thu hồi vốn tới 40% chi phí tháo dỡ.",
+          image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
+          tag: "Thanh Lý Thu Vốn",
+          link: "/dashboard?category=Sắt thép",
+        },
+        {
+          title: "Tái Sinh Gỗ Cốp Pha & Ván Sàn",
+          desc: "Gỗ cốp pha phủ phim, xà gồ gỗ thông và ván ép còn tái sử dụng được luân chuyển ngay cho các đội thợ làm nhà tạm, bồn cây.",
+          image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80",
+          tag: "Tuần Hoàn Gỗ",
+          link: "/dashboard?category=Gỗ & Ván cốp pha",
+        },
+        {
+          title: "Trợ Lý Bóc Tách Tự Động AI",
+          desc: "Chụp một bức ảnh công trường đập phá, AI Advisor sẽ tự động nhận diện chủng loại vật liệu, ước tính khối lượng và gợi ý giá thanh lý.",
+          image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+          tag: "Công Nghệ Độc Quyền",
+          link: "/ai-advisor",
+        },
+      ],
+    },
+    whyChoose: {
+      badge: "Lợi Thế Vượt Trội",
+      title: "Vì Sao Hàng Ngàn Chủ Thầu Tin Chọn?",
+      desc: "Chúng tôi kết hợp sức mạnh của Bản đồ GIS định vị, Thuật toán tối ưu quãng đường và Trợ lý thị giác AI để giải quyết triệt để vấn đề rác thải xây dựng cồng kềnh tại Việt Nam.",
+      bgImageUrl: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728313/finance-lite/banners/mat-mvkg5d78-9782a01c0068.jpg",
+      items: [
+        {
+          title: "Định Vị Radar Bán Kính Siêu Tốc",
+          desc: "Chỉ cần chọn bán kính 3km, 5km hoặc 10km, hệ thống tự động quét và lọc mọi nguồn vật liệu tháo dỡ đang có sẵn xung quanh bạn.",
+        },
+        {
+          title: "Tiết Kiệm Tới 40% Chi Phí Vật Tư",
+          desc: "Nhà B có thể mua được sắt thép, ván cốp pha, cửa nhôm kính chất lượng cao với giá rẻ hơn 40% hoặc nhận gạch xà bần hoàn toàn 0 đồng.",
+        },
+        {
+          title: "Giảm 80% Phế Thải Ra Môi Trường",
+          desc: "Thay vì đổ trộm xà bần ra vỉa hè hay bờ sông, tài nguyên được tuần hoàn ngay lập tức cho các công trình san lấp và tôn nền.",
+        },
+        {
+          title: "Giao Dịch An Toàn & Minh Bạch GPS",
+          desc: "Mọi bài đăng đều phải xác thực tọa độ GPS thật qua trình duyệt. Không lo tin ảo, tin môi giới trung gian ăn chênh lệch.",
+        },
+      ],
+    },
+    gallery: {
+      badge: "Minh Bạch Hiện Trường 100%",
+      title: "Thư Viện Công Trình Đã Kết Nối Thành Công",
+      desc: "Mỗi hình ảnh trên MatGreen đều được đính kèm tọa độ GPS và thời điểm chụp thực tế tại công trường. Nói không với ảnh mạng và tin ảo.",
+      items: [
+        {
+          image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=800&q=80",
+          title: "Công trình tháo dỡ nhà phố Hoàng Mai",
+          tag: "Thu hồi gạch cổ",
+        },
+        {
+          image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
+          title: "Bốc dỡ sắt hộp & xà gồ C tại Cầu Giấy",
+          tag: "Tái sử dụng thép",
+        },
+        {
+          image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
+          title: "Tập kết cửa nhôm Xingfa còn mới 95%",
+          tag: "Thanh lý cửa",
+        },
+        {
+          image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+          title: "Điều xe tải chở ván cốp pha tôn móng",
+          tag: "Logistics xanh",
+        },
+      ],
+    },
+    stats: {
+      bgImageUrl: "/assets/images/shapes/funfact-bg-3.jpg",
+      items: [
+        { num: "28+", label: "Quận/Huyện Phủ Sóng", sub: "Hà Nội, TP.HCM & Đà Nẵng" },
+        { num: "5.200+", label: "Tấn Vật Liệu Tái Sinh", sub: "Gạch, bê tông, sắt thép, gỗ" },
+        { num: "1.450+", label: "Công Trình Đã Kết Nối", sub: "Nhà phố, biệt thự & dự án" },
+        { num: "98.6%", label: "Đánh Giá 5 Sao Hài Lòng", sub: "Từ chủ nhà & đội thợ thi công" },
+      ],
+    },
+  },
+  aboutPage: {
+    header: {
+      title: "Về Dự Án MatGreen",
+      subtitle: "Sàn Kết Nối & Tái Sử Dụng Vật Liệu Tháo Dỡ Toàn Quốc",
+      bgImageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80",
+    },
+    story: {
+      badge: "Sứ Mệnh Xanh",
+      title: "Tái Sinh Tài Nguyên Tháo Dỡ Vì Một Đô Thị Không Rác Thải",
+      desc1:
+        "Mỗi năm tại Việt Nam có hàng chục triệu tấn vật liệu xây dựng bị chôn lấp lãng phí, trong khi hàng ngàn công trình khác lại khai thác cạn kiệt tài nguyên mới.",
+      desc2:
+        "MatGreen ra đời từ mong muốn ứng dụng công nghệ định vị bán kính để biến 'rác của người này thành vàng của người khác'. Chúng tôi giúp các gia chủ sắp đập phá nhà tìm được những người đang cần vật liệu ngay trong khu vực lân cận, giúp tiết kiệm chi phí bốc dỡ và bảo vệ cảnh quan đô thị.",
+      image1: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
+      image2: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80",
+    },
+    steps: {
+      badge: "Quy Trình Hoạt Động",
+      title: "Tuần Hoàn Vật Liệu Trong 4 Bước",
+      items: [
+        {
+          num: "01",
+          title: "Chụp Ảnh & Định Vị GPS",
+          desc: "Gia chủ hoặc đội thợ nhà A chụp 2-3 tấm ảnh đống vật liệu thừa, bấm lấy vị trí GPS hiện tại trên công trường.",
+        },
+        {
+          num: "02",
+          title: "AI Bóc Tách & Kích Hoạt Radar",
+          desc: "Hệ thống tự động phân loại xà bần, gạch, sắt thép và thông báo ngay đến các công trình trong bán kính 3-10km.",
+        },
+        {
+          num: "03",
+          title: "Kết Nối Đôi Bên Trực Tiếp",
+          desc: "Nhà B xem ảnh thật, liên hệ gọi điện hoặc chat qua MatGreen để chốt khối lượng và hẹn giờ bốc dỡ.",
+        },
+        {
+          num: "04",
+          title: "Giải Phóng Mặt Bằng 0 Đồng",
+          desc: "Mặt bằng nhà A được dọn sạch tinh tươm. Nhà B có vật liệu tôn nền giá rẻ, giảm thiểu phế thải đổ trộm.",
+        },
+      ],
+    },
+  },
+  contactPage: {
+    header: {
+      title: "Liên Hệ Đội Ngũ MatGreen",
+      subtitle: "Hỗ Trợ Nhanh Chóng 24/7 - Giải Phóng Mặt Bằng Siêu Tốc",
+      bgImageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1600&q=80",
+    },
+    opening: {
+      badge: "Điều Phối Siêu Tốc",
+      title: "Thời Gian Tiếp Nhận & Hỗ Trợ",
+      weekdayHours: "07:00 Sáng – 19:00 Tối",
+      sundayHours: "08:00 Sáng – 16:00 Chiều",
+      hotlineNote: "Hỗ trợ điều phối xe ba gác & xe tải 24/7",
+      slaText: "SLA phản hồi trong 15 phút",
+    },
+  },
+  servicesPage: {
+    header: {
+      title: "Dịch Vụ & Giải Pháp Toàn Diện",
+      subtitle: "Kết Nối Xuyên Suốt Vòng Đời Vật Liệu Xây Dựng Đô Thị",
+      bgImageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80",
+    },
+    packages: {
+      items: [
+        {
+          name: "Gia Chủ / Cá Nhân (Nhà A)",
+          target: "Dành cho nhà sắp sửa chữa, đập phá",
+          price: "0đ",
+          period: "Miễn phí vĩnh viễn",
+          badge: "Phổ Biến Nhất",
+          highlight: true,
+          features: [
+            "Đăng tin cho tặng / thanh lý không giới hạn",
+            "Tự động định vị GPS công trình chính xác",
+            "Trợ lý AI bóc tách khối lượng tự động",
+            "Hiển thị trên bản đồ Radar bán kính",
+            "Chat thời gian thực & gọi điện trực tiếp",
+          ],
+          btnText: "Đăng Tin Miễn Phí",
+          btnLink: "/post",
+        },
+        {
+          name: "Nhà Thầu / Đội Thợ (Nhà B)",
+          target: "Dành cho đội thi công, hoàn thiện",
+          price: "0đ",
+          period: "Miễn phí trải nghiệm",
+          badge: "Tiết Kiệm Chi Phí",
+          highlight: false,
+          features: [
+            "Quét radar tìm vật liệu trong bán kính 20km",
+            "Lọc danh mục gạch, sắt thép, gỗ, cát đá",
+            "Lưu tin yêu thích để theo dõi công trình",
+            "Xem ảnh hiện trường đã kiểm định GPS",
+            "Nhận thông báo khi có nguồn cung mới",
+          ],
+          btnText: "Mở Radar Quét Ngay",
+          btnLink: "/dashboard",
+        },
+        {
+          name: "Đội Xe / Đối Tác Logistics",
+          target: "Dành cho tài xế xe tải & ba gác",
+          price: "Liên hệ",
+          period: "Hợp tác đối tác",
+          badge: "Thu Nhập Cao",
+          highlight: false,
+          features: [
+            "Nhận đơn chở hàng cự ly ngắn 3-10km",
+            "Hỗ trợ ghép chuyến tăng thu nhập mỗi ngày",
+            "Tích hợp danh bạ đội xe trên hệ thống",
+            "Quyền lợi đối tác vận chuyển ưu tiên",
+          ],
+          btnText: "Đăng Ký Đội Xe",
+          btnLink: "/contact",
+        },
+      ],
+    },
+    faqs: {
+      items: [
+        {
+          q: "Đăng tin cho tặng vật liệu (Nhà A) có mất phí dịch vụ không?",
+          a: "Hoàn toàn miễn phí 100%. MatGreen không thu bất kỳ khoản phí nào khi bạn đăng tin cho tặng xà bần hoặc thanh lý vật liệu cũ.",
+        },
+        {
+          q: "Ai sẽ là người chịu trách nhiệm vận chuyển vật liệu?",
+          a: "Thông thường, bên nhận (Nhà B) hoặc đội thợ sẽ tự điều xe ba gác, xe tải đến bốc dỡ và chở đi theo thỏa thuận trực tiếp giữa 2 bên.",
+        },
+        {
+          q: "Làm sao để biết vật liệu đăng trên sàn có thật hay không?",
+          a: "MatGreen yêu cầu mọi bài đăng phải có ảnh chụp thực tế tại công trình (được lưu trữ trên Cloudinary), kèm tọa độ GPS và số điện thoại, Zalo chính chủ.",
+        },
+        {
+          q: "Trợ lý AI bóc tách khối lượng có chính xác không?",
+          a: "Mô hình AI của MatGreen được huấn luyện dựa trên định mức xây dựng Việt Nam, độ chính xác đạt khoảng 85-92% đối với các công trình nhà phố, nhà cấp 4 và biệt thự.",
+        },
+      ],
+    },
+  },
 };
 
 // Cập nhật Favicon động theo logo/favicon URL
@@ -197,6 +622,66 @@ export const useSiteConfigStore = create<SiteConfigState>((set, get) => ({
             ...data,
             general: { ...DEFAULT_SITE_CONFIG.general, ...(data.general || {}) },
             contact: { ...DEFAULT_SITE_CONFIG.contact, ...(data.contact || {}) },
+            homePage: {
+              hero: { ...DEFAULT_SITE_CONFIG.homePage.hero, ...(data.homePage?.hero || {}) },
+              about: { ...DEFAULT_SITE_CONFIG.homePage.about, ...(data.homePage?.about || {}) },
+              services: {
+                ...DEFAULT_SITE_CONFIG.homePage.services,
+                ...(data.homePage?.services || {}),
+                items: data.homePage?.services?.items?.length
+                  ? data.homePage.services.items
+                  : DEFAULT_SITE_CONFIG.homePage.services.items,
+              },
+              whyChoose: {
+                ...DEFAULT_SITE_CONFIG.homePage.whyChoose,
+                ...(data.homePage?.whyChoose || {}),
+                items: data.homePage?.whyChoose?.items?.length
+                  ? data.homePage.whyChoose.items
+                  : DEFAULT_SITE_CONFIG.homePage.whyChoose.items,
+              },
+              gallery: {
+                ...DEFAULT_SITE_CONFIG.homePage.gallery,
+                ...(data.homePage?.gallery || {}),
+                items: data.homePage?.gallery?.items?.length
+                  ? data.homePage.gallery.items
+                  : DEFAULT_SITE_CONFIG.homePage.gallery.items,
+              },
+              stats: {
+                ...DEFAULT_SITE_CONFIG.homePage.stats,
+                ...(data.homePage?.stats || {}),
+                items: data.homePage?.stats?.items?.length
+                  ? data.homePage.stats.items
+                  : DEFAULT_SITE_CONFIG.homePage.stats.items,
+              },
+            },
+            aboutPage: {
+              header: { ...DEFAULT_SITE_CONFIG.aboutPage.header, ...(data.aboutPage?.header || {}) },
+              story: { ...DEFAULT_SITE_CONFIG.aboutPage.story, ...(data.aboutPage?.story || {}) },
+              steps: {
+                ...DEFAULT_SITE_CONFIG.aboutPage.steps,
+                ...(data.aboutPage?.steps || {}),
+                items: data.aboutPage?.steps?.items?.length
+                  ? data.aboutPage.steps.items
+                  : DEFAULT_SITE_CONFIG.aboutPage.steps.items,
+              },
+            },
+            contactPage: {
+              header: { ...DEFAULT_SITE_CONFIG.contactPage.header, ...(data.contactPage?.header || {}) },
+              opening: { ...DEFAULT_SITE_CONFIG.contactPage.opening, ...(data.contactPage?.opening || {}) },
+            },
+            servicesPage: {
+              header: { ...DEFAULT_SITE_CONFIG.servicesPage.header, ...(data.servicesPage?.header || {}) },
+              packages: {
+                items: data.servicesPage?.packages?.items?.length
+                  ? data.servicesPage.packages.items
+                  : DEFAULT_SITE_CONFIG.servicesPage.packages.items,
+              },
+              faqs: {
+                items: data.servicesPage?.faqs?.items?.length
+                  ? data.servicesPage.faqs.items
+                  : DEFAULT_SITE_CONFIG.servicesPage.faqs.items,
+              },
+            },
             teamMembers: data.teamMembers?.length ? data.teamMembers : DEFAULT_SITE_CONFIG.teamMembers,
             partners: data.partners?.length ? data.partners : DEFAULT_SITE_CONFIG.partners,
             testimonials: data.testimonials?.length ? data.testimonials : DEFAULT_SITE_CONFIG.testimonials,

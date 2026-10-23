@@ -18,55 +18,23 @@ import { LandingWhyChoose } from "@/components/landing/LandingWhyChoose";
 import { LandingStats } from "@/components/landing/LandingStats";
 import { LandingTestimonials } from "@/components/landing/LandingTestimonials";
 import { LandingBrands } from "@/components/landing/LandingBrands";
-import { useSiteConfigStore } from "@/stores/site-config.store";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const AboutPage: React.FC = () => {
   const { config } = useSiteConfigStore();
-  const steps = [
-    {
-      num: "01",
-      title: "Chụp Ảnh & Định Vị GPS",
-      desc: "Gia chủ hoặc đội thợ nhà A chụp 2-3 tấm ảnh đống vật liệu thừa, bấm lấy vị trí GPS hiện tại trên công trường.",
-    },
-    {
-      num: "02",
-      title: "AI Bóc Tách & Kích Hoạt Radar",
-      desc: "Hệ thống tự động phân loại xà bần, gạch, sắt thép và thông báo ngay đến các công trình trong bán kính 3-10km.",
-    },
-    {
-      num: "03",
-      title: "Kết Nối Đôi Bên Trực Tiếp",
-      desc: "Nhà B xem ảnh thật, liên hệ gọi điện hoặc chat qua MatGreen để chốt khối lượng và hẹn giờ bốc dỡ.",
-    },
-    {
-      num: "04",
-      title: "Giải Phóng Mặt Bằng 0 Đồng",
-      desc: "Mặt bằng nhà A được dọn sạch tinh tươm. Nhà B có vật liệu tôn nền giá rẻ, giảm thiểu phế thải đổ trộm.",
-    },
-  ];
+  const aboutPageConfig = config?.aboutPage || DEFAULT_SITE_CONFIG.aboutPage;
+
+  const steps = aboutPageConfig.steps?.items?.length
+    ? aboutPageConfig.steps.items
+    : DEFAULT_SITE_CONFIG.aboutPage.steps.items;
 
   const team = config?.teamMembers?.length
     ? config.teamMembers
-    : [
-        {
-          name: "Nguyễn Văn Quân",
-          role: "Nhà Sáng Lập & Kỹ Sư Hệ Thống",
-          image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-          bio: "10 năm kinh nghiệm thi công & đam mê công nghệ tuần hoàn vật liệu.",
-        },
-        {
-          name: "TS. Lê Hoàng Mai",
-          role: "Cố Vấn Khoa Học & Môi Trường",
-          image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
-          bio: "Chuyên gia nghiên cứu tái chế phế phẩm xây dựng hướng tới Net Zero.",
-        },
-        {
-          name: "Vũ Hải Đăng",
-          role: "Trưởng Nhóm Kỹ Thuật AI & Bản Đồ",
-          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-          bio: "Phát triển thuật toán bóc tách khối lượng và radar cự ly gần.",
-        },
-      ];
+    : DEFAULT_SITE_CONFIG.teamMembers;
+
+  const headerBg = aboutPageConfig.header?.bgImageUrl || DEFAULT_SITE_CONFIG.aboutPage.header.bgImageUrl;
+  const storyImage1 = aboutPageConfig.story?.image1 || DEFAULT_SITE_CONFIG.aboutPage.story.image1;
+  const storyImage2 = aboutPageConfig.story?.image2 || DEFAULT_SITE_CONFIG.aboutPage.story.image2;
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
@@ -76,8 +44,7 @@ export const AboutPage: React.FC = () => {
       <section
         className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80')",
+          backgroundImage: `url('${headerBg}')`,
         }}
       >
         <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs" />
@@ -91,8 +58,13 @@ export const AboutPage: React.FC = () => {
             <li><span>Về Chúng Tôi</span></li>
           </ul>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
-            Về Dự Án MatGreen
+            {aboutPageConfig.header?.title || "Về Dự Án MatGreen"}
           </h1>
+          {aboutPageConfig.header?.subtitle && (
+            <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-xl mx-auto">
+              {aboutPageConfig.header.subtitle}
+            </p>
+          )}
         </div>
       </section>
 
@@ -105,16 +77,16 @@ export const AboutPage: React.FC = () => {
               <div className="relative mx-auto max-w-lg">
                 <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                   <img
-                    src="https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80"
-                    alt="Công trình xây dựng tuần hoàn MatGreen"
-                    className="w-full h-80 sm:h-96 object-cover"
+                    src={storyImage1}
+                    alt={aboutPageConfig.story?.title || "Công trình xây dựng tuần hoàn MatGreen"}
+                    className="w-full h-80 sm:h-96 object-cover hover:scale-105 transition-transform duration-500"
                   />
                 </div>
                 <div className="absolute -bottom-8 -right-4 sm:-right-8 w-48 sm:w-60 rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900">
                   <img
-                    src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80"
+                    src={storyImage2}
                     alt="Kỹ sư kiểm định hiện trường"
-                    className="w-full h-36 sm:h-44 object-cover"
+                    className="w-full h-36 sm:h-44 object-cover hover:scale-105 transition-transform duration-500"
                   />
                 </div>
               </div>
@@ -124,16 +96,18 @@ export const AboutPage: React.FC = () => {
             <div className="lg:col-span-6 space-y-5">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
                 <Leaf className="w-3.5 h-3.5 text-emerald-700" />
-                Sứ Mệnh Xanh
+                {aboutPageConfig.story?.badge || "Sứ Mệnh Xanh"}
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 font-display tracking-tight leading-tight">
-                Tái Sinh Tài Nguyên Tháo Dỡ Vì Một Đô Thị Không Rác Thải
+                {aboutPageConfig.story?.title || "Tái Sinh Tài Nguyên Tháo Dỡ Vì Một Đô Thị Không Rác Thải"}
               </h2>
               <p className="text-sm font-semibold text-slate-700 leading-relaxed">
-                Mỗi năm tại Việt Nam có hàng chục triệu tấn vật liệu xây dựng bị chôn lấp lãng phí, trong khi hàng ngàn công trình khác lại khai thác cạn kiệt tài nguyên mới.
+                {aboutPageConfig.story?.desc1 ||
+                  "Mỗi năm tại Việt Nam có hàng chục triệu tấn vật liệu xây dựng bị chôn lấp lãng phí, trong khi hàng ngàn công trình khác lại khai thác cạn kiệt tài nguyên mới."}
               </p>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                MatGreen ra đời từ mong muốn ứng dụng công nghệ định vị bán kính để biến "rác của người này thành vàng của người khác". Chúng tôi giúp các gia chủ sắp đập phá nhà tìm được những người đang cần vật liệu ngay trong khu vực lân cận, giúp tiết kiệm chi phí bốc dỡ và bảo vệ cảnh quan đô thị.
+                {aboutPageConfig.story?.desc2 ||
+                  "MatGreen ra đời từ mong muốn ứng dụng công nghệ định vị bán kính để biến 'rác của người này thành vàng của người khác'. Chúng tôi giúp các gia chủ sắp đập phá nhà tìm được những người đang cần vật liệu ngay trong khu vực lân cận, giúp tiết kiệm chi phí bốc dỡ và bảo vệ cảnh quan đô thị."}
               </p>
               <div className="pt-2">
                 <Link to="/dashboard" className="solox-btn solox-btn--emerald">

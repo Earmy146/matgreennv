@@ -20,81 +20,28 @@ import { LandingServices } from "@/components/landing/LandingServices";
 import { LandingWhyChoose } from "@/components/landing/LandingWhyChoose";
 import { LandingOpening } from "@/components/landing/LandingOpening";
 import { LandingBrands } from "@/components/landing/LandingBrands";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const ServicesPage: React.FC = () => {
+  const { config } = useSiteConfigStore();
+  const servicesPageConfig = config?.servicesPage || DEFAULT_SITE_CONFIG.servicesPage;
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  const packages = [
-    {
-      name: "Gia Chủ / Cá Nhân (Nhà A)",
-      target: "Dành cho nhà sắp sửa chữa, đập phá",
-      price: "0đ",
-      period: "Miễn phí vĩnh viễn",
-      badge: "Phổ Biến Nhất",
-      highlight: true,
-      features: [
-        "Đăng tin cho tặng / thanh lý không giới hạn",
-        "Tự động định vị GPS công trình chính xác",
-        "Trợ lý AI bóc tách khối lượng tự động",
-        "Hiển thị trên bản đồ Radar bán kính",
-        "Chat thời gian thực & gọi điện trực tiếp",
-      ],
-      btnText: "Đăng Tin Miễn Phí",
-      btnLink: "/post",
-    },
-    {
-      name: "Nhà Thầu / Đội Thợ (Nhà B)",
-      target: "Dành cho đội thi công, hoàn thiện",
-      price: "0đ",
-      period: "Miễn phí trải nghiệm",
-      badge: "Tiết Kiệm Chi Phí",
-      highlight: false,
-      features: [
-        "Quét radar tìm vật liệu trong bán kính 20km",
-        "Lọc danh mục gạch, sắt thép, gỗ, cát đá",
-        "Lưu tin yêu thích để theo dõi công trình",
-        "Xem ảnh hiện trường đã kiểm định GPS",
-        "Nhận thông báo khi có nguồn cung mới",
-      ],
-      btnText: "Mở Radar Quét Ngay",
-      btnLink: "/dashboard",
-    },
-    {
-      name: "Đội Xe / Đối Tác Logistics",
-      target: "Dành cho tài xế xe tải & ba gác",
-      price: "Liên hệ",
-      period: "Hợp tác đối tác",
-      badge: "Thu Nhập Cao",
-      highlight: false,
-      features: [
-        "Nhận đơn chở hàng cự ly ngắn 3-10km",
-        "Hỗ trợ ghép chuyến tăng thu nhập mỗi ngày",
-        "Tích hợp danh bạ đội xe trên hệ thống",
-        "Quyền lợi đối tác vận chuyển ưu tiên",
-      ],
-      btnText: "Đăng Ký Đội Xe",
-      btnLink: "/contact",
-    },
-  ];
+  const rawPackages = servicesPageConfig.packages?.items?.length
+    ? servicesPageConfig.packages.items
+    : DEFAULT_SITE_CONFIG.servicesPage.packages.items;
 
-  const faqs = [
-    {
-      q: "Đăng tin cho tặng vật liệu (Nhà A) có mất phí dịch vụ không?",
-      a: "Hoàn toàn miễn phí 100%. MatGreen không thu bất kỳ khoản phí nào khi bạn đăng tin cho tặng xà bần hoặc thanh lý vật liệu cũ.",
-    },
-    {
-      q: "Ai sẽ là người chịu trách nhiệm vận chuyển vật liệu?",
-      a: "Thông thường, bên nhận (Nhà B) hoặc đội thợ sẽ tự điều xe ba gác, xe tải đến bốc dỡ và chở đi theo thỏa thuận trực tiếp giữa 2 bên.",
-    },
-    {
-      q: "Làm sao để biết vật liệu đăng trên sàn có thật hay không?",
-      a: "MatGreen yêu cầu mọi bài đăng phải có ảnh chụp thực tế tại công trình (được lưu trữ trên Cloudinary), kèm tọa độ GPS và số điện thoại, Zalo chính chủ.",
-    },
-    {
-      q: "Trợ lý AI bóc tách khối lượng có chính xác không?",
-      a: "Mô hình AI của MatGreen được huấn luyện dựa trên định mức xây dựng Việt Nam, độ chính xác đạt khoảng 85-92% đối với các công trình nhà phố, nhà cấp 4 và biệt thự.",
-    },
-  ];
+  const packages = rawPackages;
+
+  const rawFaqs = servicesPageConfig.faqs?.items?.length
+    ? servicesPageConfig.faqs.items
+    : DEFAULT_SITE_CONFIG.servicesPage.faqs.items;
+
+  const faqs = rawFaqs;
+
+  const headerBg =
+    servicesPageConfig.header?.bgImageUrl ||
+    "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80";
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
@@ -104,8 +51,7 @@ export const ServicesPage: React.FC = () => {
       <section
         className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=1920&q=80')",
+          backgroundImage: `url('${headerBg}')`,
         }}
       >
         <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs" />
@@ -119,8 +65,13 @@ export const ServicesPage: React.FC = () => {
             <li><span>Dịch Vụ</span></li>
           </ul>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
-            Dịch Vụ & Giải Pháp Toàn Diện
+            {servicesPageConfig.header?.title || "Dịch Vụ & Giải Pháp Toàn Diện"}
           </h1>
+          {servicesPageConfig.header?.subtitle && (
+            <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-xl mx-auto">
+              {servicesPageConfig.header.subtitle}
+            </p>
+          )}
         </div>
       </section>
 

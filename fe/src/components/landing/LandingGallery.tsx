@@ -1,30 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck, Compass, ArrowRight, Eye } from "lucide-react";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const LandingGallery: React.FC = () => {
-  const galleryItems = [
-    {
-      image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f7?auto=format&fit=crop&w=800&q=80",
-      title: "Công trình tháo dỡ nhà phố Hoàng Mai",
-      tag: "Thu hồi gạch cổ",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
-      title: "Bốc dỡ sắt hộp & xà gồ C tại Cầu Giấy",
-      tag: "Tái sử dụng thép",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
-      title: "Tập kết cửa nhôm Xingfa còn mới 95%",
-      tag: "Thanh lý cửa",
-    },
-    {
-      image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
-      title: "Điều xe tải chở ván cốp pha tôn móng",
-      tag: "Logistics xanh",
-    },
-  ];
+  const { config } = useSiteConfigStore();
+  const gallery = config?.homePage?.gallery || DEFAULT_SITE_CONFIG.homePage.gallery;
+
+  const galleryItems = gallery.items?.length
+    ? gallery.items
+    : DEFAULT_SITE_CONFIG.homePage.gallery.items;
 
   return (
     <section className="py-16 bg-white overflow-hidden relative">
@@ -70,16 +55,21 @@ export const LandingGallery: React.FC = () => {
                 </div>
 
                 <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-2 font-sans">
-                  Minh Bạch Hiện Trường 100%
+                  {gallery.badge || "Minh Bạch Hiện Trường 100%"}
                 </span>
 
                 <h3 className="text-2xl sm:text-3xl font-black leading-snug font-display text-white mb-4">
-                  Thư Viện Công Trình <br />
-                  <span className="text-emerald-400">Đã Kết Nối Thành Công</span>
+                  {gallery.title || (
+                    <>
+                      Thư Viện Công Trình <br />
+                      <span className="text-emerald-400">Đã Kết Nối Thành Công</span>
+                    </>
+                  )}
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                  Mỗi hình ảnh trên MatGreen đều được đính kèm tọa độ GPS và thời điểm chụp thực tế tại công trường. Nói không với ảnh mạng và tin ảo.
+                  {gallery.desc ||
+                    "Mỗi hình ảnh trên MatGreen đều được đính kèm tọa độ GPS và thời điểm chụp thực tế tại công trường. Nói không với ảnh mạng và tin ảo."}
                 </p>
               </div>
 
@@ -101,3 +91,4 @@ export const LandingGallery: React.FC = () => {
 };
 
 export default LandingGallery;
+

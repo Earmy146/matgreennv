@@ -1,38 +1,33 @@
 import React from "react";
 import { MapPin, Recycle, Building2, Smile, Award } from "lucide-react";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const LandingStats: React.FC = () => {
-  const stats = [
-    {
-      num: "28+",
-      label: "Quận/Huyện Phủ Sóng",
-      icon: <MapPin className="w-8 h-8 text-emerald-400" />,
-      sub: "Hà Nội, TP.HCM & Đà Nẵng",
-    },
-    {
-      num: "5.200+",
-      label: "Tấn Vật Liệu Tái Sinh",
-      icon: <Recycle className="w-8 h-8 text-emerald-400" />,
-      sub: "Gạch, bê tông, sắt thép, gỗ",
-    },
-    {
-      num: "1.450+",
-      label: "Công Trình Đã Kết Nối",
-      icon: <Building2 className="w-8 h-8 text-emerald-400" />,
-      sub: "Nhà phố, biệt thự & dự án",
-    },
-    {
-      num: "98.6%",
-      label: "Đánh Giá 5 Sao Hài Lòng",
-      icon: <Smile className="w-8 h-8 text-amber-400" />,
-      sub: "Từ chủ nhà & đội thợ thi công",
-    },
+  const { config } = useSiteConfigStore();
+  const statsConfig = config?.homePage?.stats || DEFAULT_SITE_CONFIG.homePage.stats;
+
+  const defaultIcons = [
+    <MapPin key="map" className="w-8 h-8 text-emerald-400" />,
+    <Recycle key="recycle" className="w-8 h-8 text-emerald-400" />,
+    <Building2 key="build" className="w-8 h-8 text-emerald-400" />,
+    <Smile key="smile" className="w-8 h-8 text-amber-400" />,
   ];
+
+  const rawStats = statsConfig.items?.length
+    ? statsConfig.items
+    : DEFAULT_SITE_CONFIG.homePage.stats.items;
+
+  const stats = rawStats.map((item, idx) => ({
+    ...item,
+    icon: defaultIcons[idx % defaultIcons.length],
+  }));
+
+  const bgImage = statsConfig.bgImageUrl || DEFAULT_SITE_CONFIG.homePage.stats.bgImageUrl;
 
   return (
     <section
       className="py-16 bg-slate-950 text-white bg-cover bg-center relative overflow-hidden"
-      style={{ backgroundImage: "url('/assets/images/shapes/funfact-bg-3.jpg')" }}
+      style={{ backgroundImage: `url('${bgImage}')` }}
     >
       <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
 
@@ -64,3 +59,4 @@ export const LandingStats: React.FC = () => {
 };
 
 export default LandingStats;
+

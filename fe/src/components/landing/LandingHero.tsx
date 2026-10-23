@@ -12,9 +12,13 @@ import {
   ShieldCheck,
   Search,
 } from "lucide-react";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const LandingHero: React.FC = () => {
   const navigate = useNavigate();
+  const { config } = useSiteConfigStore();
+  const hero = config?.homePage?.hero || DEFAULT_SITE_CONFIG.homePage.hero;
+
   const [searchRadius, setSearchRadius] = useState<number>(10);
   const [searchCategory, setSearchCategory] = useState<string>("all");
   const [searchKeyword, setSearchKeyword] = useState<string>("");
@@ -29,6 +33,10 @@ export const LandingHero: React.FC = () => {
 
     navigate(`/dashboard?${query.toString()}`);
   };
+
+  const heroImage = hero.imageUrl || DEFAULT_SITE_CONFIG.homePage.hero.imageUrl;
+  const youtubeUrl = hero.youtubeVideoUrl || DEFAULT_SITE_CONFIG.homePage.hero.youtubeVideoUrl;
+  const highlights = hero.highlights?.length ? hero.highlights : DEFAULT_SITE_CONFIG.homePage.hero.highlights;
 
   return (
     <section className="relative bg-stone-100 overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28">
@@ -56,32 +64,27 @@ export const LandingHero: React.FC = () => {
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-600/10 border border-emerald-600/25 text-emerald-800 text-xs font-bold tracking-wide uppercase shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-              Sàn Tuần Hoàn Vật Liệu Xây Dựng Số 1 Việt Nam
+              {hero.badge || "Sàn Tuần Hoàn Vật Liệu Xây Dựng Số 1 Việt Nam"}
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.12] font-display">
-              Khám Phá Nơi Biến <br />
-              <span className="text-emerald-700">Vật Liệu Tháo Dỡ</span> Thành Tài Nguyên Tái Sinh
+              {hero.titleLine1 || "Khám Phá Nơi Biến"} <br />
+              <span className="text-emerald-700">{hero.titleHighlight || "Vật Liệu Tháo Dỡ"}</span> {hero.titleLine2 || "Thành Tài Nguyên Tái Sinh"}
             </h1>
 
             <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              Kết nối trực tiếp <strong>Nhà A</strong> (cần giải phóng mặt bằng, thừa xà bần, gạch, sắt thép tháo dỡ) với <strong>Nhà B</strong> (đang xây dựng cần mua rẻ hoặc nhận vật liệu miễn phí) theo <span className="text-emerald-700 font-bold">bán kính định vị GPS</span> gần bạn nhất.
+              {hero.subtitle ||
+                "Kết nối trực tiếp Nhà A (cần giải phóng mặt bằng, thừa xà bần, gạch, sắt thép tháo dỡ) với Nhà B (đang xây dựng cần mua rẻ hoặc nhận vật liệu miễn phí) theo bán kính định vị GPS gần bạn nhất."}
             </p>
 
             {/* Quick check highlights */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-2 max-w-lg mx-auto lg:mx-0">
-              <div className="flex items-center gap-2 text-xs text-slate-700 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Cho nhận 0đ & Bán rẻ</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-700 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Radar GPS bán kính</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-700 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>AI bóc tách tự động</span>
-              </div>
+              {highlights.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
 
             {/* Quick Form Search Bar ngay trên Hero */}
@@ -145,8 +148,8 @@ export const LandingHero: React.FC = () => {
               {/* Hình ảnh chính bo góc nghệ thuật */}
               <div className="relative rounded-[48px] overflow-hidden shadow-2xl border-4 border-white bg-slate-900 z-10">
                 <img
-                  src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80"
-                  alt="Tuần hoàn vật liệu xây dựng MatGreen"
+                  src={heroImage}
+                  alt={hero.titleLine1 || "Tuần hoàn vật liệu xây dựng MatGreen"}
                   className="w-full h-[400px] sm:h-[480px] object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -202,7 +205,7 @@ export const LandingHero: React.FC = () => {
             <div className="aspect-video w-full">
               <iframe
                 className="w-full h-full"
-                src="https://www.youtube-nocookie.com/embed/h9MbznbxlLc?autoplay=1"
+                src={youtubeUrl}
                 title="MatGreen Video"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -216,3 +219,4 @@ export const LandingHero: React.FC = () => {
 };
 
 export default LandingHero;
+

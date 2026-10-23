@@ -67,6 +67,10 @@ export const ContactPage: React.FC = () => {
         },
       ];
 
+  const headerBg =
+    config?.contactPage?.header?.bgImageUrl ||
+    "https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=1600&q=80";
+
   return (
     <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
@@ -75,8 +79,7 @@ export const ContactPage: React.FC = () => {
       <section
         className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=1600&q=80')",
+          backgroundImage: `url('${headerBg}')`,
         }}
       >
         <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
@@ -90,8 +93,13 @@ export const ContactPage: React.FC = () => {
             <li><span>Liên Hệ</span></li>
           </ul>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
-            Liên Hệ Đội Ngũ MatGreen
+            {config?.contactPage?.header?.title || "Liên Hệ Đội Ngũ MatGreen"}
           </h1>
+          {config?.contactPage?.header?.subtitle && (
+            <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-xl mx-auto">
+              {config.contactPage.header.subtitle}
+            </p>
+          )}
         </div>
       </section>
 

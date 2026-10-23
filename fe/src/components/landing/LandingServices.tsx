@@ -1,42 +1,29 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Truck, Recycle, ShieldCheck, Hammer, Layers, Cpu } from "lucide-react";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const LandingServices: React.FC = () => {
-  const services = [
-    {
-      title: "Điều Phối Xà Bần & Tôn Nền",
-      desc: "Giải phóng hàng trăm tấn gạch vỡ, bê tông và vữa cũ từ công trình đập phá đến các dự án san lấp mặt bằng trong bán kính 5km.",
-      image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
-      icon: <Truck className="w-5 h-5 text-emerald-600" />,
-      tag: "Miễn Phí / Giá Rẻ",
-      link: "/dashboard?category=Gạch & Bê tông",
-    },
-    {
-      title: "Thu Hồi Nhôm Kính & Sắt Thép",
-      desc: "Bảo toàn nguyên vẹn khung cửa nhôm Xingfa, cửa sắt lùa và xà gồ thép chữ C để gia chủ thu hồi vốn tới 40% chi phí tháo dỡ.",
-      image: "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80",
-      icon: <Hammer className="w-5 h-5 text-amber-600" />,
-      tag: "Thanh Lý Thu Vốn",
-      link: "/dashboard?category=Sắt thép",
-    },
-    {
-      title: "Tái Sinh Gỗ Cốp Pha & Ván Sàn",
-      desc: "Gỗ cốp pha phủ phim, xà gồ gỗ thông và ván ép còn tái sử dụng được luân chuyển ngay cho các đội thợ làm nhà tạm, bồn cây.",
-      image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80",
-      icon: <Layers className="w-5 h-5 text-emerald-600" />,
-      tag: "Tuần Hoàn Gỗ",
-      link: "/dashboard?category=Gỗ & Ván cốp pha",
-    },
-    {
-      title: "Trợ Lý Bóc Tách Tự Động AI",
-      desc: "Chụp một bức ảnh công trường đập phá, AI Advisor sẽ tự động nhận diện chủng loại vật liệu, ước tính khối lượng và gợi ý giá thanh lý.",
-      image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-      icon: <Cpu className="w-5 h-5 text-indigo-600" />,
-      tag: "Công Nghệ Độc Quyền",
-      link: "/ai-advisor",
-    },
+  const { config } = useSiteConfigStore();
+  const servicesConfig = config?.homePage?.services || DEFAULT_SITE_CONFIG.homePage.services;
+
+  const icons = [
+    <Truck key="truck" className="w-5 h-5 text-emerald-600" />,
+    <Hammer key="hammer" className="w-5 h-5 text-amber-600" />,
+    <Layers key="layers" className="w-5 h-5 text-emerald-600" />,
+    <Cpu key="cpu" className="w-5 h-5 text-indigo-600" />,
+    <Recycle key="recycle" className="w-5 h-5 text-teal-600" />,
+    <ShieldCheck key="shield" className="w-5 h-5 text-emerald-600" />,
   ];
+
+  const rawItems = servicesConfig.items?.length
+    ? servicesConfig.items
+    : DEFAULT_SITE_CONFIG.homePage.services.items;
+
+  const services = rawItems.map((item, idx) => ({
+    ...item,
+    icon: icons[idx % icons.length],
+  }));
 
   return (
     <section
@@ -52,15 +39,17 @@ export const LandingServices: React.FC = () => {
             className="mx-auto mb-3 h-5 w-auto object-contain"
           />
           <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
-            Dịch Vụ Tuần Hoàn Toàn Diện
+            {servicesConfig.badge || "Dịch Vụ Tuần Hoàn Toàn Diện"}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
-            Giải Pháp MatGreen Cung Cấp
+            {servicesConfig.title || "Giải Pháp MatGreen Cung Cấp"}
           </h2>
           <p className="mt-3 text-sm text-slate-600">
-            Hỗ trợ toàn diện từ khâu khảo sát, định vị GPS, bóc tách khối lượng đến điều phối đội xe vận chuyển tận chân công trình.
+            {servicesConfig.desc ||
+              "Hỗ trợ toàn diện từ khâu khảo sát, định vị GPS, bóc tách khối lượng đến điều phối đội xe vận chuyển tận chân công trình."}
           </p>
         </div>
+
 
         {/* Services Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

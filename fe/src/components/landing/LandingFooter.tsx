@@ -64,8 +64,8 @@ export const LandingFooter: React.FC = () => {
             </Link>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              {config.general?.siteTagline ? `${config.general.siteName || "MatGreen"} - ${config.general.siteTagline}. ` : ""}
-              Nền tảng công nghệ tiên phong tuần hoàn vật liệu xây dựng tháo dỡ tại Việt Nam. Kết nối cung cầu theo bán kính định vị GPS, giảm thiểu phế thải đô thị.
+              {config.general?.footerDesc ||
+                "Nền tảng công nghệ tiên phong tuần hoàn vật liệu xây dựng tháo dỡ tại Việt Nam. Kết nối cung cầu theo bán kính định vị GPS, giảm thiểu phế thải đô thị."}
             </p>
 
             {/* Newsletter Subscription Form */}
@@ -172,38 +172,36 @@ export const LandingFooter: React.FC = () => {
                 Kết Nối Cộng Đồng
               </h5>
               <div className="flex items-center gap-2.5">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
-                >
-                  <Facebook className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
-                >
-                  <Twitter className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://youtube.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
-                >
-                  <Youtube className="w-4 h-4" />
-                </a>
+                {config.general?.socialFacebook && (
+                  <a
+                    href={config.general.socialFacebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
+                  >
+                    <Facebook className="w-4 h-4" />
+                  </a>
+                )}
+                {config.general?.socialInstagram && (
+                  <a
+                    href={config.general.socialInstagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
+                  >
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                )}
+                {config.general?.socialYoutube && (
+                  <a
+                    href={config.general.socialYoutube}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-emerald-600 text-white flex items-center justify-center transition-colors"
+                  >
+                    <Youtube className="w-4 h-4" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -211,7 +209,7 @@ export const LandingFooter: React.FC = () => {
 
         {/* Bottom Bar Copyright */}
         <div className="mt-12 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} MatGreen. Nền tảng kết nối tái sử dụng vật liệu xây dựng và tuần hoàn phế liệu.</p>
+          <p>{config.general?.copyrightText || `© ${new Date().getFullYear()} MatGreen. Nền tảng kết nối tái sử dụng vật liệu xây dựng và tuần hoàn phế liệu.`}</p>
           <div className="flex items-center gap-6">
             <Link to="/about" className="hover:text-emerald-400 transition-colors">
               Chính sách bảo mật

@@ -1,30 +1,29 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Check, Compass, ShieldCheck, TrendingDown, Leaf, ArrowRight } from "lucide-react";
+import { useSiteConfigStore, DEFAULT_SITE_CONFIG } from "@/stores/site-config.store";
 
 export const LandingWhyChoose: React.FC = () => {
-  const features = [
-    {
-      title: "Định Vị Radar Bán Kính Siêu Tốc",
-      desc: "Chỉ cần chọn bán kính 3km, 5km hoặc 10km, hệ thống tự động quét và lọc mọi nguồn vật liệu tháo dỡ đang có sẵn xung quanh bạn.",
-      icon: <Compass className="w-5 h-5 text-emerald-400" />,
-    },
-    {
-      title: "Tiết Kiệm Tới 40% Chi Phí Vật Tư",
-      desc: "Nhà B có thể mua được sắt thép, ván cốp pha, cửa nhôm kính chất lượng cao với giá rẻ hơn 40% hoặc nhận gạch xà bần hoàn toàn 0 đồng.",
-      icon: <TrendingDown className="w-5 h-5 text-amber-400" />,
-    },
-    {
-      title: "Giảm 80% Phế Thải Ra Môi Trường",
-      desc: "Thay vì đổ trộm xà bần ra vỉa hè hay bờ sông, tài nguyên được tuần hoàn ngay lập tức cho các công trình san lấp và tôn nền.",
-      icon: <Leaf className="w-5 h-5 text-emerald-400" />,
-    },
-    {
-      title: "Giao Dịch An Toàn & Minh Bạch GPS",
-      desc: "Mọi bài đăng đều phải xác thực tọa độ GPS thật qua trình duyệt. Không lo tin ảo, tin môi giới trung gian ăn chênh lệch.",
-      icon: <ShieldCheck className="w-5 h-5 text-teal-400" />,
-    },
+  const { config } = useSiteConfigStore();
+  const whyConfig = config?.homePage?.whyChoose || DEFAULT_SITE_CONFIG.homePage.whyChoose;
+
+  const defaultIcons = [
+    <Compass key="compass" className="w-5 h-5 text-emerald-400" />,
+    <TrendingDown key="trend" className="w-5 h-5 text-amber-400" />,
+    <Leaf key="leaf" className="w-5 h-5 text-emerald-400" />,
+    <ShieldCheck key="shield" className="w-5 h-5 text-teal-400" />,
   ];
+
+  const rawFeatures = whyConfig.items?.length
+    ? whyConfig.items
+    : DEFAULT_SITE_CONFIG.homePage.whyChoose.items;
+
+  const features = rawFeatures.map((item, idx) => ({
+    ...item,
+    icon: defaultIcons[idx % defaultIcons.length],
+  }));
+
+  const bgImage = whyConfig.bgImageUrl || DEFAULT_SITE_CONFIG.homePage.whyChoose.bgImageUrl;
 
   return (
     <section className="relative py-24 lg:py-32 text-white overflow-hidden">
@@ -32,8 +31,7 @@ export const LandingWhyChoose: React.FC = () => {
       <div
         className="absolute inset-0 parallax-bg z-0"
         style={{
-          backgroundImage:
-            "url('https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728313/finance-lite/banners/mat-mvkg5d78-9782a01c0068.jpg')",
+          backgroundImage: `url('${bgImage}')`,
         }}
       />
 
@@ -51,16 +49,21 @@ export const LandingWhyChoose: React.FC = () => {
                 className="mb-3 h-5 w-auto object-contain brightness-0 invert opacity-90"
               />
               <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-2 font-sans">
-                Lợi Thế Vượt Trội
+                {whyConfig.badge || "Lợi Thế Vượt Trội"}
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight font-display leading-tight">
-                Vì Sao Hàng Ngàn <br />
-                <span className="text-emerald-400">Chủ Thầu Tin Chọn?</span>
+                {whyConfig.title || (
+                  <>
+                    Vì Sao Hàng Ngàn <br />
+                    <span className="text-emerald-400">Chủ Thầu Tin Chọn?</span>
+                  </>
+                )}
               </h2>
             </div>
 
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-              Chúng tôi kết hợp sức mạnh của <strong>Bản đồ GIS định vị</strong>, <strong>Thuật toán tối ưu quãng đường</strong> và <strong>Trợ lý thị giác AI</strong> để giải quyết triệt để vấn đề rác thải xây dựng cồng kềnh tại Việt Nam.
+              {whyConfig.desc ||
+                "Chúng tôi kết hợp sức mạnh của Bản đồ GIS định vị, Thuật toán tối ưu quãng đường và Trợ lý thị giác AI để giải quyết triệt để vấn đề rác thải xây dựng cồng kềnh tại Việt Nam."}
             </p>
 
             <div className="pt-2">
