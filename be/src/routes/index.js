@@ -31,4 +31,8 @@ router.use("/reviews", reviewRoutes);
 router.use("/reports", reportRoutes);
 router.use("/admin", adminRoutes);
 
+// Public Site Config endpoint
+const siteConfigController = require("../controllers/site-config.controller");
+router.get("/site-config", siteConfigController.get);
+
 module.exports = router;

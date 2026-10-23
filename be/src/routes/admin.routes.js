@@ -1,5 +1,6 @@
 const express = require("express");
 const adminController = require("../controllers/admin.controller");
+const siteConfigController = require("../controllers/site-config.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
 const { requireAdmin, requireRole } = require("../middlewares/admin.middleware");
 const router = express.Router();
@@ -12,4 +13,6 @@ router.get("/stats", adminController.stats);
 router.get("/audit-logs", adminController.auditLogs);
 router.get("/phone-verification-requests", adminController.phoneVerificationRequests);
 router.patch("/users/:id/phone-verification", requireAdmin, adminController.verifyPhone);
+router.get("/site-config", siteConfigController.get);
+router.put("/site-config", requireAdmin, siteConfigController.update);
 module.exports = router;
