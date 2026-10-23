@@ -22,6 +22,7 @@ import { MaterialCard } from "@/features/materials/MaterialCard";
 import { MaterialFilter } from "@/features/materials/MaterialFilter";
 import { MaterialGridSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LocationPromptBanner } from "@/components/common/LocationPromptBanner";
 import { Pagination } from "@/components/ui/Pagination";
 import { useLocationStore } from "@/stores/location.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -139,6 +140,9 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Cảnh báo vị trí GPS kèm CTA khi mất vị trí hoặc khi vị trí quá 5 phút */}
+      <LocationPromptBanner />
+
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1 */}
@@ -248,9 +252,7 @@ export const DashboardPage: React.FC = () => {
         <div className="space-y-6">
           {/* Radar Component */}
           {latitude === null || longitude === null ? (
-            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
-              Vui lòng cấp quyền vị trí GPS để xem các công trình quanh bạn. Hệ thống không dùng vị trí mặc định.
-            </div>
+            <LocationPromptBanner className="my-2" />
           ) : (
             <RadarMapWidget
               materials={displayMaterials}

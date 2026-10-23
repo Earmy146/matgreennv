@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Recycle, Sparkles, MapPin, Search, PlusCircle, ArrowRight, Layers } from "lucide-react";
+import { Recycle, Sparkles, MapPin, Search, PlusCircle, ArrowRight, Layers, LocateFixed } from "lucide-react";
 import { MaterialFilter } from "@/features/materials/MaterialFilter";
 import { MaterialCard } from "@/features/materials/MaterialCard";
 import { MaterialGridSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LocationPromptBanner } from "@/components/common/LocationPromptBanner";
 import { Pagination } from "@/components/ui/Pagination";
 import { useLocationStore } from "@/stores/location.store";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { materialsApi } from "@/services/api";
 import type { MaterialItem } from "@/types/material.types";
 
 export const HomePage: React.FC = () => {
   const { latitude, longitude, radiusKm } = useLocationStore();
+  const { getCurrentLocation, isLocating } = useGeolocation();
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -78,7 +81,7 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Hero Banner */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white p-8 sm:p-12 shadow-xl shadow-emerald-950/20">
         <div className="relative z-10 max-w-2xl">
@@ -120,6 +123,9 @@ export const HomePage: React.FC = () => {
         <div className="absolute -right-20 -bottom-20 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
       </section>
 
+      {/* Cảnh báo vị trí GPS kèm CTA khi mất vị trí hoặc khi vị trí quá 5 phút */}
+      <LocationPromptBanner />
+
       {/* Filter Component with Custom Radius/Diameter and Keyword Search */}
       <MaterialFilter
         selectedCategory={selectedCategory}
@@ -141,6 +147,8 @@ export const HomePage: React.FC = () => {
             <p className="text-xs text-slate-500 mt-0.5">
               {isLoading
                 ? "Đang quét các công trình quanh vị trí của bạn..."
+                : latitude === null || longitude === null
+                ? "Vui lòng cấp quyền vị trí GPS để tính toán khoảng cách km"
                 : `Tìm thấy ${paginationData.total} nguồn vật liệu trong bán kính ${radiusKm}km`}
             </p>
           </div>
@@ -149,6 +157,17 @@ export const HomePage: React.FC = () => {
         {isLoading ? (
           /* Skeleton Grid hiển thị chính xác 12 ô card - Layout Shift = 0 */
           <MaterialGridSkeleton count={pageSize} />
+        ) : latitude === null || longitude === null ? (
+          /* CTA Khi đang mất vị trí hoàn toàn */
+          <EmptyState
+            icon={<LocateFixed className="w-8 h-8 text-amber-500 stroke-[1.75]" />}
+            title="Bạn Chưa Bật Định Vị GPS Để Quét Vật Liệu"
+            description="Sàn MatGreen kết nối các nguồn cung tháo dỡ và người cần nhận theo khoảng cách thực tế. Hãy nhấn nút bên dưới để cấp quyền định vị hoặc chọn vị trí mẫu ở thanh cảnh báo bên trên."
+            actionText={isLocating ? "Đang xác định GPS..." : "Lấy Vị Trí Của Bạn (GPS)"}
+            onAction={getCurrentLocation}
+            secondaryActionText="Đăng tin cho / bán vật liệu"
+            secondaryActionHref="/post"
+          />
         ) : displayMaterials.length === 0 ? (
           <EmptyState
             icon={<MapPin className="w-8 h-8 text-emerald-600 stroke-[1.75]" />}

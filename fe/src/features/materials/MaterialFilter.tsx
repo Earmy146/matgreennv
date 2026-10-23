@@ -21,7 +21,7 @@ export const MaterialFilter: React.FC<MaterialFilterProps> = ({
   searchTerm = "",
   onSearchChange,
 }) => {
-  const { radiusKm, setRadius, address } = useLocationStore();
+  const { latitude, longitude, radiusKm, setRadius, address } = useLocationStore();
   const { getCurrentLocation, isLocating, error } = useGeolocation();
   const [customRadius, setCustomRadius] = useState<string>(String(radiusKm));
   const [isDiameterMode, setIsDiameterMode] = useState<boolean>(false);
@@ -60,7 +60,14 @@ export const MaterialFilter: React.FC<MaterialFilterProps> = ({
           </button>
 
           <span className="text-xs text-slate-500 font-medium">
-            Tọa độ gốc: <strong className="text-slate-800">{address}</strong>
+            Tọa độ gốc:{" "}
+            {latitude && longitude ? (
+              <strong className="text-slate-800">{address || `GPS (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`}</strong>
+            ) : (
+              <span className="text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                Chưa xác định (Hãy bấm Lấy Vị Trí)
+              </span>
+            )}
           </span>
 
           {error && <span className="text-xs text-rose-500 font-medium">{error}</span>}
