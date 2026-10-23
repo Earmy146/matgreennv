@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Outlet, createBrowserRouter } from "react-router-dom";
+import { SmoothScrollProvider } from "@/components/common/SmoothScrollProvider";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { LandingPage } from "@/pages/LandingPage";
 import { AboutPage } from "@/pages/AboutPage";
@@ -22,118 +23,144 @@ import { AdminModerationPage } from "@/pages/AdminModerationPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
+const RootLayout = () => (
+  <SmoothScrollProvider>
+    <Outlet />
+  </SmoothScrollProvider>
+);
+
 export const router = createBrowserRouter([
-  // Các trang công khai phong cách Landing (Home Three & Solox style)
   {
-    path: "/",
-    element: <LandingPage />,
-  },
-  {
-    path: "/about",
-    element: <AboutPage />,
-  },
-  {
-    path: "/services",
-    element: <ServicesPage />,
-  },
-  {
-    path: "/contact",
-    element: <ContactPage />,
-  },
-  // Module Tin Tức & Quản Trị Bài Viết
-  {
-    path: "/news",
-    element: <NewsPage />,
-  },
-  {
-    path: "/news/:id",
-    element: <NewsDetailPage />,
-  },
-  {
-    path: "/admin/news",
-    element: (
-      <ProtectedRoute requiredRole="admin">
-        <AdminNewsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/admin/moderation",
-    element: <ProtectedRoute requiredRole="moderator"><AdminModerationPage /></ProtectedRoute>,
-  },
-  // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
-  {
-    path: "/",
-    element: <DashboardLayout />,
+    element: <RootLayout />,
     children: [
+      // Các trang công khai phong cách Landing (Home Three & Solox style)
       {
-        path: "dashboard",
-        element: <DashboardPage />,
+        path: "/",
+        element: <LandingPage />,
       },
       {
-        path: "materials",
-        element: <HomePage />,
+        path: "/about",
+        element: <AboutPage />,
       },
       {
-        path: "map-radar",
-        element: <DashboardPage />,
+        path: "/services",
+        element: <ServicesPage />,
       },
       {
-        path: "post",
+        path: "/contact",
+        element: <ContactPage />,
+      },
+      // Module Tin Tức & Quản Trị Bài Viết
+      {
+        path: "/news",
+        element: <NewsPage />,
+      },
+      {
+        path: "/news/:id",
+        element: <NewsDetailPage />,
+      },
+      {
+        path: "/admin/news",
         element: (
-          <ProtectedRoute>
-            <PostMaterialPage />
+          <ProtectedRoute requiredRole="admin">
+            <AdminNewsPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: "my-posts",
+        path: "/admin/moderation",
         element: (
-          <ProtectedRoute>
-            <MyPostsPage />
+          <ProtectedRoute requiredRole="moderator">
+            <AdminModerationPage />
           </ProtectedRoute>
         ),
       },
-      { path: "materials/:id/edit", element: <ProtectedRoute><EditMaterialPage /></ProtectedRoute> },
+      // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
       {
-        path: "requests",
-        element: (
-          <ProtectedRoute>
-            <MaterialRequestsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "saved",
-        element: (
-          <ProtectedRoute>
-            <SavedMaterialsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "profile",
-        element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,
-      },
-      {
-        path: "materials/:id",
-        element: <MaterialDetailPage />,
-      },
-      {
-        path: "ai-advisor",
-        element: <AiAdvisorPage />,
-      },
-      {
-        path: "chat",
-        element: (
-          <ProtectedRoute>
-            <ChatPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "login",
-        element: <LoginPage />,
+        path: "/",
+        element: <DashboardLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <DashboardPage />,
+          },
+          {
+            path: "materials",
+            element: <HomePage />,
+          },
+          {
+            path: "map-radar",
+            element: <DashboardPage />,
+          },
+          {
+            path: "post",
+            element: (
+              <ProtectedRoute>
+                <PostMaterialPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "my-posts",
+            element: (
+              <ProtectedRoute>
+                <MyPostsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "materials/:id/edit",
+            element: (
+              <ProtectedRoute>
+                <EditMaterialPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "requests",
+            element: (
+              <ProtectedRoute>
+                <MaterialRequestsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "saved",
+            element: (
+              <ProtectedRoute>
+                <SavedMaterialsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "profile",
+            element: (
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "materials/:id",
+            element: <MaterialDetailPage />,
+          },
+          {
+            path: "ai-advisor",
+            element: <AiAdvisorPage />,
+          },
+          {
+            path: "chat",
+            element: (
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "login",
+            element: <LoginPage />,
+          },
+        ],
       },
     ],
   },

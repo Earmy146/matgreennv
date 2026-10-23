@@ -11,11 +11,41 @@ import {
   X,
   Save,
   Search,
+  UploadCloud,
+  Loader2,
+  Image as ImageIcon,
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { useNewsStore } from "@/stores/news.store";
 import type { NewsArticle } from "@/types/news.types";
+
+const PRESET_SOLOX_IMAGES = [
+  {
+    name: "Vật liệu tái chế",
+    url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728276/finance-lite/news/mat-mvkg4ktp-2a6bf9a482b9.png",
+  },
+  {
+    name: "Tháo dỡ an toàn",
+    url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728277/finance-lite/news/mat-mvkg4mfc-f1d945df1299.png",
+  },
+  {
+    name: "Sàn 0 đồng",
+    url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728277/finance-lite/news/mat-mvkg4mzi-a456fb843bf6.png",
+  },
+  {
+    name: "Kiểm định xà bần",
+    url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728278/finance-lite/news/mat-mvkg4np8-15f79c916a37.png",
+  },
+  {
+    name: "Cộng đồng xanh",
+    url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728279/finance-lite/news/mat-mvkg4oaw-7442d2ab7bd2.png",
+  },
+  {
+    name: "Vận chuyển GPS",
+    url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728280/finance-lite/news/mat-mvkg4oyb-fa68d429e6da.png",
+  },
+];
 
 export const AdminNewsPage: React.FC = () => {
   const { articles, addArticle, updateArticle, deleteArticle } = useNewsStore();
@@ -24,6 +54,8 @@ export const AdminNewsPage: React.FC = () => {
   const [editingArticle, setEditingArticle] = useState<NewsArticle | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [uploadingTarget, setUploadingTarget] = useState<"thumbnail" | "banner" | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -108,6 +140,65 @@ export const AdminNewsPage: React.FC = () => {
         slug: editingArticle ? prev.slug : generatedSlug,
       };
     });
+  };
+
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    target: "thumbnail" | "banner"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Kiểm tra định dạng
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Vui lòng chọn file hình ảnh hợp lệ (JPG, PNG, WEBP)");
+      return;
+    }
+
+    setUploadingTarget(target);
+    setUploadError(null);
+
+    const body = new FormData();
+    body.append("image", file);
+    body.append("folder", "news");
+
+    try {
+      const res = await fetch("/api/upload/image", {
+        method: "POST",
+        body,
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.data?.url) {
+        throw new Error(json.message || "Tải ảnh lên máy chủ Cloudinary thất bại");
+      }
+
+      const uploadedUrl = json.data.url;
+      if (target === "thumbnail") {
+        setFormData((prev) => ({
+          ...prev,
+          thumbnail: uploadedUrl,
+          bannerImage: prev.bannerImage ? prev.bannerImage : uploadedUrl,
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, bannerImage: uploadedUrl }));
+      }
+      showToast("Tải ảnh lên Cloudinary thành công!");
+    } catch (err: any) {
+      setUploadError(err.message || "Lỗi tải ảnh");
+    } finally {
+      setUploadingTarget(null);
+      e.target.value = "";
+    }
+  };
+
+  const handleSelectPreset = (url: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      thumbnail: url,
+      bannerImage: url,
+    }));
+    showToast("Đã chọn ảnh mẫu Solox từ Cloudinary!");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -382,17 +473,107 @@ export const AdminNewsPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Khu vực Upload Thumbnail lên Cloudinary */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px]">
+                    Ảnh đại diện (Thumbnail & Cloudinary) *
+                  </label>
+                  {uploadingTarget === "thumbnail" && (
+                    <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Đang tải lên Cloudinary...
+                    </span>
+                  )}
+                </div>
+
+                {uploadError && (
+                  <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                    {uploadError}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* Preview Thumbnail */}
+                  <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 overflow-hidden shrink-0 bg-slate-50 relative group">
+                    {formData.thumbnail ? (
+                      <img
+                        src={formData.thumbnail}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                        <ImageIcon className="w-6 h-6" />
+                        <span className="text-[10px] mt-1">Chưa có ảnh</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs cursor-pointer transition-colors">
+                        <UploadCloud className="w-4 h-4 text-emerald-600" />
+                        {uploadingTarget === "thumbnail" ? "Đang đẩy lên Cloudinary..." : "Tải ảnh từ máy tính (Cloudinary)"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingTarget !== null}
+                          onChange={(e) => handleFileUpload(e, "thumbnail")}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    <input
+                      type="url"
+                      required
+                      placeholder="Hoặc dán URL ảnh trực tiếp..."
+                      value={formData.thumbnail}
+                      onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Preset ảnh Solox trên Cloudinary để Admin chọn nhanh */}
+                <div className="pt-2">
+                  <span className="block text-[11px] font-bold text-slate-500 mb-1.5">
+                    Hoặc chọn nhanh từ kho ảnh Solox (Đã seed Cloudinary):
+                  </span>
+                  <div className="grid grid-cols-6 gap-2">
+                    {PRESET_SOLOX_IMAGES.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelectPreset(preset.url)}
+                        title={preset.name}
+                        className={`group relative rounded-xl overflow-hidden border-2 transition-all cursor-pointer aspect-video ${
+                          formData.thumbnail === preset.url
+                            ? "border-emerald-600 ring-2 ring-emerald-500/30 scale-102"
+                            : "border-slate-200 hover:border-emerald-400 opacity-80 hover:opacity-100"
+                        }`}
+                      >
+                        <img
+                          src={preset.url}
+                          alt={preset.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Link ảnh đại diện (Thumbnail) *
+                    Ảnh bìa lớn (Banner Header URL)
                   </label>
                   <input
                     type="url"
-                    required
-                    placeholder="https://images.unsplash.com/..."
-                    value={formData.thumbnail}
-                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                    placeholder="https://..."
+                    value={formData.bannerImage}
+                    onChange={(e) => setFormData({ ...formData, bannerImage: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>

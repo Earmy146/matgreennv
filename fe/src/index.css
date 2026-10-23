@@ -2,6 +2,12 @@
 
 :root {
   --font-sans: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant', Georgia, serif;
+  --font-cursive: 'Alex Brush', cursive;
+  --color-emerald-primary: #059669;
+  --color-emerald-dark: #064e3b;
+  --color-cream: #fbf9f5;
+  --color-gold: #c2a74e;
 }
 
 body {
@@ -9,10 +15,56 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #fafaf9;
+  color: #1e293b;
+  overflow-x: hidden;
 }
 
+/* Typography Helpers matching Solox index-3.html */
+.font-display {
+  font-family: var(--font-serif);
+}
+
+.font-handwriting {
+  font-family: var(--font-cursive);
+}
+
+/* Parallax Banner Effect (Lướt xuống ảnh nền giữ cố định và lộ dần) */
+.parallax-bg {
+  background-attachment: fixed;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media (max-width: 768px) {
+  .parallax-bg {
+    background-attachment: scroll; /* Fallback cho di động để mượt mà */
+  }
+}
+
+/* Lenis Smooth Scroll Recommended Rules */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Animations matching index-3.html */
 @keyframes spinSlow {
   from {
     transform: rotate(0deg);
@@ -23,16 +75,93 @@ body {
 }
 
 .animate-spin-slow {
-  animation: spinSlow 12s linear infinite;
+  animation: spinSlow 20s linear infinite;
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+.animate-float {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 4s ease-in-out infinite;
+}
+
+/* Solox pill button style */
+.solox-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 2rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.solox-btn--emerald {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.3);
+}
+
+.solox-btn--emerald:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 15px 30px -5px rgba(5, 150, 105, 0.4);
+  transform: translateY(-2px);
+}
+
+.solox-btn--dark {
+  background: #111827;
+  color: #ffffff;
+}
+
+.solox-btn--dark:hover {
+  background: #1f2937;
+  transform: translateY(-2px);
+}
+
+.solox-btn--outline {
+  background: transparent;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+}
+
+.solox-btn--outline:hover {
+  border-color: #059669;
+  color: #059669;
+  background-color: #ecfdf5;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
@@ -41,4 +170,3 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-

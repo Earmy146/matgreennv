@@ -9,16 +9,73 @@ import {
   Truck,
   ShieldCheck,
   Check,
-  X,
   ChevronDown,
   ChevronUp,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { LandingServices } from "@/components/landing/LandingServices";
+import { LandingWhyChoose } from "@/components/landing/LandingWhyChoose";
+import { LandingOpening } from "@/components/landing/LandingOpening";
+import { LandingBrands } from "@/components/landing/LandingBrands";
 
 export const ServicesPage: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const packages = [
+    {
+      name: "Gia Chủ / Cá Nhân (Nhà A)",
+      target: "Dành cho nhà sắp sửa chữa, đập phá",
+      price: "0đ",
+      period: "Miễn phí vĩnh viễn",
+      badge: "Phổ Biến Nhất",
+      highlight: true,
+      features: [
+        "Đăng tin cho tặng / thanh lý không giới hạn",
+        "Tự động định vị GPS công trình chính xác",
+        "Trợ lý AI bóc tách khối lượng tự động",
+        "Hiển thị trên bản đồ Radar bán kính",
+        "Chat thời gian thực & gọi điện trực tiếp",
+      ],
+      btnText: "Đăng Tin Miễn Phí",
+      btnLink: "/post",
+    },
+    {
+      name: "Nhà Thầu / Đội Thợ (Nhà B)",
+      target: "Dành cho đội thi công, hoàn thiện",
+      price: "0đ",
+      period: "Miễn phí trải nghiệm",
+      badge: "Tiết Kiệm Chi Phí",
+      highlight: false,
+      features: [
+        "Quét radar tìm vật liệu trong bán kính 20km",
+        "Lọc danh mục gạch, sắt thép, gỗ, cát đá",
+        "Lưu tin yêu thích để theo dõi công trình",
+        "Xem ảnh hiện trường đã kiểm định GPS",
+        "Nhận thông báo khi có nguồn cung mới",
+      ],
+      btnText: "Mở Radar Quét Ngay",
+      btnLink: "/dashboard",
+    },
+    {
+      name: "Đội Xe / Đối Tác Logistics",
+      target: "Dành cho tài xế xe tải & ba gác",
+      price: "Liên hệ",
+      period: "Hợp tác đối tác",
+      badge: "Thu Nhập Cao",
+      highlight: false,
+      features: [
+        "Nhận đơn chở hàng cự ly ngắn 3-10km",
+        "Hỗ trợ ghép chuyến tăng thu nhập mỗi ngày",
+        "Tích hợp danh bạ đội xe trên hệ thống",
+        "Quyền lợi đối tác vận chuyển ưu tiên",
+      ],
+      btnText: "Đăng Ký Đội Xe",
+      btnLink: "/contact",
+    },
+  ];
 
   const faqs = [
     {
@@ -31,7 +88,7 @@ export const ServicesPage: React.FC = () => {
     },
     {
       q: "Làm sao để biết vật liệu đăng trên sàn có thật hay không?",
-      a: "MatGreen yêu cầu mọi bài đăng phải có ảnh chụp thực tế tại công trình (được lưu trữ trên Cloudinary), kèm số điện thoại, Zalo chính chủ và khung giờ tiện ghé xem.",
+      a: "MatGreen yêu cầu mọi bài đăng phải có ảnh chụp thực tế tại công trình (được lưu trữ trên Cloudinary), kèm tọa độ GPS và số điện thoại, Zalo chính chủ.",
     },
     {
       q: "Trợ lý AI bóc tách khối lượng có chính xác không?",
@@ -40,180 +97,132 @@ export const ServicesPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Header Banner */}
-      <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white py-16 lg:py-24 px-4 sm:px-6 relative text-center">
-        <div className="max-w-4xl mx-auto space-y-4 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            Hệ Sinh Thái Toàn Diện
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            Dịch Vụ Tuần Hoàn Vật Liệu Xây Dựng Số 1
+      {/* Page Header Banner phong cách Solox */}
+      <section
+        className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
+        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <img
+            src="/assets/images/shapes/page-header-s-1.png"
+            alt="Page header shape"
+            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
+          />
+          <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
+            <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
+            <li>/</li>
+            <li><span>Dịch Vụ</span></li>
+          </ul>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
+            Dịch Vụ & Giải Pháp Toàn Diện
           </h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            Giải pháp đồng bộ từ khâu bóc tách công trình, định vị vệ tinh GPS, kết nối xe vận tải đến sàn giao dịch cho nhận minh bạch.
-          </p>
         </div>
       </section>
 
-      {/* 6 Target Audiences Grid */}
-      <section className="py-20 bg-white">
+      {/* 4 Dịch vụ cốt lõi với texture Solox */}
+      <LandingServices />
+
+      {/* Bảng phân hệ & Giải pháp phong cách Solox packages.html */}
+      <section className="py-20 bg-white border-y border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-2">
-              Dành Cho Mọi Đối Tượng
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
+              Giải Pháp Cho Mọi Đối Tác
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Chúng Tôi Phục Vụ Ai?
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 font-display tracking-tight">
+              Lựa Chọn Vai Trò Của Bạn
             </h2>
+            <p className="mt-3 text-sm text-slate-600">
+              Dù bạn là người cần giải phóng mặt bằng, nhà thầu cần tiết kiệm chi phí hay tài xế vận tải, MatGreen đều có giải pháp tương ứng.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* 1 */}
-            <div className="p-7 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                <Gift className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Gia Chủ Tháo Dỡ (Nhà A)</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Đăng tin xà bần, gạch vỡ cần giải phóng gấp. Đội ngũ người nhận sẽ tự điều xe đến dọn sạch mà không tốn 1 đồng chi phí bãi thải.
-              </p>
-              <Link to="/post" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:underline pt-2">
-                Đăng tin cho vật liệu ngay <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {packages.map((pkg, idx) => (
+              <div
+                key={idx}
+                className={`rounded-3xl p-8 border flex flex-col justify-between transition-all duration-300 relative ${
+                  pkg.highlight
+                    ? "bg-stone-50 border-emerald-500 shadow-xl ring-2 ring-emerald-500/20"
+                    : "bg-white border-stone-200 shadow-sm hover:shadow-xl"
+                }`}
+              >
+                {pkg.badge && (
+                  <div
+                    className={`absolute -top-3.5 right-6 px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                      pkg.highlight
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-slate-900 text-white"
+                    }`}
+                  >
+                    {pkg.badge}
+                  </div>
+                )}
 
-            {/* 2 */}
-            <div className="p-7 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
-                <Coins className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Người Cần Vật Tư (Nhà B)</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Quét bản đồ tìm gạch xây, xà bần tôn nền, cửa nhôm kính, cốt thép cách công trình bạn vài km, tiết kiệm tới 70% chi phí mua mới.
-              </p>
-              <Link to="/dashboard" className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:underline pt-2">
-                Quét tìm trên Radar GPS <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 font-display mb-1">
+                    {pkg.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 mb-6 font-normal">
+                    {pkg.target}
+                  </p>
 
-            {/* 3 */}
-            <div className="p-7 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                <Truck className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Đội Xe Vận Tải & Xe Ba Gác</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Nhận thông báo chuyến hàng chở phế liệu ngay tại khu vực hoạt động, tăng thu nhập hàng ngày từ các chuyến xe vận chuyển trung chuyển.
-              </p>
-              <Link to="/contact" className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline pt-2">
-                Đăng ký đội xe hợp tác <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+                  <div className="mb-6 pb-6 border-b border-stone-200">
+                    <span className="text-3xl sm:text-4xl font-black text-slate-900 font-display">
+                      {pkg.price}
+                    </span>
+                    <span className="text-xs text-slate-400 block mt-1">
+                      {pkg.period}
+                    </span>
+                  </div>
 
-            {/* 4 */}
-            <div className="p-7 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                <Cpu className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Trí Tuệ Nhân Tạo (AI) Thẩm Định</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Ước tính khối lượng xà bần, sắt thép phế liệu và đề xuất phương án thu hồi tài chính tối ưu chỉ bằng vài dòng mô tả công trình.
-              </p>
-              <Link to="/ai-advisor" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:underline pt-2">
-                Trải nghiệm AI Advisor <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+                  <ul className="space-y-3 mb-8">
+                    {pkg.features.map((feat, fIdx) => (
+                      <li key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <span className="font-medium leading-snug">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-            {/* 5 */}
-            <div className="p-7 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
-                <Compass className="w-6 h-6" />
+                <div>
+                  <Link
+                    to={pkg.btnLink}
+                    className={`w-full py-3.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
+                      pkg.highlight
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "bg-slate-900 hover:bg-slate-800 text-white"
+                    }`}
+                  >
+                    <span>{pkg.btnText}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
-              <h3 className="text-base font-bold text-slate-900">Đội Thợ Tháo Dỡ Chuyên Nghiệp</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Tiếp cận các công trình cần đập phá nhà, nhận việc liên tục và thanh lý vật tư tháo dỡ nhanh gọn không bị ứ đọng kho bãi.
-              </p>
-              <Link to="/contact" className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:underline pt-2">
-                Gia nhập mạng lưới thợ <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {/* 6 */}
-            <div className="p-7 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900">Doanh Nghiệp & Dự Án Bền Vững</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Thực hiện cam kết tiêu chuẩn ESG, kinh tế tuần hoàn và cắt giảm dấu chân carbon CO2 cho các công trình chứng nhận công trình xanh.
-              </p>
-              <Link to="/news" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:underline pt-2">
-                Tìm hiểu báo cáo ESG <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-2">
-              So Sánh Thực Tế
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Tự Đổ Xà Bần vs Qua Sàn MatGreen
-            </h2>
-          </div>
+      {/* Banner Parallax lớn */}
+      <LandingWhyChoose />
 
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-slate-900 text-white font-bold">
-                <tr>
-                  <th className="py-4 px-6">Tiêu chí so sánh</th>
-                  <th className="py-4 px-6 text-rose-300">Cách làm truyền thống</th>
-                  <th className="py-4 px-6 text-emerald-400">Qua Sàn MatGreen</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                <tr>
-                  <td className="py-4 px-6 font-bold text-slate-800">Chi phí xử lý mặt bằng</td>
-                  <td className="py-4 px-6 text-rose-600 font-semibold">Tốn 300K - 1.5M / chuyến xe</td>
-                  <td className="py-4 px-6 text-emerald-700 font-bold">0 Đồng (Bên nhận tự chở)</td>
-                </tr>
-                <tr>
-                  <td className="py-4 px-6 font-bold text-slate-800">Thời gian tìm người dọn</td>
-                  <td className="py-4 px-6 text-slate-500">Mất 2-4 ngày hỏi người quen</td>
-                  <td className="py-4 px-6 text-emerald-700 font-bold">15 - 60 phút qua Radar GPS</td>
-                </tr>
-                <tr>
-                  <td className="py-4 px-6 font-bold text-slate-800">Thanh lý cửa, sắt thép cũ</td>
-                  <td className="py-4 px-6 text-slate-500">Bị ép giá bán phế liệu vụn</td>
-                  <td className="py-4 px-6 text-emerald-700 font-bold">Bán đúng giá trị tái sử dụng</td>
-                </tr>
-                <tr>
-                  <td className="py-4 px-6 font-bold text-slate-800">Tác động môi trường</td>
-                  <td className="py-4 px-6 text-rose-600">Đổ trộm, chôn lấp, ô nhiễm</td>
-                  <td className="py-4 px-6 text-emerald-700 font-bold">Tuần hoàn 100%, giảm CO2</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      {/* Thời gian tiếp nhận SLA */}
+      <LandingOpening />
 
-      {/* FAQ Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-2">
-              Hỏi Đáp
+      {/* Câu hỏi thường gặp FAQs */}
+      <section className="py-20 bg-stone-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
+              Giải Đáp Thắc Mắc
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 font-display tracking-tight">
               Câu Hỏi Thường Gặp
             </h2>
           </div>
@@ -222,11 +231,12 @@ export const ServicesPage: React.FC = () => {
             {faqs.map((faq, idx) => (
               <div
                 key={idx}
-                className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50/50"
+                className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm transition-all"
               >
                 <button
+                  type="button"
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full py-4 px-5 text-left font-bold text-sm text-slate-800 flex items-center justify-between cursor-pointer"
+                  className="w-full text-left p-5 flex items-center justify-between gap-4 font-bold text-slate-800 text-sm hover:text-emerald-700 transition-colors cursor-pointer font-display"
                 >
                   <span>{faq.q}</span>
                   {openFaq === idx ? (
@@ -236,7 +246,7 @@ export const ServicesPage: React.FC = () => {
                   )}
                 </button>
                 {openFaq === idx && (
-                  <div className="px-5 pb-4 text-xs text-slate-600 leading-relaxed font-normal border-t border-slate-100 pt-3">
+                  <div className="px-5 pb-5 text-xs text-slate-600 leading-relaxed border-t border-stone-100 pt-3">
                     {faq.a}
                   </div>
                 )}
@@ -246,7 +256,10 @@ export const ServicesPage: React.FC = () => {
         </div>
       </section>
 
+      <LandingBrands />
       <LandingFooter />
     </div>
   );
 };
+
+export default ServicesPage;

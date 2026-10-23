@@ -14,143 +14,165 @@ import {
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { LandingWhyChoose } from "@/components/landing/LandingWhyChoose";
 import { LandingStats } from "@/components/landing/LandingStats";
 import { LandingTestimonials } from "@/components/landing/LandingTestimonials";
+import { LandingBrands } from "@/components/landing/LandingBrands";
 
 export const AboutPage: React.FC = () => {
   const steps = [
     {
       num: "01",
-      title: "Chụp Ảnh & Định Vị Công Trình",
-      desc: "Gia chủ hoặc đội thợ nhà A chụp 2-3 tấm ảnh đống vật liệu thừa, chọn vị trí GPS trên bản đồ và ghi số điện thoại liên hệ.",
+      title: "Chụp Ảnh & Định Vị GPS",
+      desc: "Gia chủ hoặc đội thợ nhà A chụp 2-3 tấm ảnh đống vật liệu thừa, bấm lấy vị trí GPS hiện tại trên công trường.",
     },
     {
       num: "02",
-      title: "AI Bóc Tách & Quét Bán Kính",
-      desc: "Hệ thống tự động phân loại xà bần, gạch, sắt thép và kích hoạt radar thông báo đến các nhà thầu trong bán kính 3-10km.",
+      title: "AI Bóc Tách & Kích Hoạt Radar",
+      desc: "Hệ thống tự động phân loại xà bần, gạch, sắt thép và thông báo ngay đến các công trình trong bán kính 3-10km.",
     },
     {
       num: "03",
       title: "Kết Nối Đôi Bên Trực Tiếp",
-      desc: "Nhà B xem ảnh thực tế, thỏa thuận qua điện thoại/Zalo và điều xe ba gác hoặc xe tải đến chở vật liệu theo lịch hẹn.",
+      desc: "Nhà B xem ảnh thật, liên hệ gọi điện hoặc chat qua MatGreen để chốt khối lượng và hẹn giờ bốc dỡ.",
     },
     {
       num: "04",
       title: "Giải Phóng Mặt Bằng 0 Đồng",
-      desc: "Mặt bằng nhà A được dọn sạch tinh tươm mà không mất phí đổ rác. Nhà B có vật liệu tôn nền giá rẻ, môi trường xanh sạch.",
+      desc: "Mặt bằng nhà A được dọn sạch tinh tươm. Nhà B có vật liệu tôn nền giá rẻ, giảm thiểu phế thải đổ trộm.",
     },
   ];
 
   const team = [
     {
       name: "Nguyễn Văn Quân",
-      role: "Nhà Sáng Lập & Kiến Trúc Sư Hệ Thống",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
-      bio: "10 năm kinh nghiệm quản lý thi công công trình dân dụng & đam mê công nghệ Net Zero.",
+      role: "Nhà Sáng Lập & Kỹ Sư Hệ Thống",
+      image: "/assets/images/team/team-1-1.jpg",
+      bio: "10 năm kinh nghiệm thi công & đam mê công nghệ tuần hoàn vật liệu.",
     },
     {
       name: "TS. Lê Hoàng Mai",
-      role: "Cố Vấn Khoa Học & Kinh Tế Tuần Hoàn",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80",
-      bio: "Chuyên gia nghiên cứu tái chế phế phẩm xây dựng tại Viện Vật Liệu Xây Dựng.",
+      role: "Cố Vấn Khoa Học & Môi Trường",
+      image: "/assets/images/team/team-1-2.jpg",
+      bio: "Chuyên gia nghiên cứu tái chế phế phẩm xây dựng hướng tới Net Zero.",
     },
     {
       name: "Vũ Hải Đăng",
-      role: "Trưởng Nhóm Kỹ Thuật AI & GIS Maps",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
-      bio: "Chuyên gia phát triển thuật toán định vị không gian và thị giác máy tính bóc tách kết cấu.",
+      role: "Trưởng Nhóm Kỹ Thuật AI & Bản Đồ",
+      image: "/assets/images/team/team-1-3.jpg",
+      bio: "Phát triển thuật toán bóc tách khối lượng và radar cự ly gần.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Page Header Banner */}
-      <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white py-16 lg:py-24 px-4 sm:px-6 relative overflow-hidden text-center">
-        <div className="max-w-4xl mx-auto relative z-10 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <Leaf className="w-3.5 h-3.5" /> Về MatGreen
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            Giải Cứu Hàng Triệu Tấn Vật Liệu Tháo Dỡ Khỏi Các Bãi Chôn Lấp
+      {/* Page Header Banner phong cách Solox about.html */}
+      <section
+        className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden"
+        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+          <img
+            src="/assets/images/shapes/page-header-s-1.png"
+            alt="Page header shape"
+            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
+          />
+          <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
+            <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
+            <li>/</li>
+            <li><span>Về Chúng Tôi</span></li>
+          </ul>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
+            Về Dự Án MatGreen
           </h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            Chúng tôi tin rằng trong xây dựng, không có khái niệm "rác thải". Mọi viên gạch, thanh sắt, khối xà bần đều là tài nguyên giá trị nếu được đưa đến đúng công trình đang cần.
-          </p>
         </div>
       </section>
 
-      {/* Origin Story Section */}
+      {/* Section 1: Câu chuyện sáng lập & why-choose-two phong cách Solox */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Ảnh kép nghệ thuật */}
             <div className="lg:col-span-6 relative">
-              <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-100">
+              <div className="relative mx-auto max-w-lg">
+                <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                  <img
+                    src="/assets/images/resources/why-choose-2-1.jpg"
+                    alt="Công trình MatGreen"
+                    className="w-full h-80 sm:h-96 object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-8 -right-4 sm:-right-8 w-48 sm:w-60 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                  <img
+                    src="/assets/images/resources/why-choose-2-2.jpg"
+                    alt="Tập kết vật liệu"
+                    className="w-full h-36 sm:h-44 object-cover"
+                  />
+                </div>
+                {/* Decorative shape */}
                 <img
-                  src="https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=800&auto=format&fit=crop&q=80"
-                  alt="Công trình xây dựng xanh"
-                  className="w-full h-[400px] object-cover"
+                  src="/assets/images/shapes/why-choose-2-s-1.png"
+                  alt="Decorative shape"
+                  className="absolute -top-6 -left-6 w-20 h-20 object-contain pointer-events-none opacity-80 animate-float"
                 />
               </div>
             </div>
 
+            {/* Nội dung */}
             <div className="lg:col-span-6 space-y-5">
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block">
-                Câu Chuyện Khởi Nguồn
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
-                Nỗi Trăn Trở Từ Hàng Ngàn Đống Xà Bần Bị Đổ Trộm Ra Ven Đường
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+                <Leaf className="w-3.5 h-3.5 text-emerald-700" />
+                Sứ Mệnh Xanh
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 font-display tracking-tight leading-tight">
+                Tái Sinh Tài Nguyên Tháo Dỡ Vì Một Đô Thị Không Rác Thải
               </h2>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Tại Việt Nam, mỗi năm phát sinh hơn <strong>12 triệu tấn</strong> phế thải rắn xây dựng. Chi phí vận chuyển xà bần rất đắt đỏ, khiến nhiều đội thợ phải lén lút đổ trộm ra kênh rạch, bãi đất trống gây ô nhiễm môi trường nghiêm trọng.
+              <p className="text-sm font-semibold text-slate-700 leading-relaxed">
+                Mỗi năm tại Việt Nam có hàng chục triệu tấn vật liệu xây dựng bị chôn lấp lãng phí, trong khi hàng ngàn công trình khác lại khai thác cạn kiệt tài nguyên mới.
               </p>
-              <p className="text-slate-600 text-sm leading-relaxed">
-                Trong khi đó, ở các khu vực ngoại thành hoặc công trình lân cận, người dân phải chi hàng chục triệu đồng để mua cát đá san lấp mới. <strong>MatGreen</strong> ra đời như chiếc cầu nối thông minh, số hóa quá trình trao đổi để biến bài toán đau đầu thành cơ hội tiết kiệm đôi bên.
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                MatGreen ra đời từ mong muốn ứng dụng công nghệ định vị bán kính để biến "rác của người này thành vàng của người khác". Chúng tôi giúp các gia chủ sắp đập phá nhà tìm được những người đang cần vật liệu ngay trong khu vực lân cận, giúp tiết kiệm chi phí bốc dỡ và bảo vệ cảnh quan đô thị.
               </p>
-
-              <div className="pt-2 flex items-center gap-6">
-                <div>
-                  <span className="text-2xl font-black text-emerald-700 block">70%</span>
-                  <span className="text-xs text-slate-500 font-semibold">Giảm chi phí vật tư tôn nền</span>
-                </div>
-                <div className="w-px h-10 bg-slate-200" />
-                <div>
-                  <span className="text-2xl font-black text-emerald-700 block">0 Đồng</span>
-                  <span className="text-xs text-slate-500 font-semibold">Chi phí dọn dẹp mặt bằng tháo dỡ</span>
-                </div>
+              <div className="pt-2">
+                <Link to="/dashboard" className="solox-btn solox-btn--emerald">
+                  <span>Trải Nghiệm Radar Ngay</span>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4-Step Process Section */}
-      <section className="py-20 bg-slate-50">
+      {/* Section 2: Quy trình 4 bước */}
+      <section className="py-20 bg-stone-100 border-y border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-2">
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
               Quy Trình Hoạt Động
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              4 Bước Đơn Giản Để Tuần Hoàn Vật Liệu
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 font-display tracking-tight">
+              Tuần Hoàn Vật Liệu Trong 4 Bước
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, idx) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {steps.map((st, i) => (
               <div
-                key={idx}
-                className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-lg transition-all duration-300 relative group"
+                key={i}
+                className="bg-white p-7 rounded-3xl border border-stone-200 shadow-sm hover:shadow-xl transition-all duration-300 relative group"
               >
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 font-black text-lg flex items-center justify-center mb-5 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                  {step.num}
+                <div className="text-4xl font-black text-emerald-700/20 font-display mb-4 group-hover:text-emerald-700 transition-colors">
+                  {st.num}
                 </div>
-                <h3 className="text-base font-bold text-slate-900 mb-2 leading-snug">
-                  {step.title}
+                <h3 className="text-base font-bold text-slate-900 font-display leading-snug mb-2">
+                  {st.title}
                 </h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-normal">
-                  {step.desc}
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  {st.desc}
                 </p>
               </div>
             ))}
@@ -158,41 +180,39 @@ export const AboutPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Live Stats */}
-      <LandingStats />
-
-      {/* Team Section */}
+      {/* Section 3: Đội ngũ chuyên gia (Team One phong cách Solox) */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3">
-              <Users className="w-3.5 h-3.5" /> Đội Ngũ Tiên Phong
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Những Người Xây Dựng MatGreen
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
+              Đội Ngũ Phát Triển
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 font-display tracking-tight">
+              Những Người Đứng Sau MatGreen
             </h2>
-            <p className="text-slate-500 text-xs sm:text-sm mt-2">
-              Kết hợp giữa các kỹ sư xây dựng thực chiến và đội ngũ phát triển công nghệ cao vì môi trường.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {team.map((m, idx) => (
               <div
                 key={idx}
-                className="bg-slate-50 rounded-3xl overflow-hidden border border-slate-200/80 text-center p-6 space-y-4 hover:-translate-y-1 transition-all duration-300 shadow-xs hover:shadow-md"
+                className="bg-stone-50 rounded-3xl overflow-hidden border border-stone-200 shadow-sm hover:shadow-xl transition-all duration-300 group text-center"
               >
-                <img
-                  src={m.image}
-                  alt={m.name}
-                  className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-emerald-500"
-                />
-                <div>
-                  <h3 className="font-bold text-slate-900 text-base">{m.name}</h3>
-                  <span className="text-xs text-emerald-700 font-semibold block mt-0.5">
+                <div className="h-64 overflow-hidden bg-slate-200">
+                  <img
+                    src={m.image}
+                    alt={m.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-slate-900 font-display group-hover:text-emerald-700 transition-colors">
+                    {m.name}
+                  </h3>
+                  <span className="block text-xs font-semibold text-emerald-700 mb-2">
                     {m.role}
                   </span>
-                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     {m.bio}
                   </p>
                 </div>
@@ -202,10 +222,19 @@ export const AboutPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Section 4: Parallax Why Choose Us */}
+      <LandingWhyChoose />
+
+      {/* Section 5: Funfacts Stats */}
+      <LandingStats />
+
+      {/* Section 6: Testimonials & Brands */}
       <LandingTestimonials />
+      <LandingBrands />
 
       <LandingFooter />
     </div>
   );
 };
+
+export default AboutPage;

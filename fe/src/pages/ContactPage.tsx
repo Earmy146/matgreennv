@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Phone,
   Mail,
@@ -12,6 +13,8 @@ import {
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { LandingOpening } from "@/components/landing/LandingOpening";
+import { LandingBrands } from "@/components/landing/LandingBrands";
 
 export const ContactPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -41,13 +44,13 @@ export const ContactPage: React.FC = () => {
   const offices = [
     {
       city: "Trụ Sở Hà Nội (Miền Bắc)",
-      address: "Tòa nhà Sông Đà, Đường Phạm Hùng, Mỹ Đình, Nam Từ Liêm, Hà Nội",
+      address: "Tòa Nhà Innovation, Cầu Giấy, Hà Nội",
       phone: "0988 776 655",
       email: "hanoi@matgreen.vn",
     },
     {
       city: "Chi Nhánh TP.HCM (Miền Nam)",
-      address: "Đường Nguyễn Hữu Thọ, Phường Tân Hưng, Quận 7, TP. Hồ Chí Minh",
+      address: "Đường Nguyễn Hữu Thọ, Quận 7, TP. Hồ Chí Minh",
       phone: "0912 345 678",
       email: "hcm@matgreen.vn",
     },
@@ -60,181 +63,184 @@ export const ContactPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-stone-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Header Banner */}
-      <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white py-16 lg:py-24 px-4 sm:px-6 relative text-center">
-        <div className="max-w-4xl mx-auto space-y-4 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            Hỗ Trợ 24/7 Toàn Quốc
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            Liên Hệ Với Đội Ngũ MatGreen
+      {/* Page Header Banner phong cách Solox */}
+      <section
+        className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
+        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <img
+            src="/assets/images/shapes/page-header-s-1.png"
+            alt="Page header shape"
+            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
+          />
+          <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
+            <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
+            <li>/</li>
+            <li><span>Liên Hệ</span></li>
+          </ul>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
+            Liên Hệ Đội Ngũ MatGreen
           </h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            Chúng tôi luôn lắng nghe và sẵn sàng hỗ trợ khảo sát công trình, điều phối xe vận chuyển vật liệu nhanh chóng trên toàn quốc.
-          </p>
         </div>
       </section>
 
-      {/* 3 Offices Cards */}
-      <section className="py-16 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {offices.map((off, idx) => (
-              <div
-                key={idx}
-                className="p-6 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3"
-              >
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                  <Building className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">{off.city}</h3>
-                <p className="text-xs text-slate-500 flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>{off.address}</span>
-                </p>
-                <div className="pt-2 text-xs text-slate-600 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                    <strong>{off.phone}</strong>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{off.email}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* SLA tiếp nhận nhanh */}
+      <LandingOpening />
 
-      {/* Contact Form & Map Section */}
-      <section className="py-20 bg-slate-50">
+      {/* Contact Form & 3 Văn phòng */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Form */}
-            <div className="lg:col-span-6 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-              <h2 className="text-2xl font-black text-slate-900 mb-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Cột 1 (7 Cột): Form liên hệ */}
+            <div className="lg:col-span-7 bg-stone-50 p-8 sm:p-10 rounded-3xl border border-stone-200 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
                 Gửi Tin Nhắn Cho Chúng Tôi
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display mb-4">
+                Bạn Cần Hỗ Trợ Gì Hôm Nay?
               </h2>
-              <p className="text-xs text-slate-500 mb-6">
-                Chuyên viên tư vấn khu vực của MatGreen sẽ liên hệ lại qua điện thoại trong vòng 15 phút.
+              <p className="text-xs sm:text-sm text-slate-600 mb-8 leading-relaxed">
+                Dù bạn cần điều xe bốc dỡ xà bần gấp, hỗ trợ định vị GPS hay muốn trở thành đối tác logistics, hãy để lại thông tin để kỹ thuật viên liên hệ trong 15 phút.
               </p>
 
-              {submitted ? (
-                <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3 animate-fadeIn">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                  <h4 className="text-sm font-bold text-emerald-900">
-                    Cảm ơn bạn đã liên hệ!
-                  </h4>
-                  <p className="text-xs text-emerald-700">
-                    Thông tin đã được ghi nhận. Chúng tôi sẽ gọi lại ngay theo số điện thoại đã cung cấp.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Họ và tên *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Nguyễn Văn A"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Số điện thoại *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="0988xxxxxx"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                  </div>
-
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Tiêu đề yêu cầu
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Họ và tên *
                     </label>
                     <input
                       type="text"
-                      placeholder="VD: Cần dọn 5 xe xà bần tại Cầu Giấy..."
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Nội dung chi tiết
-                    </label>
-                    <textarea
-                      rows={4}
                       required
-                      placeholder="Mô tả cụ thể yêu cầu của bạn, địa chỉ công trình..."
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-normal"
+                      placeholder="VD: Nguyễn Văn A"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                  >
-                    <Send className="w-4 h-4" /> Gửi Yêu Cầu Hỗ Trợ
-                  </button>
-                </form>
-              )}
-            </div>
-
-            {/* Interactive Map & Direct Emergency Help */}
-            <div className="lg:col-span-6 space-y-6">
-              <div className="bg-emerald-900 text-white p-7 rounded-3xl space-y-4 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center">
-                    <Truck className="w-5 h-5" />
-                  </div>
                   <div>
-                    <h3 className="font-bold text-base">Cần Dọn Mặt Bằng Khẩn Cấp?</h3>
-                    <p className="text-xs text-emerald-200">Đội xe ba gác & xe tải ben ứng trực</p>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Số điện thoại / Zalo *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="VD: 0988 776 655"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
                   </div>
                 </div>
-                <p className="text-xs text-emerald-100 leading-relaxed">
-                  Nếu bạn đang bị thanh tra xây dựng nhắc nhở hoặc cần dọn gấp xà bần trong 2 giờ tới, hãy gọi ngay đường dây nóng khẩn cấp của chúng tôi:
-                </p>
-                <a
-                  href="tel:19008899"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-emerald-950 font-black text-sm hover:bg-emerald-50 transition-colors"
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="ban@gmail.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Nhu cầu hỗ trợ
+                    </label>
+                    <select
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      <option value="">Chọn nhu cầu của bạn</option>
+                      <option value="Hỗ trợ dọn xà bần gấp">Hỗ trợ dọn xà bần gấp (Nhà A)</option>
+                      <option value="Cần tìm vật liệu tôn nền">Cần tìm vật liệu tôn nền (Nhà B)</option>
+                      <option value="Đăng ký tài xế / xe tải">Đăng ký tài xế / xe tải vận chuyển</option>
+                      <option value="Hợp tác đối tác doanh nghiệp">Hợp tác đối tác doanh nghiệp</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Nội dung chi tiết
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="Mô tả hiện trạng công trình, địa chỉ hoặc khối lượng vật liệu cần giải quyết..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="solox-btn solox-btn--emerald w-full shadow-md text-sm cursor-pointer active:scale-98"
                 >
-                  <Phone className="w-4 h-4 text-emerald-600" /> Gọi Hotline: 1900 8899
-                </a>
+                  <Send className="w-4 h-4 mr-2" />
+                  <span>Gửi Yêu Cầu Hỗ Trợ Ngay</span>
+                </button>
+
+                {submitted && (
+                  <div className="p-3.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Cảm ơn bạn! Đội ngũ điều phối MatGreen sẽ liên hệ lại ngay trong 15 phút.
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Cột 2 (5 Cột): Danh sách 3 văn phòng & Google Maps */}
+            <div className="lg:col-span-5 space-y-6">
+              <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-1 font-sans">
+                Mạng Lưới Chi Nhánh
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-display">
+                Hiện Diện Tại 3 Miền
+              </h3>
+
+              <div className="space-y-4">
+                {offices.map((off, idx) => (
+                  <div
+                    key={idx}
+                    className="p-5 rounded-2xl bg-stone-50 border border-stone-200 hover:border-emerald-500 transition-all shadow-xs"
+                  >
+                    <h4 className="text-sm font-bold text-slate-900 font-display mb-1 flex items-center gap-2">
+                      <Building className="w-4 h-4 text-emerald-600" />
+                      {off.city}
+                    </h4>
+                    <p className="text-xs text-slate-600 mb-2 flex items-start gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                      <span>{off.address}</span>
+                    </p>
+                    <div className="flex items-center gap-4 text-xs font-bold text-emerald-700 pt-2 border-t border-stone-200/60">
+                      <a href={`tel:${off.phone}`} className="flex items-center gap-1 hover:underline">
+                        <Phone className="w-3.5 h-3.5" /> {off.phone}
+                      </a>
+                      <a href={`mailto:${off.email}`} className="flex items-center gap-1 hover:underline text-slate-500">
+                        <Mail className="w-3.5 h-3.5" /> {off.email}
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Map embed box */}
-              <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-sm h-72 bg-slate-200">
+              {/* Bản đồ định vị Google Maps */}
+              <div className="rounded-2xl overflow-hidden shadow-md border border-stone-200 h-52">
                 <iframe
-                  title="MatGreen Headquarters Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.4854124673826!2d105.78013407596958!3d21.013253280632296!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab54b9d0e2e5%3A0xb36b5ec63297a7e8!2zVMOyYSBuaMOgIFPDtG5nIMSQw6A!5e0!3m2!1svi!2s!4v1700000000000!5m2!1svi!2s"
+                  title="Bản đồ MatGreen"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096814183571!2d105.78010887587002!3d21.02881188777717!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab86cece9f61%3A0x7720e5aab7a73b48!2zQ-G6p3UgR2nhuqV5LCBIw6AgTuG7mWksIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1700000000000!5m2!1svi!2s"
                   className="w-full h-full border-0"
-                  allowFullScreen
                   loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>
             </div>
@@ -242,7 +248,10 @@ export const ContactPage: React.FC = () => {
         </div>
       </section>
 
+      <LandingBrands />
       <LandingFooter />
     </div>
   );
 };
+
+export default ContactPage;

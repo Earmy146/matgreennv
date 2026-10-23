@@ -44,30 +44,39 @@ export const NewsPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white py-16 px-4 sm:px-6 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3">
-            <Newspaper className="w-3.5 h-3.5" />
-            Cẩm Nang & Xu Hướng
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3">
-            Tin Tức & Kinh Nghiệm Tái Sinh Vật Liệu
+      {/* Page Header Banner phong cách Solox */}
+      <section
+        className="relative py-20 lg:py-24 bg-slate-950 text-white bg-cover bg-center overflow-hidden text-center"
+        style={{ backgroundImage: "url('/assets/images/backgrounds/page-header-bg-1-1.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <img
+            src="/assets/images/shapes/page-header-s-1.png"
+            alt="Page header shape"
+            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
+          />
+          <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
+            <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
+            <li>/</li>
+            <li><span>Tin Tức</span></li>
+          </ul>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight">
+            Tin Tức & Cẩm Nang Tái Sinh Vật Liệu
           </h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mx-auto mt-3 leading-relaxed">
             Nơi chia sẻ kiến thức thực tế về tháo dỡ công trình, kỹ thuật thu hồi vật tư nguyên vẹn và các giải pháp xây dựng bền vững vì môi trường.
           </p>
-
-          <div className="mt-6">
+          <div className="mt-5">
             <Link
               to="/admin/news"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
             >
-              <Settings className="w-4 h-4" /> Bảng Quản Trị: Thêm / Chỉnh Sửa Bài Viết Tin Tức
+              <Settings className="w-4 h-4" /> Bảng Quản Trị: Thêm & Chỉnh Sửa Bài Viết
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Content & Filters */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-12 w-full">

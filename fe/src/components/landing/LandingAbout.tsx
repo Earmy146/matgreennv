@@ -1,130 +1,130 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Recycle,
-  CheckCircle2,
-  ArrowRight,
-  Leaf,
-  Coins,
-  MapPin,
-  Sparkles,
-} from "lucide-react";
+import { CheckCircle2, ArrowRight, ShieldCheck, Sparkles, Building2 } from "lucide-react";
 
 export const LandingAbout: React.FC = () => {
+  const benefits = [
+    "Tiết kiệm 100% chi phí đổ xà bần",
+    "Minh bạch tọa độ vị trí công trình qua GPS",
+    "Xác thực chéo ảnh hiện trường công trường",
+    "Kết nối xe ba gác & xe tải chở hàng siêu tốc",
+    "Trợ lý AI bóc tách khối lượng và phân loại",
+    "Chung tay vì mục tiêu Net Zero & Giảm rác thải",
+  ];
+
   return (
-    <section id="about" className="py-20 lg:py-28 bg-white relative overflow-hidden">
-      {/* Background soft shapes */}
-      <div className="absolute top-1/2 -right-40 w-80 h-80 bg-emerald-50 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 -left-40 w-80 h-80 bg-teal-50 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Left Column: Visual Showcase & Badges */}
+    <section id="about" className="py-20 lg:py-28 bg-stone-50 overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Cột 1 (Col 5): Khung ảnh nghệ thuật Solox với hoa, viền và badge */}
           <div className="lg:col-span-5 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+            <div className="relative mx-auto max-w-md lg:max-w-none">
+              {/* Hình ảnh chính bo góc nghệ thuật */}
+              <div className="relative rounded-[40px] overflow-hidden shadow-2xl border-4 border-white bg-emerald-900/10 z-10">
+                <img
+                  src="/assets/images/resources/about-3-1.jpg"
+                  alt="Công trình tái chế vật liệu MatGreen"
+                  className="w-full h-[420px] sm:h-[480px] object-cover hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+
+              {/* Viền hoa văn trang trí Solox (about-3-border.png) */}
               <img
-                src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80"
-                alt="Công trình tháo dỡ và tái sử dụng vật liệu"
-                className="w-full h-[420px] object-cover hover:scale-105 transition-transform duration-700"
+                src="/assets/images/shapes/about-3-border.png"
+                alt="Decorative border"
+                className="absolute -top-6 -left-6 w-full h-full pointer-events-none z-0 opacity-80"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
-              <div className="absolute bottom-6 left-6 right-6 text-white">
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest block mb-1">
-                  Mô hình 2 Chiều
-                </span>
-                <p className="text-lg font-black leading-snug">
-                  "Không có phế liệu bỏ đi, chỉ có tài nguyên đặt sai chỗ"
-                </p>
+              {/* Bông hoa/Lá nổi Solox (about-3-flower.png) */}
+              <div className="absolute -top-8 -right-8 w-24 h-24 sm:w-28 sm:h-28 z-20 animate-float pointer-events-none">
+                <img
+                  src="/assets/images/shapes/about-3-flower.png"
+                  alt="Decorative flower"
+                  className="w-full h-full object-contain drop-shadow-md"
+                />
               </div>
-            </div>
 
-            {/* Floating badge */}
-            <div className="absolute -bottom-6 -right-4 sm:right-6 bg-slate-900 text-white p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-950">
-                <Recycle className="w-7 h-7" />
-              </div>
-              <div>
-                <span className="text-2xl font-black text-emerald-400 block leading-none">
-                  100%
-                </span>
-                <span className="text-xs text-slate-300 font-medium">
-                  Kết nối trực tiếp gia chủ & nhà thầu
-                </span>
+              {/* Badge thống kê góc dưới */}
+              <div className="absolute -bottom-6 -right-4 sm:-bottom-8 sm:right-6 bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl shadow-xl border border-stone-200 z-20 flex items-center gap-3.5 max-w-[240px]">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-700 font-black text-lg">
+                  15k
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                    Tấn phế thải <br />
+                    <span className="text-emerald-700 font-extrabold">Được tái sinh mỗi ngày</span>
+                  </h4>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Narrative & Values */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-              <Leaf className="w-3.5 h-3.5 text-emerald-600" />
-              Về Nền Tảng MatGreen
+          {/* Cột 2 (Col 4): Nội dung giới thiệu cốt lõi */}
+          <div className="lg:col-span-4 space-y-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+              Cân Bằng Sinh Thái & Kinh Tế
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-              Giải Pháp Số Hóa Kết Nối Nguồn Vật Liệu Tháo Dỡ Đầu Tiên Tại Việt Nam
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-tight font-display">
+              Giải Pháp Tuần Hoàn <br />
+              <span className="text-emerald-700">Tài Nguyên Xây Dựng Số 1</span>
             </h2>
 
-            <p className="text-slate-600 text-base leading-relaxed">
-              Mỗi ngày có hàng ngàn ngôi nhà, công trình cũ được đập phá và cải tạo. <strong>Nhà A</strong> phải chi rất nhiều tiền để thuê xe ba gác, xe tải chở xà bần, gạch vỡ, cửa gỗ, xà gồ đi vứt. Trong khi đó, ngay gần đó, <strong>Nhà B</strong> đang xây móng, làm đường hoặc dựng nhà xưởng lại đang đỏ mắt tìm kiếm nguồn vật liệu giá rẻ để san lấp và tái sử dụng.
+            <p className="text-sm sm:text-base font-semibold text-slate-700 leading-relaxed">
+              MatGreen sinh ra để nối liền khoảng cách giữa người thừa không biết bỏ đâu và người thiếu không biết tìm ở đâu.
             </p>
 
-            <p className="text-slate-600 text-base leading-relaxed">
-              <strong>MatGreen</strong> ra đời để giải quyết triệt để nút thắt này bằng công nghệ bản đồ số: quét bán kính GPS thực tế, cung cấp bằng chứng ảnh chụp rõ ràng và ứng dụng AI phân loại khối lượng.
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+              Tại các đô thị lớn, hàng ngàn ngôi nhà đập đi mỗi ngày tạo ra lượng xà bần khổng lồ gây áp lực lên bãi rác và môi trường. Trong khi đó, ngay tại các phường xã lân cận, nhiều gia đình đang cần đôn nền, làm nhà tạm, lót sân mà phải mua cát đá mới với giá đắt đỏ. Chúng tôi ứng dụng công nghệ định vị và mạng lưới vận chuyển địa phương để giải quyết bài toán này trong 15 phút.
             </p>
-
-            {/* 4 Pillars of Value */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-colors">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <Coins className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">Tiết Kiệm Chi Phí Cực Lớn</h3>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Nhà A tiết kiệm chi phí bốc dỡ xà bần, Nhà B nhận vật liệu 0đ hoặc mua thanh lý rẻ hơn 50-70%.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-colors">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <MapPin className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">Tối Ưu Cự Ly Vận Chuyển</h3>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Lọc bán kính GPS từ 1km đến 50km, chỉ hiển thị các nguồn vật liệu quanh bạn giúp giảm phí xe cộ.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-colors">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <Sparkles className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">Trợ Lý AI Thẩm Định</h3>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Tự động ước tính khối lượng sắt vụn, gạch, gỗ và gợi ý giá hợp lý theo mô tả công trình.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-colors">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <Leaf className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">Bảo Vệ Môi Trường Xanh</h3>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Hạn chế tối đa rác thải xây dựng đổ trộm ra sông hồ, giảm thiểu phát thải khí carbon CO2.
-                </p>
-              </div>
-            </div>
 
             <div className="pt-2">
               <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 transition-colors group"
+                to="/about"
+                className="solox-btn solox-btn--emerald"
               >
-                Khám phá bản đồ vật liệu ngay hôm nay
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <span>Tìm Hiểu Về MatGreen</span>
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
+            </div>
+          </div>
+
+          {/* Cột 3 (Col 3): Danh sách Lợi ích & Chữ ký sáng lập */}
+          <div className="lg:col-span-3 space-y-6 bg-white p-6 sm:p-7 rounded-3xl border border-stone-200 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight font-display">
+              Lợi Ích Cốt Lõi
+            </h3>
+
+            <ul className="space-y-3">
+              {benefits.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span className="font-medium leading-snug">{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* Khối chữ ký và Founder */}
+            <div className="pt-5 border-t border-stone-100 flex items-center gap-3">
+              <img
+                src="/assets/images/resources/about-author-2.png"
+                alt="Founder MatGreen"
+                className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500/20"
+              />
+              <div>
+                <img
+                  src="/assets/images/resources/about-sign-2.png"
+                  alt="Chữ ký sáng lập"
+                  className="h-7 w-auto object-contain mb-1 opacity-80"
+                />
+                <span className="block text-[11px] font-bold text-slate-800">
+                  Nguyễn Văn Quân - Đồng Sáng Lập
+                </span>
+                <span className="block text-[10px] text-slate-400">
+                  MatGreen Circular Platform
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -132,3 +132,5 @@ export const LandingAbout: React.FC = () => {
     </section>
   );
 };
+
+export default LandingAbout;

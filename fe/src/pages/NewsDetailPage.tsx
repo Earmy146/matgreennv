@@ -61,19 +61,32 @@ export const NewsDetailPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
+      {/* Solox Page Header Banner */}
+      <section className="relative py-16 lg:py-20 bg-slate-900 text-white overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{ backgroundImage: `url('/assets/images/backgrounds/page-header-bg-1-1.jpg')` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-slate-900/80 to-slate-900/90" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
+          <span className="text-emerald-400 font-serif italic text-base sm:text-lg tracking-wider">
+            {article.category}
+          </span>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mt-2 tracking-tight leading-snug max-w-3xl mx-auto">
+            {article.title}
+          </h1>
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-300 mt-4 font-medium flex-wrap">
+            <Link to="/" className="hover:text-emerald-400">Trang chủ</Link>
+            <span>/</span>
+            <Link to="/news" className="hover:text-emerald-400">Tin tức</Link>
+            <span>/</span>
+            <span className="text-emerald-400">Chi tiết bài viết</span>
+          </div>
+        </div>
+      </section>
+
       <main className="flex-1 py-10 lg:py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          {/* Breadcrumb & Back */}
-          <div className="mb-6">
-            <Link
-              to="/news"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Danh sách bài viết tin tức
-            </Link>
-          </div>
-
-          {/* Article Header */}
           <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-sm mb-8">
             <div className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 mb-4">
               {article.category}

@@ -10,11 +10,11 @@ export const initialNewsList: NewsArticle[] = [
     author: {
       name: "KS. Trần Đình Trọng",
       role: "Chuyên gia Kết cấu & Xây dựng Bền vững",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      avatar: "/assets/images/resources/about-author-1.png",
     },
     publishedAt: "2026-10-18",
-    thumbnail: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80",
-    bannerImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&auto=format&fit=crop&q=80",
+    thumbnail: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728276/finance-lite/news/mat-mvkg4ktp-2a6bf9a482b9.png",
+    bannerImage: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728276/finance-lite/news/mat-mvkg4ktp-2a6bf9a482b9.png",
     views: 1420,
     readTimeMinutes: 5,
     tags: ["Tháo dỡ", "Gạch cũ", "Xà bần", "Kinh nghiệm"],
@@ -45,10 +45,11 @@ Thay vì vội vàng bỏ tiền thuê xe chở đi, bạn chỉ cần mở ứn
     author: {
       name: "ThS. Nguyễn Quỳnh Nga",
       role: "Viện Nghiên cứu Kinh tế Môi trường",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+      avatar: "/assets/images/resources/about-author-2.png",
     },
     publishedAt: "2026-10-15",
-    thumbnail: "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=800&auto=format&fit=crop&q=80",
+    thumbnail: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728277/finance-lite/news/mat-mvkg4mfc-f1d945df1299.png",
+    bannerImage: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728277/finance-lite/news/mat-mvkg4mfc-f1d945df1299.png",
     views: 980,
     readTimeMinutes: 7,
     tags: ["Kinh tế tuần hoàn", "Net Zero", "Bền vững", "ESG"],
@@ -75,10 +76,11 @@ Vật liệu xây dựng có đặc tính là nặng và cồng kềnh, chi phí
     author: {
       name: "Bác Ba Thợ Cả",
       role: "Trưởng Đội Tháo Dỡ Chuyên Nghiệp",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      avatar: "/assets/images/resources/about-author-1.png",
     },
     publishedAt: "2026-10-10",
-    thumbnail: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80",
+    thumbnail: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728277/finance-lite/news/mat-mvkg4mzi-a456fb843bf6.png",
+    bannerImage: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728277/finance-lite/news/mat-mvkg4mzi-a456fb843bf6.png",
     views: 1850,
     readTimeMinutes: 4,
     tags: ["Nhôm kính", "Thép cũ", "Kỹ thuật", "Mẹo hay"],
@@ -102,10 +104,11 @@ Sau khi tháo dỡ, hãy lau sạch bụi bẩn, chụp ảnh rõ nét và đăn
     author: {
       name: "Vũ Hải Đăng",
       role: "Kỹ sư AI & Dữ liệu Xây dựng",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      avatar: "/assets/images/resources/about-author-2.png",
     },
     publishedAt: "2026-10-05",
-    thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80",
+    thumbnail: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728278/finance-lite/news/mat-mvkg4np8-15f79c916a37.png",
+    bannerImage: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728278/finance-lite/news/mat-mvkg4np8-15f79c916a37.png",
     views: 760,
     readTimeMinutes: 6,
     tags: ["AI", "Bóc tách", "Thẩm định", "Công nghệ"],
@@ -116,6 +119,52 @@ Trợ lý **MatGreen AI Advisor** sử dụng các mô hình thị giác máy t�
 - Tự động nhận diện chủng loại: Gạch ống, gạch thẻ, tôn mạ kẽm, sắt hộp 40x80, xà gồ C...
 - Bóc tách khối lượng ước tính dựa trên diện tích sàn và số tầng.
 - Đề xuất mức giá tham khảo theo thời giá phế liệu và đồ cũ tại địa phương.
+    `,
+  },
+  {
+    id: "news-5",
+    slug: "quy-dinh-quan-ly-phe-thai-xay-dung-va-trach-nhiem-chu-dau-tu",
+    title: "Quy định pháp lý về quản lý phế thải xây dựng & trách nhiệm chủ đầu tư",
+    excerpt: "Tìm hiểu các nghị định và quy chuẩn môi trường mới nhất về vận chuyển, đổ thải và tái chế phế thải từ các công trình dân dụng đô thị.",
+    category: "Kinh Tế Tuần Hoàn",
+    author: {
+      name: "Luật sư Lê Minh Trí",
+      role: "Chuyên gia Pháp chế Đô thị",
+      avatar: "/assets/images/resources/about-author-1.png",
+    },
+    publishedAt: "2026-10-02",
+    thumbnail: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728279/finance-lite/news/mat-mvkg4oaw-7442d2ab7bd2.png",
+    bannerImage: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728279/finance-lite/news/mat-mvkg4oaw-7442d2ab7bd2.png",
+    views: 640,
+    readTimeMinutes: 5,
+    tags: ["Pháp lý", "Quy chuẩn", "Môi trường", "Chính sách"],
+    content: `
+Chính phủ và các thành phố lớn đang siết chặt chế tài xử phạt hành vi đổ trộm xà bần ra vỉa hè, lòng đường hoặc các khu đất trống chưa xây dựng. Mức phạt hành chính có thể lên tới hàng chục triệu đồng kèm theo buộc khôi phục hiện trạng ban đầu.
+
+Việc ứng dụng các nền tảng tuần hoàn như MatGreen giúp chủ đầu tư có chứng từ số rõ ràng về điểm đến của vật liệu thừa, đảm bảo tuân thủ 100% quy định bảo vệ môi trường của địa phương.
+    `,
+  },
+  {
+    id: "news-6",
+    slug: "mo-hinh-ket-noi-xe-ba-gac-xe-tai-dia-phuong-trong-chuoi-tuan-hoan",
+    title: "Mô hình kết nối xe ba gác & xe tải địa phương trong chuỗi logistics xanh",
+    excerpt: "Cách MatGreen tạo sinh kế ổn định cho hàng trăm tài xế xe tải nhỏ và đội thợ bốc xếp địa phương thông qua các đơn hàng vận chuyển vật liệu thừa ngắn tuyến.",
+    category: "Hướng Dẫn & Mẹo",
+    author: {
+      name: "Nguyễn Văn Quân",
+      role: "Đồng Sáng Lập MatGreen",
+      avatar: "/assets/images/resources/about-author-2.png",
+    },
+    publishedAt: "2026-09-28",
+    thumbnail: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728280/finance-lite/news/mat-mvkg4oyb-fa68d429e6da.png",
+    bannerImage: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728280/finance-lite/news/mat-mvkg4oyb-fa68d429e6da.png",
+    views: 1120,
+    readTimeMinutes: 5,
+    tags: ["Logistics", "Vận tải", "Xe ba gác", "Cộng đồng"],
+    content: `
+Logistics cự ly ngắn (Last-mile & Hyper-local logistics) là mắt xích quan trọng nhất quyết định sự thành bại của việc tái sử dụng vật liệu xây dựng. Nếu khoảng cách giữa công trình đập phá và công trình tái sử dụng quá xa, chi phí xăng dầu và nhân công sẽ triệt tiêu lợi nhuận tái chế.
+
+MatGreen tối ưu hóa bán kính gom hàng trong phạm vi từ 3km đến 10km, cho phép xe ba gác máy và xe tải 1.25 tấn di chuyển nhanh chóng, quay đầu nhiều chuyến trong ngày, đem lại thu nhập thực tế cho các bác tài địa phương.
     `,
   },
 ];
