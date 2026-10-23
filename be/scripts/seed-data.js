@@ -346,7 +346,16 @@ async function seedData() {
     },
   ];
 
-  await Material.insertMany(realMaterials);
+  await Material.insertMany(
+    realMaterials.map((material) => ({
+      ...material,
+      location: {
+        ...material.location,
+        source: "seed",
+        verificationStatus: "unverified",
+      },
+    }))
+  );
   console.log(`   ✅ Đã seed thành công ${realMaterials.length} bài đăng vật liệu thật vào MongoDB Atlas!`);
 
   console.log("\n🎉 HOÀN TẤT SEED DỮ LIỆU: Toàn bộ database đã sẵn sàng cho trải nghiệm thực tế 100%!");

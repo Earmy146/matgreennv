@@ -2,6 +2,13 @@ const express = require("express");
 const router = express.Router();
 const materialController = require("../controllers/material.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
+const { createUserRateLimit } = require("../middlewares/user-rate-limit.middleware");
+
+const createMaterialLimit = createUserRateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 20,
+  message: "Bạn đã đăng quá nhiều bài trong một giờ, vui lòng thử lại sau",
+});
 
 // Lấy danh sách bài đăng theo bán kính hoặc đường kính quanh vị trí hiện tại (có phân trang)
 router.get("/nearby", materialController.getNearby);
@@ -16,7 +23,7 @@ router.get("/", materialController.list);
 router.get("/:id", materialController.getById);
 
 // Đăng bài vật liệu thừa (yêu cầu đăng nhập)
-router.post("/", authenticate, materialController.create);
+router.post("/", authenticate, createMaterialLimit, materialController.create);
 
 // Cập nhật trạng thái bài đăng (available -> reserved -> completed)
 router.patch("/:id/status", authenticate, materialController.updateStatus);

@@ -6,10 +6,13 @@ const materialSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      minlength: 5,
+      maxlength: 180,
     },
     description: {
       type: String,
       trim: true,
+      maxlength: 5000,
     },
     category: {
       type: String,
@@ -82,6 +85,11 @@ const materialSchema = new mongoose.Schema(
         type: String,
         enum: ["browser_gps", "verified", "seed"],
         default: "browser_gps",
+      },
+      verificationStatus: {
+        type: String,
+        enum: ["unverified", "verified", "flagged"],
+        default: "unverified",
       },
     },
     contactPhone: {

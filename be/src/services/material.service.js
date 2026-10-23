@@ -34,6 +34,12 @@ class MaterialService {
       contactHours,
     } = data;
 
+    if (typeof title !== "string" || title.trim().length < 5 || title.trim().length > 180) {
+      throw new BadRequestError("Tiêu đề phải dài từ 5 đến 180 ký tự");
+    }
+    if (description && (typeof description !== "string" || description.trim().length > 5000)) {
+      throw new BadRequestError("Mô tả không được vượt quá 5.000 ký tự");
+    }
     if (latitude === undefined || longitude === undefined || !address?.trim()) {
       throw new BadRequestError("Vui lòng cung cấp tọa độ định vị và địa chỉ công trình");
     }
@@ -51,6 +57,9 @@ class MaterialService {
 
     if (!contactPhone) {
       throw new BadRequestError("Vui lòng cung cấp số điện thoại liên hệ");
+    }
+    if (!/^[0-9+().\-\s]{8,25}$/.test(String(contactPhone).trim())) {
+      throw new BadRequestError("Số điện thoại liên hệ không hợp lệ");
     }
 
     const material = await Material.create({
