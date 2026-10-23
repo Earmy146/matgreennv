@@ -17,6 +17,7 @@ import { useLocationStore } from "@/stores/location.store";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { materialsApi, uploadApi } from "@/services/api";
 import { CATEGORY_LABELS } from "@/lib/utils";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 
 export const PostMaterialPage: React.FC = () => {
   const navigate = useNavigate();
@@ -437,17 +438,19 @@ export const PostMaterialPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Description */}
+          {/* Description with RichTextEditor */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Mô tả chi tiết công trình & yêu cầu vận chuyển
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <span>Mô tả chi tiết công trình & yêu cầu bốc dỡ (Bộ công cụ nâng cao)</span>
+              <span className="text-[11px] font-normal text-slate-400 lowercase">
+                chèn ảnh, bôi đậm, căn chỉnh, cỡ chữ
+              </span>
             </label>
-            <textarea
-              rows={3}
-              placeholder="VD: Đập bức tường phòng khách, gạch thẻ còn nguyên khoảng 2000 viên, xà bần đã xúc sẵn vào bao, người nhận tự chở xe ba gác hoặc xe tải nhỏ..."
+            <RichTextEditor
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              onChange={(description) => setFormData({ ...formData, description })}
+              placeholder="VD: Đập bức tường phòng khách, gạch thẻ còn nguyên khoảng 2000 viên, xà bần đã xúc sẵn vào bao, hỗ trợ người nhận bốc lên xe..."
+              minHeight={220}
             />
           </div>
 

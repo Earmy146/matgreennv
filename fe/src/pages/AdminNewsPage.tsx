@@ -15,12 +15,11 @@ import {
   Loader2,
   Image as ImageIcon,
 } from "lucide-react";
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { LandingFooter } from "@/components/landing/LandingFooter";
 import { useNewsStore } from "@/stores/news.store";
 import type { NewsArticle } from "@/types/news.types";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 
-const PRESET_SOLOX_IMAGES = [
+const SUGGESTED_NEWS_IMAGES = [
   {
     name: "Vật liệu tái chế",
     url: "https://res.cloudinary.com/dwcuijzvd/image/upload/v1792728276/finance-lite/news/mat-mvkg4ktp-2a6bf9a482b9.png",
@@ -198,7 +197,7 @@ export const AdminNewsPage: React.FC = () => {
       thumbnail: url,
       bannerImage: url,
     }));
-    showToast("Đã chọn ảnh mẫu Solox từ Cloudinary!");
+    showToast("Đã chọn ảnh minh họa cho bài viết!");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -262,13 +261,9 @@ export const AdminNewsPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
-      <LandingHeader />
-
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
+    <div className="space-y-6 animate-fadeIn">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">
               <Link to="/news" className="hover:text-emerald-600 flex items-center gap-1">
                 <ArrowLeft className="w-3.5 h-3.5" /> Tin tức
@@ -280,7 +275,7 @@ export const AdminNewsPage: React.FC = () => {
               Quản Lý Nội Dung Tin Tức & Cẩm Nang
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Dành cho Quản trị viên (Admin) tạo bài viết mới, chỉnh sửa nội dung và quản lý bài đăng.
+              Dành cho Quản trị viên tạo bài viết mới, chỉnh sửa nội dung và quản lý bài đăng.
             </p>
           </div>
 
@@ -401,12 +396,17 @@ export const AdminNewsPage: React.FC = () => {
             </table>
           </div>
         </div>
-      </main>
 
       {/* Modal Tạo/Sửa Bài Viết */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative animate-fadeIn">
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+          data-lenis-prevent
+        >
+          <div
+            className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative overscroll-contain"
+            data-lenis-prevent
+          >
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
@@ -535,13 +535,13 @@ export const AdminNewsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Preset ảnh Solox trên Cloudinary để Admin chọn nhanh */}
+                {/* Ảnh minh họa gợi ý để chọn nhanh */}
                 <div className="pt-2">
                   <span className="block text-[11px] font-bold text-slate-500 mb-1.5">
-                    Hoặc chọn nhanh từ kho ảnh Solox (Đã seed Cloudinary):
+                    Hoặc chọn ảnh minh họa gợi ý cho bài viết:
                   </span>
                   <div className="grid grid-cols-6 gap-2">
-                    {PRESET_SOLOX_IMAGES.map((preset, idx) => (
+                    {SUGGESTED_NEWS_IMAGES.map((preset, idx) => (
                       <button
                         key={idx}
                         type="button"
@@ -608,16 +608,17 @@ export const AdminNewsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Nội dung bài viết chi tiết *
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Nội dung bài viết chi tiết (Bộ công cụ nâng cao) *</span>
+                  <span className="text-[11px] font-normal text-slate-400 lowercase">
+                    hỗ trợ chèn ảnh, căn lề, cỡ chữ, định dạng phong phú
+                  </span>
                 </label>
-                <textarea
-                  rows={6}
-                  required
-                  placeholder="Nhập nội dung bài viết, các tiêu đề phân mục..."
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y font-normal"
+                  onChange={(content) => setFormData({ ...formData, content })}
+                  placeholder="Nhập nội dung bài viết, tiêu đề phân mục, chèn ảnh minh họa..."
+                  minHeight={320}
                 />
               </div>
 
@@ -654,8 +655,6 @@ export const AdminNewsPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      <LandingFooter />
     </div>
   );
 };
