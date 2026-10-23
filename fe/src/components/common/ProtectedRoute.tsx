@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores/auth.store";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "user" | "admin";
+  requiredRole?: "user" | "moderator" | "admin" | "superadmin";
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -27,7 +27,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // 2. Nếu có yêu cầu quyền admin mà tài khoản không phải admin
-  if (requiredRole === "admin" && user.role !== "admin") {
+  const roleLevels = { user: 0, moderator: 1, admin: 2, superadmin: 3 };
+  if (requiredRole && roleLevels[user.role] < roleLevels[requiredRole]) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-6 text-center">
         <div className="max-w-md bg-white p-8 rounded-3xl border border-rose-200 shadow-xl space-y-4">

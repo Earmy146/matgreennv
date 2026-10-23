@@ -230,15 +230,17 @@ export const reportsApi = {
     const res = await api.post("/reports", payload);
     return res.data.data;
   },
-  list: async () => (await api.get("/reports")).data.data,
+  list: async (params?: { page?: number; limit?: number; status?: string }) => (await api.get("/reports", { params })).data.data,
   update: async (id: string, status: string, resolution: string) => (await api.patch(`/reports/${id}`, { status, resolution })).data.data,
 };
 
 export const adminApi = {
-  users: async () => (await api.get("/admin/users")).data.data,
-  suspendUser: async (id: string, suspended: boolean) => (await api.patch(`/admin/users/${id}/suspend`, { suspended })).data.data,
-  materials: async () => (await api.get("/admin/materials")).data.data,
-  moderateMaterial: async (id: string, status: string) => (await api.patch(`/admin/materials/${id}/status`, { status })).data.data,
+  stats: async () => (await api.get("/admin/stats")).data.data,
+  users: async (params?: { page?: number; limit?: number; search?: string }) => (await api.get("/admin/users", { params })).data.data,
+  suspendUser: async (id: string, suspended: boolean, reason: string) => (await api.patch(`/admin/users/${id}/suspend`, { suspended, reason })).data.data,
+  materials: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/materials", { params })).data.data,
+  moderateMaterial: async (id: string, status: string, reason: string) => (await api.patch(`/admin/materials/${id}/status`, { status, reason })).data.data,
+  auditLogs: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/audit-logs", { params })).data.data,
 };
 
 export const aiMaterialsApi = {

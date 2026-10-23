@@ -1,11 +1,13 @@
 const express = require("express");
 const adminController = require("../controllers/admin.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
-const { requireAdmin } = require("../middlewares/admin.middleware");
+const { requireAdmin, requireRole } = require("../middlewares/admin.middleware");
 const router = express.Router();
-router.use(authenticate, requireAdmin);
+router.use(authenticate, requireRole("moderator"));
 router.get("/users", adminController.users);
-router.patch("/users/:id/suspend", adminController.suspendUser);
+router.patch("/users/:id/suspend", requireAdmin, adminController.suspendUser);
 router.get("/materials", adminController.materials);
-router.patch("/materials/:id/status", adminController.moderateMaterial);
+router.patch("/materials/:id/status", requireAdmin, adminController.moderateMaterial);
+router.get("/stats", adminController.stats);
+router.get("/audit-logs", adminController.auditLogs);
 module.exports = router;

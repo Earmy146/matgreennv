@@ -4,7 +4,7 @@ export interface User {
   email: string;
   phone?: string;
   address?: string;
-  role: "user" | "admin";
+  role: "user" | "moderator" | "admin" | "superadmin";
   isVerified?: boolean;
 }
 

@@ -58,7 +58,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin/moderation",
-    element: <ProtectedRoute requiredRole="admin"><AdminModerationPage /></ProtectedRoute>,
+    element: <ProtectedRoute requiredRole="moderator"><AdminModerationPage /></ProtectedRoute>,
   },
   // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
   {

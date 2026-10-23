@@ -17,6 +17,7 @@ async function authenticate(req, res, next) {
     req.user = decoded;
     return next();
   } catch (err) {
+    if (err instanceof AuthFailureError) return next(err);
     return next(new AuthFailureError("Phiên đăng nhập đã hết hạn hoặc không hợp lệ"));
   }
 }
