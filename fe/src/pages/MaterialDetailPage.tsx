@@ -78,7 +78,7 @@ export const MaterialDetailPage: React.FC = () => {
   const isFree = material.type === "free";
   const [lng, lat] = material.location.coordinates;
   const cleanPhone = material.contactPhone.replace(/[^0-9+]/g, "");
-  const mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`;
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   return (
