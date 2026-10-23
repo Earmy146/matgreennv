@@ -44,13 +44,13 @@ class ChatService {
     };
   }
 
-  async saveMessage({ senderId, receiverId, materialId, content }) {
+  async saveMessage({ senderId, receiverId, materialId, content, attachments = [] }) {
     if (!receiverId || senderId === receiverId) {
       throw new BadRequestError("Người nhận tin nhắn không hợp lệ");
     }
 
     const normalizedContent = String(content || "").trim();
-    if (!normalizedContent || normalizedContent.length > 2000) {
+    if ((!normalizedContent && !attachments.length) || normalizedContent.length > 2000) {
       throw new BadRequestError("Tin nhắn phải có từ 1 đến 2000 ký tự");
     }
 
@@ -59,6 +59,7 @@ class ChatService {
       receiver: receiverId,
       material: materialId,
       content: normalizedContent,
+      attachments,
     });
 
     const savedMessage = await Message.findById(msg._id)

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { Link, useSearchParams } from "react-router-dom";
-import { Loader2, MessageSquare, Send, User } from "lucide-react";
-import { chatApi, type ChatConversation, type ChatMessage } from "@/services/api";
+import { Loader2, MessageSquare, Paperclip, Send, User, X } from "lucide-react";
+import { chatApi, uploadApi, type ChatAttachment, type ChatConversation, type ChatMessage } from "@/services/api";
 import { useAuthStore } from "@/stores/auth.store";
 
 const PAGE_SIZE = 30;
@@ -30,6 +30,9 @@ export const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [input, setInput] = useState("");
+  const [attachment, setAttachment] = useState<ChatAttachment | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [typing, setTyping] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(Boolean(partnerId));
@@ -84,6 +87,9 @@ export const ChatPage: React.FC = () => {
     socket.on("connect_error", () => setConnected(false));
     socket.on("new_message", appendMessage);
     socket.on("message_sent", appendMessage);
+    socket.on("typing", (data: { senderId: string; materialId?: string; isTyping: boolean }) => {
+      if (data.senderId === partnerId && data.materialId === materialId) setTyping(data.isTyping);
+    });
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -126,21 +132,41 @@ export const ChatPage: React.FC = () => {
   const handleSend = async (event: React.FormEvent) => {
     event.preventDefault();
     const content = input.trim();
-    if (!content || !partnerId || !user?.id || sending) return;
+    if (!partnerId || !user?.id || sending || (!content && !attachment)) return;
     setSending(true);
     setError(null);
     try {
-      const payload = { receiverId: partnerId, materialId, content };
+      const payload = { receiverId: partnerId, materialId, content, attachments: attachment ? [attachment] : [] };
       if (socketRef.current?.connected) {
         socketRef.current.emit("send_message", payload);
       } else {
         appendMessage(await chatApi.sendMessage(payload));
       }
       setInput("");
+      setAttachment(null);
     } catch {
       setError("Không thể gửi tin nhắn. Vui lòng thử lại.");
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleTyping = (value: string) => {
+    setInput(value);
+    if (!partnerId || !socketRef.current?.connected) return;
+    socketRef.current.emit("typing", { receiverId: partnerId, materialId, isTyping: Boolean(value.trim()) });
+  };
+
+  const handleAttachment = async (file?: File) => {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      setAttachment(await uploadApi.uploadAttachment(file));
+    } catch {
+      setError("Không thể tải file lên. Vui lòng thử lại.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -213,7 +239,12 @@ export const ChatPage: React.FC = () => {
             return (
               <div key={message._id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs sm:text-sm ${isMe ? "bg-emerald-600 text-white rounded-br-none" : "bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs"}`}>
-                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                  {message.content && <p className="whitespace-pre-wrap break-words">{message.content}</p>}
+                  {message.attachments?.map((file) => (
+                    file.mimetype.startsWith("image/")
+                      ? <a key={file.url} href={file.url} target="_blank" rel="noreferrer"><img src={file.url} alt={file.name} className="max-w-full max-h-48 rounded-lg mt-1 object-contain" /></a>
+                      : <a key={file.url} href={file.url} target="_blank" rel="noreferrer" className="block mt-1 underline break-all">{file.name}</a>
+                  ))}
                   <span className={`block text-[10px] mt-1 text-right ${isMe ? "text-emerald-200" : "text-slate-400"}`}>
                     {new Date(message.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                   </span>
@@ -224,17 +255,23 @@ export const ChatPage: React.FC = () => {
         </div>
 
         {error && <div className="px-4 py-2 text-xs text-rose-700 bg-rose-50 border-t border-rose-100">{error}</div>}
+        {typing && <div className="px-4 py-1 text-[11px] text-slate-400 bg-white">Đối tác đang nhập...</div>}
+        {attachment && <div className="px-3 py-2 bg-emerald-50 text-xs flex items-center gap-2"><span className="truncate flex-1">{attachment.name}</span><button type="button" onClick={() => setAttachment(null)}><X className="w-4 h-4" /></button></div>}
         <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 flex gap-2">
+          <label className="p-2.5 rounded-xl border border-slate-200 text-slate-600 cursor-pointer hover:bg-slate-50">
+            <Paperclip className="w-4 h-4" />
+            <input type="file" accept="image/*,.pdf,.txt,.zip" className="hidden" onChange={(event) => handleAttachment(event.target.files?.[0])} disabled={uploading} />
+          </label>
           <input
             type="text"
             maxLength={2000}
             placeholder="Nhập tin nhắn trao đổi về vật liệu, thời gian bốc vác..."
             value={input}
-            onChange={(event) => setInput(event.target.value)}
+            onChange={(event) => handleTyping(event.target.value)}
             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
-          <button type="submit" disabled={sending || !input.trim()} className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50">
-            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          <button type="submit" disabled={sending || uploading || (!input.trim() && !attachment)} className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50">
+            {sending || uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
       </div>

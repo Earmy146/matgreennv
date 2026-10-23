@@ -112,6 +112,13 @@ export const materialRequestsApi = {
   },
 };
 
+export interface ChatAttachment {
+  url: string;
+  name: string;
+  mimetype: string;
+  size?: number;
+}
+
 export interface ChatMessage {
   _id: string;
   content: string;
@@ -120,6 +127,7 @@ export interface ChatMessage {
   material?: string;
   isRead: boolean;
   createdAt: string;
+  attachments?: ChatAttachment[];
 }
 
 export interface ChatMessagesPage {
@@ -143,7 +151,7 @@ export const chatApi = {
     const res = await api.get<{ data: ChatMessagesPage }>("/chat/messages", { params });
     return res.data.data;
   },
-  sendMessage: async (payload: { receiverId: string; materialId?: string; content: string }) => {
+  sendMessage: async (payload: { receiverId: string; materialId?: string; content: string; attachments?: ChatAttachment[] }) => {
     const res = await api.post<{ data: ChatMessage }>("/chat/messages", payload);
     return res.data.data;
   },
@@ -218,6 +226,14 @@ export const aiMaterialsApi = {
 };
 
 export const uploadApi = {
+  uploadAttachment: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await api.post<{ data: { url: string; originalname: string; mimetype: string; bytes: number } }>("/upload/attachment", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return { url: res.data.data.url, name: res.data.data.originalname, mimetype: res.data.data.mimetype, size: res.data.data.bytes };
+  },
   uploadImage: async (file: File, folder = "materials") => {
     const formData = new FormData();
     formData.append("image", file);

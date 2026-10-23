@@ -48,12 +48,13 @@ class ChatController {
 
   async sendMessage(req, res, next) {
     try {
-      const { receiverId, materialId, content } = req.body;
+      const { receiverId, materialId, content, attachments } = req.body;
       const result = await chatService.saveMessage({
         senderId: req.user.id,
         receiverId,
         materialId,
         content,
+        attachments,
       });
       new CREATED({
         message: "Gửi tin nhắn thành công",

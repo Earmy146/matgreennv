@@ -40,6 +40,12 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/heic",
   "image/heif",
 ]);
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+  ...ALLOWED_MIME_TYPES,
+  "application/pdf",
+  "text/plain",
+  "application/zip",
+]);
 
 async function uploadImageBuffer({
   buffer,
@@ -50,6 +56,48 @@ async function uploadImageBuffer({
 }) {
   if (!buffer || !buffer.length) {
     throw new BadRequestError("Không có file ảnh để tải lên");
+  }
+
+  async function uploadAttachmentBuffer({ buffer, mimetype, originalname, folder = "chat" }) {
+    if (!buffer || !buffer.length) throw new BadRequestError("Không có file để tải lên");
+    if (buffer.length > MAX_IMAGE_SIZE) {
+      throw new BadRequestError(`File vượt quá dung lượng cho phép (${Math.round(MAX_IMAGE_SIZE / (1024 * 1024))}MB)`);
+    }
+    if (!ALLOWED_ATTACHMENT_TYPES.has(String(mimetype).toLowerCase())) {
+      throw new BadRequestError("Định dạng file không được hỗ trợ");
+    }
+
+    const accounts = parseCloudinaryAccounts();
+    if (!accounts.length) throw new BadRequestError("Chưa cấu hình tài khoản Cloudinary");
+    const account = accounts[0];
+    const timestamp = Math.round(Date.now() / 1000);
+    const uploadFolder = `${account.folder}/${folder}`.replace(/\/+/g, "/").replace(/^\/+|\/+$/g, "");
+    const public_id = buildPublicId("chat");
+    const params = { folder: uploadFolder, public_id, timestamp };
+    const signature = signParams(params, account.apiSecret);
+    const form = new FormData();
+    form.append("file", new Blob([buffer], { type: mimetype }), originalname || "attachment");
+    form.append("api_key", account.apiKey);
+    form.append("folder", uploadFolder);
+    form.append("public_id", public_id);
+    form.append("timestamp", String(timestamp));
+    form.append("signature", signature);
+    const resourceType = String(mimetype).startsWith("image/") ? "image" : "raw";
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${account.cloudName}/${resourceType}/upload`, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(20000),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new BadRequestError(data?.error?.message || "Tải file lên thất bại");
+    return {
+      url: data.secure_url,
+      public_id: data.public_id,
+      format: data.format,
+      bytes: data.bytes,
+      originalname: originalname || "attachment",
+      mimetype,
+    };
   }
 
   if (buffer.length > MAX_IMAGE_SIZE) {
@@ -216,6 +264,7 @@ async function testCloudinaryConnection() {
 
 module.exports = {
   uploadImageBuffer,
+  uploadAttachmentBuffer,
   deleteCloudinaryImage,
   testCloudinaryConnection,
 };

@@ -13,6 +13,9 @@ const fileFilter = (req, file, cb) => {
     "image/webp",
     "image/heic",
     "image/heif",
+    "application/pdf",
+    "text/plain",
+    "application/zip",
   ];
 
   if (allowedMimes.includes(file.mimetype.toLowerCase())) {
@@ -20,7 +23,7 @@ const fileFilter = (req, file, cb) => {
   } else {
     cb(
       new BadRequestError(
-        "Chỉ chấp nhận file ảnh có định dạng JPG, PNG, WEBP, HEIC hoặc HEIF"
+        "Định dạng file không được hỗ trợ"
       ),
       false
     );
@@ -38,4 +41,5 @@ const upload = multer({
 module.exports = {
   uploadSingle: upload.single("image"),
   uploadMultiple: upload.array("images", 5), // Tối đa 5 ảnh một lúc cho vật liệu
+  uploadAttachment: upload.single("file"),
 };

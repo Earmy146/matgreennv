@@ -31,12 +31,22 @@ function initSocket(server, allowedOrigins = ["*"]) {
 
     socket.on("send_message", async (data) => {
       try {
-        const { receiverId, materialId, content } = data;
+        const { receiverId, materialId, content, attachments } = data;
         const savedMsg = await chatService.saveMessage({
           senderId: socket.userId,
           receiverId,
           materialId,
           content,
+          attachments,
+        });
+
+        socket.on("typing", ({ receiverId, materialId, isTyping }) => {
+          if (!receiverId || receiverId === socket.userId) return;
+          io.to(`user:${receiverId}`).emit("typing", {
+            senderId: socket.userId,
+            materialId,
+            isTyping: Boolean(isTyping),
+          });
         });
 
         io.to(`user:${receiverId}`).emit("new_message", savedMsg);
