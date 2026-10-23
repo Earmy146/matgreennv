@@ -47,17 +47,19 @@ export const LandingOffers: React.FC = () => {
               />
             )}
 
+            <div className="absolute inset-0 z-0 bg-gradient-to-r from-white/95 via-white/80 to-white/30" />
+
             <div className="relative z-10 max-w-md">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider mb-4 shadow-sm">
                 <Gift className="w-3.5 h-3.5" />
                 {card1.badge}
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug mb-3 font-display">
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-snug mb-3 font-display drop-shadow-[0_1px_1px_rgba(255,255,255,0.7)]">
                 {card1.title}
               </h3>
 
-              <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-700 mb-6 leading-relaxed">
                 {card1.desc}
               </p>
 
@@ -92,17 +94,19 @@ export const LandingOffers: React.FC = () => {
               />
             )}
 
+            <div className="absolute inset-0 z-0 bg-gradient-to-r from-white/95 via-white/80 to-white/30" />
+
             <div className="relative z-10 max-w-md">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-600 text-white text-xs font-extrabold uppercase tracking-wider mb-4 shadow-sm">
                 <Coins className="w-3.5 h-3.5" />
                 {card2.badge}
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug mb-3 font-display">
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-snug mb-3 font-display drop-shadow-[0_1px_1px_rgba(255,255,255,0.7)]">
                 {card2.title}
               </h3>
 
-              <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-700 mb-6 leading-relaxed">
                 {card2.desc}
               </p>
 
