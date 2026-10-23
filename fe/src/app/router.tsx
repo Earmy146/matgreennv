@@ -19,6 +19,7 @@ import { MaterialRequestsPage } from "@/pages/MaterialRequestsPage";
 import { SavedMaterialsPage } from "@/pages/SavedMaterialsPage";
 import { EditMaterialPage } from "@/pages/EditMaterialPage";
 import { AdminModerationPage } from "@/pages/AdminModerationPage";
+import { ProfilePage } from "@/pages/ProfilePage";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -109,6 +110,10 @@ export const router = createBrowserRouter([
             <SavedMaterialsPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "profile",
+        element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,
       },
       {
         path: "materials/:id",

@@ -22,6 +22,23 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+    phoneVerificationRequestedAt: {
+      type: Date,
+    },
+    phoneVerificationNote: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
     address: {
       type: String,
       trim: true,

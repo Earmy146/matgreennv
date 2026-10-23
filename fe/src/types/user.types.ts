@@ -4,6 +4,9 @@ export interface User {
   email: string;
   phone?: string;
   address?: string;
+  bio?: string;
+  avatar?: string;
+  phoneVerified?: boolean;
   role: "user" | "moderator" | "admin" | "superadmin";
   isVerified?: boolean;
 }

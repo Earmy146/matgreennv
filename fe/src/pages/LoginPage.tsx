@@ -18,7 +18,7 @@ import {
 import { useAuthStore } from "@/stores/auth.store";
 import { authApi } from "@/services/api";
 
-type AuthMode = "login" | "register" | "verify";
+type AuthMode = "login" | "register" | "verify" | "forgot" | "reset";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +35,7 @@ export const LoginPage: React.FC = () => {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [otp, setOtp] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -191,6 +192,26 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault(); clearMessages(); setLoading(true);
+    try {
+      const response = await authApi.forgotPassword(email);
+      setSuccessMsg(response.message); setMode("reset");
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || "Không thể gửi mã đặt lại mật khẩu");
+    } finally { setLoading(false); }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault(); clearMessages(); setLoading(true);
+    try {
+      const response = await authApi.resetPassword({ email, otp, newPassword: resetPassword });
+      setSuccessMsg(response.message); setMode("login"); setPassword(""); setOtp(""); setResetPassword("");
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || "Không thể đặt lại mật khẩu");
+    } finally { setLoading(false); }
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-10 px-4">
       <div className="w-full max-w-md">
@@ -295,6 +316,7 @@ export const LoginPage: React.FC = () => {
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
+
               </button>
 
               {/* Quick Fill Sample Accounts */}
@@ -326,6 +348,23 @@ export const LoginPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </form>
+          )}
+
+          {(mode === "forgot" || mode === "reset") && (
+            <form onSubmit={mode === "forgot" ? handleForgotPassword : handleResetPassword} className="space-y-4">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Email tài khoản
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm" />
+              </label>
+              {mode === "reset" && <>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">OTP gửi qua email
+                  <input required value={otp} onChange={(e) => setOtp(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm" />
+                </label>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Mật khẩu mới
+                  <input type="password" required minLength={8} value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm" />
+                </label>
+              </>}
+              <button disabled={loading} className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white disabled:opacity-60">{loading ? "Đang xử lý..." : mode === "forgot" ? "Gửi mã OTP" : "Đặt lại mật khẩu"}</button>
             </form>
           )}
 
@@ -520,6 +559,9 @@ export const LoginPage: React.FC = () => {
                   className="text-emerald-700 font-bold hover:underline cursor-pointer"
                 >
                   Đăng ký miễn phí ngay
+                </button>
+                <button type="button" onClick={() => { clearMessages(); setMode("forgot"); }} className="block mx-auto mt-3 text-emerald-700 font-semibold hover:underline">
+                  Quên mật khẩu?
                 </button>
               </>
             )}

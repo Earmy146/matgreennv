@@ -166,7 +166,7 @@ export const chatApi = {
 
 export interface NotificationItem {
   _id: string;
-  type: "chat" | "request_created" | "request_status" | "request_scheduled";
+  type: "chat" | "request_created" | "request_status" | "request_scheduled" | "moderation";
   title: string;
   message: string;
   link?: string;
@@ -239,6 +239,8 @@ export const adminApi = {
   users: async (params?: { page?: number; limit?: number; search?: string }) => (await api.get("/admin/users", { params })).data.data,
   suspendUser: async (id: string, suspended: boolean, reason: string) => (await api.patch(`/admin/users/${id}/suspend`, { suspended, reason })).data.data,
   materials: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/materials", { params })).data.data,
+  phoneVerificationRequests: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/phone-verification-requests", { params })).data.data,
+  verifyPhone: async (id: string, verified: boolean, reason: string) => (await api.patch(`/admin/users/${id}/phone-verification`, { verified, reason })).data.data,
   moderateMaterial: async (id: string, status: string, reason: string) => (await api.patch(`/admin/materials/${id}/status`, { status, reason })).data.data,
   auditLogs: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/audit-logs", { params })).data.data,
 };
@@ -341,6 +343,30 @@ export const authApi = {
 
   me: async () => {
     const res = await api.get<{ message: string; data: any }>("/auth/me");
+    return res.data;
+  },
+  updateProfile: async (payload: { name: string; phone?: string; address?: string; bio?: string }) => {
+    const res = await api.patch<{ message: string; data: any }>("/auth/profile", payload);
+    return res.data;
+  },
+  changePassword: async (payload: { currentPassword: string; newPassword: string }) => {
+    const res = await api.patch<{ message: string; data: any }>("/auth/change-password", payload);
+    return res.data;
+  },
+  forgotPassword: async (email: string) => {
+    const res = await api.post<{ message: string; data: any }>("/auth/forgot-password", { email });
+    return res.data;
+  },
+  resetPassword: async (payload: { email: string; otp: string; newPassword: string }) => {
+    const res = await api.post<{ message: string; data: any }>("/auth/reset-password", payload);
+    return res.data;
+  },
+  requestPhoneVerification: async (note?: string) => {
+    const res = await api.post<{ message: string; data: any }>("/auth/phone-verification-request", { note });
+    return res.data;
+  },
+  publicProfile: async (id: string) => {
+    const res = await api.get<{ message: string; data: any }>(`/auth/users/${id}/profile`);
     return res.data;
   },
 };

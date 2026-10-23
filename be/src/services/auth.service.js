@@ -158,6 +158,84 @@ class AuthService {
       throw new AuthFailureError("Email hoặc mật khẩu không chính xác");
     }
 
+    async updateProfile(userId, { name, phone, address, bio }) {
+      const updates = {};
+      if (typeof name === "string" && name.trim()) updates.name = name.trim();
+      if (typeof phone === "string") updates.phone = phone.trim();
+      if (typeof address === "string") updates.address = address.trim();
+      if (typeof bio === "string") updates.bio = bio.trim().slice(0, 500);
+
+      if (!Object.keys(updates).length) {
+        throw new BadRequestError("Vui lòng nhập ít nhất một thông tin cần cập nhật");
+      }
+
+      const user = await User.findByIdAndUpdate(userId, updates, {
+        new: true,
+        runValidators: true,
+      });
+      if (!user) throw new NotFoundError("Không tìm thấy tài khoản");
+      return this.sanitizeUser(user);
+    }
+
+    async changePassword(userId, { currentPassword, newPassword }) {
+      if (!currentPassword || !newPassword || newPassword.length < 8) {
+        throw new BadRequestError("Mật khẩu mới phải có ít nhất 8 ký tự");
+      }
+      const user = await User.findById(userId);
+      if (!user) throw new NotFoundError("Không tìm thấy tài khoản");
+      if (!(await bcrypt.compare(currentPassword, user.password))) {
+        throw new AuthFailureError("Mật khẩu hiện tại không chính xác");
+      }
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+      return { message: "Đổi mật khẩu thành công" };
+    }
+
+    async forgotPassword({ email }) {
+      const normalizedEmail = email.toLowerCase().trim();
+      const user = await User.findOne({ email: normalizedEmail });
+      if (!user) throw new NotFoundError("Không tìm thấy tài khoản với email này");
+      const otpCode = this.generateOtp();
+      user.resetPasswordOtp = { code: otpCode, expiresAt: new Date(Date.now() + 10 * 60 * 1000) };
+      await user.save();
+      await emailService.sendPasswordResetOtp({ toEmail: user.email, otpCode, userName: user.name });
+      return { email: user.email, message: "Mã OTP đặt lại mật khẩu đã được gửi tới email của bạn" };
+    }
+
+    async resetPassword({ email, otp, newPassword }) {
+      if (!newPassword || newPassword.length < 8) {
+        throw new BadRequestError("Mật khẩu mới phải có ít nhất 8 ký tự");
+      }
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      if (!user) throw new NotFoundError("Không tìm thấy tài khoản");
+      const reset = user.resetPasswordOtp || {};
+      if (!reset.code || reset.code !== String(otp).trim()) throw new BadRequestError("Mã OTP không chính xác");
+      if (!reset.expiresAt || new Date() > new Date(reset.expiresAt)) {
+        throw new BadRequestError("Mã OTP đã hết hạn, vui lòng yêu cầu mã mới");
+      }
+      user.password = await bcrypt.hash(newPassword, 10);
+      user.resetPasswordOtp = undefined;
+      await user.save();
+      return { message: "Đặt lại mật khẩu thành công" };
+    }
+
+    async requestPhoneVerification(userId, note) {
+      const user = await User.findById(userId);
+      if (!user) throw new NotFoundError("Không tìm thấy tài khoản");
+      if (!user.phone) throw new BadRequestError("Vui lòng cập nhật số điện thoại trước");
+      if (user.phoneVerified) throw new BadRequestError("Số điện thoại đã được xác minh");
+      user.phoneVerificationRequestedAt = new Date();
+      user.phoneVerificationNote = typeof note === "string" ? note.trim().slice(0, 500) : undefined;
+      await user.save();
+      return this.sanitizeUser(user);
+    }
+
+    async publicProfile(userId) {
+      const user = await User.findById(userId).select("name email phone address avatar bio phoneVerified role createdAt");
+      if (!user) throw new NotFoundError("Không tìm thấy người dùng");
+      return this.sanitizeUser(user);
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new AuthFailureError("Email hoặc mật khẩu không chính xác");
@@ -211,6 +289,9 @@ class AuthService {
       email: user.email,
       phone: user.phone,
       address: user.address,
+      bio: user.bio,
+      avatar: user.avatar,
+      phoneVerified: user.phoneVerified,
       role: user.role,
       isVerified: user.isVerified,
     };

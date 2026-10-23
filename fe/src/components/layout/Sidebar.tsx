@@ -82,6 +82,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: Heart,
         },
         {
+          label: "Hồ Sơ & Xác Minh",
+          href: "/profile",
+          icon: UserIcon,
+        },
+        {
           label: "Bản Đồ Radar Vị Trí",
           href: "/map-radar",
           icon: MapPin,

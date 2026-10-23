@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["chat", "request_created", "request_status", "request_scheduled"],
+      enum: ["chat", "request_created", "request_status", "request_scheduled", "moderation"],
       required: true,
     },
     title: { type: String, required: true, trim: true, maxlength: 160 },

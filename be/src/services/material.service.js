@@ -228,7 +228,7 @@ class MaterialService {
     const pageSize = Math.max(1, Math.min(50, Number(limit) || 12));
     const [items, total] = await Promise.all([
       Material.find(query)
-        .populate("owner", "name phone avatar email")
+        .populate("owner", "name phone avatar email bio phoneVerified")
         .sort({ createdAt: -1 })
         .skip((currentPage - 1) * pageSize)
         .limit(pageSize)
@@ -330,7 +330,7 @@ class MaterialService {
    */
   async getMaterialById(id, userLat, userLng) {
     const material = await Material.findById(id)
-      .populate("owner", "name phone email avatar")
+      .populate("owner", "name phone email avatar bio phoneVerified")
       .lean();
 
     if (!material) {

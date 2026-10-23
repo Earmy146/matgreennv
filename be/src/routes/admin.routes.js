@@ -10,4 +10,6 @@ router.get("/materials", adminController.materials);
 router.patch("/materials/:id/status", requireAdmin, adminController.moderateMaterial);
 router.get("/stats", adminController.stats);
 router.get("/audit-logs", adminController.auditLogs);
+router.get("/phone-verification-requests", adminController.phoneVerificationRequests);
+router.patch("/users/:id/phone-verification", requireAdmin, adminController.verifyPhone);
 module.exports = router;

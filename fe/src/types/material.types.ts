@@ -46,6 +46,8 @@ export interface MaterialItem {
     phone?: string;
     avatar?: string;
     email?: string;
+    bio?: string;
+    phoneVerified?: boolean;
   };
   distanceKm?: number;
   createdAt: string;

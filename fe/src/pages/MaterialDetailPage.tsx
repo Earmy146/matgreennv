@@ -141,6 +141,12 @@ export const MaterialDetailPage: React.FC = () => {
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs text-slate-700">
               <div className="flex items-start gap-2"><MapPin className="w-4 h-4 text-emerald-600 shrink-0" /><span>Địa chỉ: <strong>{material.location.address}</strong>{material.distanceKm !== null && material.distanceKm !== undefined ? ` (Cách bạn ${formatDistance(material.distanceKm)})` : ""}</span></div>
               <div className="flex items-center gap-2"><User className="w-4 h-4 text-slate-400" /><span>Người liên hệ: <strong>{material.contactName || material.owner.name}</strong></span></div>
+              <div className="border-t border-slate-200 pt-2 mt-2 space-y-1">
+                <div className="text-xs font-bold text-slate-700">Hồ sơ người đăng</div>
+                {material.owner.email && <div className="text-xs text-slate-600">Email: {material.owner.email}</div>}
+                {material.owner.phone && <div className="text-xs text-slate-600">SĐT: {material.owner.phone} {material.owner.phoneVerified ? <span className="text-emerald-700 font-semibold">(đã xác minh)</span> : <span className="text-amber-700 font-semibold">(chưa xác minh)</span>}</div>}
+                {material.owner.bio && <div className="text-xs text-slate-600">Giới thiệu: {material.owner.bio}</div>}
+              </div>
               {material.contactHours && <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /><span>Thời gian: <strong>{material.contactHours}</strong></span></div>}
               <div className={`font-bold ${material.location.verificationStatus === "verified" ? "text-emerald-700" : material.location.verificationStatus === "flagged" ? "text-rose-700" : "text-amber-700"}`}>
                 {material.location.verificationStatus === "verified"
