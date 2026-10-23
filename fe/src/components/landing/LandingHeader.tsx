@@ -49,7 +49,7 @@ export const LandingHeader: React.FC = () => {
     <header className="w-full relative z-50">
       {/* Top bar info */}
       <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800 hidden md:block">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-2 sm:px-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
               <Phone className="w-3.5 h-3.5 text-emerald-400" /> Hotline: {config.contact?.hotline || "1900 8899 / 0988 776 655"}
@@ -106,9 +106,9 @@ export const LandingHeader: React.FC = () => {
             : "bg-white py-4 border-b border-slate-100"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 sm:gap-3.5 group">
+          <Link to="/" className="flex items-center gap-3 sm:gap-3.5 group shrink-0">
             {config.general?.logoUrl ? (
               <div className="w-13 h-13 sm:w-14 sm:h-14 md:w-15 md:h-15 rounded-2xl bg-white border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
                 <img
@@ -122,23 +122,26 @@ export const LandingHeader: React.FC = () => {
                 <Recycle className="w-7 h-7 sm:w-8 sm:h-8 animate-spin-slow" />
               </div>
             )}
-            <div className="flex flex-col justify-center min-w-0">
-              <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-slate-900 block leading-tight">
+            <div className="flex flex-col justify-center min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-[260px] xl:max-w-[300px]">
+              <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-slate-900 block leading-tight truncate">
                 {config.general?.siteName || (
                   <>Mat<span className="text-emerald-600">Green</span></>
                 )}
               </span>
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5 sm:mt-2">
+              <span
+                className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-500 block mt-1 truncate"
+                title={config.general?.siteTagline || "Vật Liệu Tuần Hoàn"}
+              >
                 {config.general?.siteTagline || "Vật Liệu Tuần Hoàn"}
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-3.5 xl:gap-6 2xl:gap-8 shrink-0">
             <Link
               to="/"
-              className={`text-sm font-bold transition-colors ${
+              className={`text-xs xl:text-sm font-bold whitespace-nowrap transition-colors ${
                 location.pathname === "/"
                   ? "text-emerald-600 font-extrabold"
                   : "text-slate-700 hover:text-emerald-600"
@@ -148,7 +151,7 @@ export const LandingHeader: React.FC = () => {
             </Link>
             <Link
               to="/about"
-              className={`text-sm font-bold transition-colors ${
+              className={`text-xs xl:text-sm font-bold whitespace-nowrap transition-colors ${
                 location.pathname === "/about"
                   ? "text-emerald-600 font-extrabold"
                   : "text-slate-700 hover:text-emerald-600"
@@ -158,7 +161,7 @@ export const LandingHeader: React.FC = () => {
             </Link>
             <Link
               to="/services"
-              className={`text-sm font-bold transition-colors ${
+              className={`text-xs xl:text-sm font-bold whitespace-nowrap transition-colors ${
                 location.pathname === "/services"
                   ? "text-emerald-600 font-extrabold"
                   : "text-slate-700 hover:text-emerald-600"
@@ -168,7 +171,7 @@ export const LandingHeader: React.FC = () => {
             </Link>
             <Link
               to="/materials"
-              className={`text-sm font-bold transition-colors ${
+              className={`text-xs xl:text-sm font-bold whitespace-nowrap transition-colors ${
                 location.pathname === "/materials"
                   ? "text-emerald-600 font-extrabold"
                   : "text-slate-700 hover:text-emerald-600"
@@ -178,7 +181,7 @@ export const LandingHeader: React.FC = () => {
             </Link>
             <Link
               to="/news"
-              className={`text-sm font-bold transition-colors ${
+              className={`text-xs xl:text-sm font-bold whitespace-nowrap transition-colors ${
                 location.pathname.startsWith("/news")
                   ? "text-emerald-600 font-extrabold"
                   : "text-slate-700 hover:text-emerald-600"
@@ -188,7 +191,7 @@ export const LandingHeader: React.FC = () => {
             </Link>
             <Link
               to="/contact"
-              className={`text-sm font-bold transition-colors ${
+              className={`text-xs xl:text-sm font-bold whitespace-nowrap transition-colors ${
                 location.pathname === "/contact"
                   ? "text-emerald-600 font-extrabold"
                   : "text-slate-700 hover:text-emerald-600"
@@ -199,7 +202,7 @@ export const LandingHeader: React.FC = () => {
           </nav>
 
           {/* Action Buttons */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 xl:gap-3 shrink-0">
             {isAuthenticated && (user?.role === "admin" || user?.role === "moderator") ? (
               <>
                 <Link
