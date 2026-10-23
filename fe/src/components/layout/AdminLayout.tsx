@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Bell,
   CheckCircle2,
+  Settings,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -47,6 +48,13 @@ export const AdminLayout: React.FC = () => {
       href: "/admin/news",
       icon: Newspaper,
       description: "Biên tập cẩm nang & tin tức tuần hoàn",
+      adminOnly: true,
+    },
+    {
+      label: "Cấu Hình Website",
+      href: "/admin/settings",
+      icon: Settings,
+      description: "Logo, favicon, Google Maps, đội ngũ, đối tác",
       adminOnly: true,
     },
   ];

@@ -9,6 +9,7 @@ import { ContactPage } from "@/pages/ContactPage";
 import { NewsPage } from "@/pages/NewsPage";
 import { NewsDetailPage } from "@/pages/NewsDetailPage";
 import { AdminNewsPage } from "@/pages/AdminNewsPage";
+import { AdminSettingsPage } from "@/pages/AdminSettingsPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { HomePage } from "@/pages/HomePage";
 import { PostMaterialPage } from "@/pages/PostMaterialPage";
@@ -85,6 +86,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute requiredRole="admin">
                 <AdminNewsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "settings",
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <AdminSettingsPage />
               </ProtectedRoute>
             ),
           },

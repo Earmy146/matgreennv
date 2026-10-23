@@ -243,6 +243,13 @@ export const adminApi = {
   verifyPhone: async (id: string, verified: boolean, reason: string) => (await api.patch(`/admin/users/${id}/phone-verification`, { verified, reason })).data.data,
   moderateMaterial: async (id: string, status: string, reason: string) => (await api.patch(`/admin/materials/${id}/status`, { status, reason })).data.data,
   auditLogs: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/audit-logs", { params })).data.data,
+  getSiteConfig: async () => (await api.get("/admin/site-config")).data.data,
+  updateSiteConfig: async (data: any) => (await api.put("/admin/site-config", data)).data.data,
+};
+
+export const siteConfigApi = {
+  get: async () => (await api.get("/site-config")).data.data,
+  update: async (data: any) => (await api.put("/admin/site-config", data)).data.data,
 };
 
 export const aiMaterialsApi = {
