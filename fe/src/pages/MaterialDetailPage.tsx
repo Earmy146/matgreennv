@@ -119,10 +119,10 @@ export const MaterialDetailPage: React.FC = () => {
               {material.contactHours && <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /><span>Thời gian: <strong>{material.contactHours}</strong></span></div>}
               <div className={`font-bold ${material.location.verificationStatus === "verified" ? "text-emerald-700" : material.location.verificationStatus === "flagged" ? "text-rose-700" : "text-amber-700"}`}>
                 {material.location.verificationStatus === "verified"
-                  ? "Địa chỉ đã được đối chiếu với bản đồ"
+                  ? "GPS đã được đối chiếu với dữ liệu bản đồ"
                   : material.location.verificationStatus === "flagged"
-                    ? "Địa chỉ và tọa độ cần được kiểm tra thêm"
-                    : "Vị trí do người đăng cung cấp, chưa xác minh"}
+                    ? "GPS có dấu hiệu lệch dữ liệu bản đồ, cần kiểm tra thêm"
+                    : "GPS do người đăng cung cấp, chưa được đối chiếu"}
               </div>
             </div>
             <div>

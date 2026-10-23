@@ -157,10 +157,10 @@ export const MyPostsPage: React.FC = () => {
                         }`}
                       >
                         {post.location?.verificationStatus === "verified"
-                          ? "Đã xác minh vị trí"
+                          ? "GPS đã đối chiếu bản đồ"
                           : post.location?.verificationStatus === "flagged"
-                            ? "Vị trí cần kiểm tra"
-                            : "Chưa xác minh vị trí"}
+                            ? "GPS lệch dữ liệu bản đồ"
+                            : "GPS chưa được đối chiếu"}
                       </span>
                       {post.location?.verificationDistanceKm !== undefined && (
                         <span className="text-slate-400">
