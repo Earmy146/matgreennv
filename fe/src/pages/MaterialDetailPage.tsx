@@ -11,8 +11,10 @@ import {
   Phone,
   User,
   CheckCircle2,
+  Heart,
 } from "lucide-react";
-import { materialRequestsApi, materialsApi } from "@/services/api";
+import { favoritesApi, materialRequestsApi, materialsApi } from "@/services/api";
+import { useAuthStore } from "@/stores/auth.store";
 import { formatCurrency, formatDistance, CATEGORY_LABELS } from "@/lib/utils";
 import { useLocationStore } from "@/stores/location.store";
 
@@ -22,6 +24,16 @@ export const MaterialDetailPage: React.FC = () => {
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [requestMessage, setRequestMessage] = useState("");
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuthStore();
+  const favoriteStatus = useQuery({
+    queryKey: ["favorite-status", id],
+    queryFn: () => favoritesApi.status(id as string),
+    enabled: Boolean(id && isAuthenticated),
+  });
+  const favoriteMutation = useMutation({
+    mutationFn: () => favoriteStatus.data?.saved ? favoritesApi.remove(id as string) : favoritesApi.add(id as string),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorite-status", id] }),
+  });
 
   const { data: material, isLoading, isError } = useQuery({
     queryKey: ["material-detail", id, latitude, longitude],
@@ -110,6 +122,17 @@ export const MaterialDetailPage: React.FC = () => {
           <div className="space-y-4">
             <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{CATEGORY_LABELS[material.category] || "Vật liệu khác"}</div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">{material.title}</h1>
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => favoriteMutation.mutate()}
+                disabled={favoriteMutation.isPending}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold ${favoriteStatus.data?.saved ? "border-rose-200 bg-rose-50 text-rose-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+              >
+                <Heart className={`w-4 h-4 ${favoriteStatus.data?.saved ? "fill-current" : ""}`} />
+                {favoriteStatus.data?.saved ? "Đã lưu bài này" : "Lưu bài này"}
+              </button>
+            )}
             <div className="text-2xl font-extrabold text-amber-600">
               {formatCurrency(material.price)}{material.unit && !isFree ? ` / ${material.unit}` : ""}
             </div>

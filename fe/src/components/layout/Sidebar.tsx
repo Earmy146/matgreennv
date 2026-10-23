@@ -17,6 +17,7 @@ import {
   PhoneCall,
   ShieldCheck,
   ClipboardList,
+  Heart,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLocationStore } from "@/stores/location.store";
@@ -74,6 +75,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: "Kho Vật Liệu Quanh Bạn",
           href: "/materials",
           icon: Compass,
+        },
+        {
+          label: "Vật Liệu Đã Lưu",
+          href: "/saved",
+          icon: Heart,
         },
         {
           label: "Bản Đồ Radar Vị Trí",

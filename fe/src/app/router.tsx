@@ -16,6 +16,7 @@ import { AiAdvisorPage } from "@/pages/AiAdvisorPage";
 import { ChatPage } from "@/pages/ChatPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { MaterialRequestsPage } from "@/pages/MaterialRequestsPage";
+import { SavedMaterialsPage } from "@/pages/SavedMaterialsPage";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -91,6 +92,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MaterialRequestsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "saved",
+        element: (
+          <ProtectedRoute>
+            <SavedMaterialsPage />
           </ProtectedRoute>
         ),
       },

@@ -177,6 +177,31 @@ export const notificationsApi = {
   },
 };
 
+export interface FavoriteItem {
+  _id: string;
+  createdAt: string;
+  material: MaterialItem;
+}
+
+export const favoritesApi = {
+  list: async () => {
+    const res = await api.get<{ data: FavoriteItem[] }>("/favorites");
+    return res.data.data;
+  },
+  status: async (materialId: string) => {
+    const res = await api.get<{ data: { materialId: string; saved: boolean } }>(`/favorites/${materialId}/status`);
+    return res.data.data;
+  },
+  add: async (materialId: string) => {
+    const res = await api.post<{ data: { materialId: string; saved: boolean } }>(`/favorites/${materialId}`);
+    return res.data.data;
+  },
+  remove: async (materialId: string) => {
+    const res = await api.delete<{ data: { materialId: string; saved: boolean } }>(`/favorites/${materialId}`);
+    return res.data.data;
+  },
+};
+
 export const aiMaterialsApi = {
   analyzeDemolition: async (description: string, address?: string) => {
     const res = await aiApi.post("/ai/materials/analyze-demolition", {

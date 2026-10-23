@@ -7,6 +7,7 @@ const chatRoutes = require("./chat.routes");
 const uploadRoutes = require("./upload.routes");
 const materialRequestRoutes = require("./material-request.routes");
 const notificationRoutes = require("./notification.routes");
+const favoriteRoutes = require("./favorite.routes");
 
 router.get("/health", (req, res) => {
   res.json({
@@ -22,5 +23,6 @@ router.use("/chat", chatRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/material-requests", materialRequestRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/favorites", favoriteRoutes);
 
 module.exports = router;
