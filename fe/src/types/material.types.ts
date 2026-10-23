@@ -18,6 +18,11 @@ export interface MaterialLocation {
   accuracy?: number;
   capturedAt?: string;
   source?: "browser_gps" | "verified" | "seed";
+  verificationStatus?: "unverified" | "verified" | "flagged";
+  verifiedAddress?: string;
+  verifiedAt?: string;
+  verificationDistanceKm?: number;
+  verificationError?: string;
 }
 
 export interface MaterialItem {

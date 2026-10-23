@@ -23,4 +23,7 @@ module.exports = {
   JWT_SECRET: process.env.JWT_SECRET || "matgreen_dev_secret_key_1234567890",
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   CORS_ORIGINS: process.env.CORS_ORIGINS || "*",
+  LOCATION_VERIFICATION_ENABLED: process.env.LOCATION_VERIFICATION_ENABLED === "true",
+  LOCATION_VERIFICATION_USER_AGENT:
+    process.env.LOCATION_VERIFICATION_USER_AGENT || "MatGreen/1.0 (location-verification)",
 };

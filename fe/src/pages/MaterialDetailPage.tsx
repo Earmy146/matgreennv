@@ -117,6 +117,13 @@ export const MaterialDetailPage: React.FC = () => {
               <div className="flex items-start gap-2"><MapPin className="w-4 h-4 text-emerald-600 shrink-0" /><span>Địa chỉ: <strong>{material.location.address}</strong>{material.distanceKm !== null && material.distanceKm !== undefined ? ` (Cách bạn ${formatDistance(material.distanceKm)})` : ""}</span></div>
               <div className="flex items-center gap-2"><User className="w-4 h-4 text-slate-400" /><span>Người liên hệ: <strong>{material.contactName || material.owner.name}</strong></span></div>
               {material.contactHours && <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /><span>Thời gian: <strong>{material.contactHours}</strong></span></div>}
+              <div className={`font-bold ${material.location.verificationStatus === "verified" ? "text-emerald-700" : material.location.verificationStatus === "flagged" ? "text-rose-700" : "text-amber-700"}`}>
+                {material.location.verificationStatus === "verified"
+                  ? "Địa chỉ đã được đối chiếu với bản đồ"
+                  : material.location.verificationStatus === "flagged"
+                    ? "Địa chỉ và tọa độ cần được kiểm tra thêm"
+                    : "Vị trí do người đăng cung cấp, chưa xác minh"}
+              </div>
             </div>
             <div>
               <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mô tả hiện trạng</h2>

@@ -39,6 +39,10 @@ export const materialsApi = {
     const res = await api.delete<{ data: { success: boolean; message: string } }>(`/materials/${id}`);
     return res.data.data;
   },
+  verifyLocation: async (id: string) => {
+    const res = await api.post<{ data: MaterialItem }>(`/materials/${id}/verify-location`);
+    return res.data.data;
+  },
 
   getById: async (id: string, coords?: { lat?: number; lng?: number }) => {
     const res = await api.get<{ data: MaterialItem }>(`/materials/${id}`, { params: coords });

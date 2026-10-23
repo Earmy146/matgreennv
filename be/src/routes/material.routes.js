@@ -3,6 +3,12 @@ const router = express.Router();
 const materialController = require("../controllers/material.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
 const { createUserRateLimit } = require("../middlewares/user-rate-limit.middleware");
+const locationVerificationController = require("../controllers/location-verification.controller");
+const locationVerificationLimit = createUserRateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  message: "Bạn đã yêu cầu xác minh vị trí quá nhiều lần, vui lòng thử lại sau",
+});
 
 const createMaterialLimit = createUserRateLimit({
   windowMs: 60 * 60 * 1000,
@@ -24,6 +30,12 @@ router.get("/:id", materialController.getById);
 
 // Đăng bài vật liệu thừa (yêu cầu đăng nhập)
 router.post("/", authenticate, createMaterialLimit, materialController.create);
+router.post(
+  "/:id/verify-location",
+  authenticate,
+  locationVerificationLimit,
+  locationVerificationController.verifyMaterial
+);
 
 // Cập nhật trạng thái bài đăng (available -> reserved -> completed)
 router.patch("/:id/status", authenticate, materialController.updateStatus);

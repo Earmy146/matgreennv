@@ -41,6 +41,10 @@ export const MyPostsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["my-materials"] });
     },
   });
+  const verifyLocation = useMutation({
+    mutationFn: (id: string) => materialsApi.verifyLocation(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-materials"] }),
+  });
 
   const deletePost = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa tin đăng vật liệu này?")) {
@@ -142,6 +146,28 @@ export const MyPostsPage: React.FC = () => {
                     <div className="text-xs font-bold text-amber-600">
                       {formatCurrency(post.price)} {post.unit && !isFree ? ` / ${post.unit}` : ""}
                     </div>
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <span
+                        className={`font-bold ${
+                          post.location?.verificationStatus === "verified"
+                            ? "text-emerald-700"
+                            : post.location?.verificationStatus === "flagged"
+                              ? "text-rose-700"
+                              : "text-amber-700"
+                        }`}
+                      >
+                        {post.location?.verificationStatus === "verified"
+                          ? "Đã xác minh vị trí"
+                          : post.location?.verificationStatus === "flagged"
+                            ? "Vị trí cần kiểm tra"
+                            : "Chưa xác minh vị trí"}
+                      </span>
+                      {post.location?.verificationDistanceKm !== undefined && (
+                        <span className="text-slate-400">
+                          lệch {post.location.verificationDistanceKm.toFixed(2)} km
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -179,6 +205,15 @@ export const MyPostsPage: React.FC = () => {
                   >
                     <Eye className="w-4 h-4" />
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => verifyLocation.mutate(post._id)}
+                    disabled={verifyLocation.isPending}
+                    className="px-2 py-2 rounded-xl border border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-[11px] font-bold disabled:opacity-50"
+                    title="Đối chiếu GPS với địa chỉ bản đồ"
+                  >
+                    Xác minh GPS
+                  </button>
 
                   <button
                     onClick={() => deletePost(post._id)}

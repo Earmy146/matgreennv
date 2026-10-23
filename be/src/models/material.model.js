@@ -91,6 +91,10 @@ const materialSchema = new mongoose.Schema(
         enum: ["unverified", "verified", "flagged"],
         default: "unverified",
       },
+      verifiedAddress: { type: String, trim: true },
+      verifiedAt: Date,
+      verificationDistanceKm: { type: Number, min: 0 },
+      verificationError: { type: String, maxlength: 500 },
     },
     contactPhone: {
       type: String,
