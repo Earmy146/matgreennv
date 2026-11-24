@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useLocationStore } from "@/stores/location.store";
+import { materialsApi } from "@/services/api";
 
 export function useGeolocation() {
   const [error, setError] = useState<string | null>(null);
@@ -16,36 +17,45 @@ export function useGeolocation() {
 
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation(
-          latitude,
-          longitude,
-          `GPS (${latitude.toFixed(5)}, ${longitude.toFixed(5)})`,
-          position.coords.accuracy,
-          new Date(position.timestamp).toISOString()
-        );
-        setIsLocating(false);
-        resolve(position);
-      },
-      (err) => {
-        setIsLocating(false);
-        let errorMsg = "Không thể lấy vị trí hiện tại.";
-        if (err.code === 1) {
-          errorMsg = "Bạn đã từ chối quyền truy cập vị trí trên trình duyệt.";
-        } else if (err.code === 2) {
-          errorMsg = "Không thể xác định vị trí vệ tinh/mạng.";
-        } else if (err.code === 3) {
-          errorMsg = "Quá thời gian lấy vị trí.";
+        async (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          const capturedIso = new Date().toISOString();
+          let resolvedAddress = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+
+          // Set coordinates immediately for snappy UI
+          setLocation(latitude, longitude, resolvedAddress, accuracy, capturedIso);
+
+          try {
+            const geo = await materialsApi.reverseGeocode(latitude, longitude);
+            if (geo?.address) {
+              resolvedAddress = geo.address;
+              setLocation(latitude, longitude, resolvedAddress, accuracy, capturedIso);
+            }
+          } catch {
+            // Keep numeric coordinates fallback if reverse geocode fails
+          }
+
+          setIsLocating(false);
+          resolve(position);
+        },
+        (err) => {
+          setIsLocating(false);
+          let errorMsg = "Không thể lấy vị trí hiện tại.";
+          if (err.code === 1) {
+            errorMsg = "Bạn đã từ chối quyền truy cập vị trí trên trình duyệt.";
+          } else if (err.code === 2) {
+            errorMsg = "Không thể xác định vị trí vệ tinh/mạng.";
+          } else if (err.code === 3) {
+            errorMsg = "Quá thời gian lấy vị trí.";
+          }
+          setError(errorMsg);
+          reject(new Error(errorMsg));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
         }
-        setError(errorMsg);
-        reject(new Error(errorMsg));
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
-      }
       );
     });
   }, [setLocation, setIsLocating]);

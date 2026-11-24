@@ -1,152 +1,208 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
-  BarChart3,
-  CheckCircle2,
-  History,
-  Shield,
-  Users,
-  Search,
-  Filter,
   Check,
-  X,
-  Phone,
-  Eye,
-  Edit3,
-  Lock,
-  Unlock,
-  ShieldCheck,
+  CheckCircle2,
   Clock,
-  Layers,
-  ArrowRight,
+  Edit3,
   ExternalLink,
+  Eye,
+  History,
+  Layers,
   Loader2,
-  FileText,
-  BadgeAlert,
+  Lock,
+  Phone,
+  Search,
+  Shield,
+  Tag,
+  Trash2,
+  Users,
+  X,
 } from "lucide-react";
 import { adminApi, reportsApi } from "@/services/api";
+import { useAuthStore } from "@/stores/auth.store";
+import { toast } from "@/stores/toast.store";
 import { AdminEditMaterialModal } from "@/components/admin/AdminEditMaterialModal";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { AUDIT_ACTION_LABELS } from "./AdminHubPage";
 import { CATEGORY_LABELS, formatPrice } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
 type TabType = "materials" | "reports" | "phoneVerification" | "users" | "auditLogs";
 
+interface PendingReasonAction {
+  title: string;
+  defaultReason: string;
+  presets: string[];
+  danger?: boolean;
+  confirmLabel: string;
+  execute: (reason: string) => void;
+}
+
 export const AdminModerationPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "superadmin";
+
   const [activeTab, setActiveTab] = useState<TabType>("materials");
 
-  // Tab Pagination states
+  // Pagination & Server-side filters
   const [materialPage, setMaterialPage] = useState(1);
+  const [materialSearch, setMaterialSearch] = useState("");
+  const [materialStatusFilter, setMaterialStatusFilter] = useState("all");
+  const [materialCategoryFilter, setMaterialCategoryFilter] = useState("all");
+
   const [reportPage, setReportPage] = useState(1);
+  const [reportStatusFilter, setReportStatusFilter] = useState("all");
+
   const [userPage, setUserPage] = useState(1);
+  const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const [userSuspendedFilter, setUserSuspendedFilter] = useState("all");
 
-  // Search & Filters
-  const [searchQuery, setSearchQuery] = useState("");
-  const [materialStatusFilter, setMaterialStatusFilter] = useState<string>("all");
-  const [reportStatusFilter, setReportStatusFilter] = useState<string>("all");
-
-  // Action reasons state
-  const [reasonMap, setReasonMap] = useState<Record<string, string>>({});
-
-  // Edit Modal State
+  // Modals
   const [selectedMaterialForEdit, setSelectedMaterialForEdit] = useState<any | null>(null);
+  const [reasonModal, setReasonModal] = useState<PendingReasonAction | null>(null);
 
-  // Data Queries
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: adminApi.stats,
   });
 
   const { data: materialsData, isLoading: materialsLoading, refetch: refetchMaterials } = useQuery({
-    queryKey: ["admin-materials", materialPage],
-    queryFn: () => adminApi.materials({ page: materialPage, limit: PAGE_SIZE }),
+    queryKey: [
+      "admin-materials",
+      materialPage,
+      materialSearch,
+      materialStatusFilter,
+      materialCategoryFilter,
+    ],
+    queryFn: () =>
+      adminApi.materials({
+        page: materialPage,
+        limit: PAGE_SIZE,
+        search: materialSearch.trim() || undefined,
+        status: materialStatusFilter !== "all" ? materialStatusFilter : undefined,
+        category: materialCategoryFilter !== "all" ? materialCategoryFilter : undefined,
+      }),
   });
 
-  const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
-    queryKey: ["admin-reports", reportPage],
-    queryFn: () => reportsApi.list({ page: reportPage, limit: PAGE_SIZE }),
+  const { data: reportsData, isLoading: reportsLoading } = useQuery({
+    queryKey: ["admin-reports", reportPage, reportStatusFilter],
+    queryFn: () =>
+      reportsApi.list({
+        page: reportPage,
+        limit: PAGE_SIZE,
+        status: reportStatusFilter !== "all" ? reportStatusFilter : undefined,
+      }),
   });
 
-  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
-    queryKey: ["admin-users", userPage],
-    queryFn: () => adminApi.users({ page: userPage, limit: PAGE_SIZE }),
+  const { data: usersData, isLoading: usersLoading } = useQuery({
+    queryKey: ["admin-users", userPage, userSearch, userRoleFilter, userSuspendedFilter],
+    queryFn: () =>
+      adminApi.users({
+        page: userPage,
+        limit: PAGE_SIZE,
+        search: userSearch.trim() || undefined,
+        role: userRoleFilter !== "all" ? userRoleFilter : undefined,
+        suspended: userSuspendedFilter !== "all" ? userSuspendedFilter : undefined,
+      }),
   });
 
-  const { data: phoneRequestsData, isLoading: phoneLoading, refetch: refetchPhones } = useQuery({
+  const { data: phoneRequestsData, isLoading: phoneLoading } = useQuery({
     queryKey: ["phone-verification-requests"],
-    queryFn: () => adminApi.phoneVerificationRequests({ limit: PAGE_SIZE }),
+    queryFn: () => adminApi.phoneVerificationRequests({ limit: 30 }),
   });
 
   const { data: auditLogsData, isLoading: auditLoading } = useQuery({
     queryKey: ["admin-audit-logs"],
-    queryFn: () => adminApi.auditLogs({ limit: 30 }),
+    queryFn: () => adminApi.auditLogs({ limit: 40 }),
   });
 
-  // Action Mutations
+  const refreshAllAdmin = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-materials"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    queryClient.invalidateQueries({ queryKey: ["phone-verification-requests"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+  };
+
   const reportUpdateMutation = useMutation({
-    mutationFn: ({ id, status, actionReason }: { id: string; status: string; actionReason: string }) =>
-      reportsApi.update(id, status, actionReason),
+    mutationFn: ({ id, status, reason }: { id: string; status: string; reason: string }) =>
+      reportsApi.update(id, status, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      refreshAllAdmin();
+      setReasonModal(null);
+      toast.success("Đã cập nhật trạng thái xử lý báo cáo");
     },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể xử lý báo cáo"),
   });
 
   const suspendMutation = useMutation({
-    mutationFn: ({ id, suspended, actionReason }: { id: string; suspended: boolean; actionReason: string }) =>
-      adminApi.suspendUser(id, suspended, actionReason),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    mutationFn: ({ id, suspended, reason }: { id: string; suspended: boolean; reason: string }) =>
+      adminApi.suspendUser(id, suspended, reason),
+    onSuccess: (_d, vars) => {
+      refreshAllAdmin();
+      setReasonModal(null);
+      toast.success(vars.suspended ? "Đã khóa tài khoản vi phạm" : "Đã mở khóa tài khoản");
     },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể cập nhật tài khoản"),
+  });
+
+  const roleMutation = useMutation({
+    mutationFn: ({ id, role, reason }: { id: string; role: "user" | "moderator"; reason: string }) =>
+      adminApi.updateUserRole(id, role, reason),
+    onSuccess: () => {
+      refreshAllAdmin();
+      setReasonModal(null);
+      toast.success("Đã cập nhật vai trò người dùng");
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể đổi vai trò"),
   });
 
   const moderateMaterialMutation = useMutation({
-    mutationFn: ({ id, status, actionReason }: { id: string; status: string; actionReason: string }) =>
-      adminApi.moderateMaterial(id, status, actionReason),
+    mutationFn: ({ id, status, reason }: { id: string; status: string; reason: string }) =>
+      adminApi.moderateMaterial(id, status, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-materials"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      refreshAllAdmin();
+      setReasonModal(null);
+      toast.success("Đã cập nhật trạng thái hiển thị bài đăng");
     },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể kiểm duyệt bài đăng"),
+  });
+
+  const deleteMaterialMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      adminApi.deleteMaterial(id, reason),
+    onSuccess: () => {
+      refreshAllAdmin();
+      setReasonModal(null);
+      toast.success("Đã xóa vĩnh viễn bài đăng vi phạm");
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể xóa bài đăng"),
   });
 
   const verifyPhoneMutation = useMutation({
-    mutationFn: ({ id, verified, actionReason }: { id: string; verified: boolean; actionReason: string }) =>
-      adminApi.verifyPhone(id, verified, actionReason),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["phone-verification-requests"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+    mutationFn: ({ id, verified, reason }: { id: string; verified: boolean; reason: string }) =>
+      adminApi.verifyPhone(id, verified, reason),
+    onSuccess: (_d, vars) => {
+      refreshAllAdmin();
+      setReasonModal(null);
+      toast.success(vars.verified ? "Đã xác minh số điện thoại" : "Đã từ chối yêu cầu xác minh");
     },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể xử lý xác minh SĐT"),
   });
 
-  const getOrPromptReason = (id: string, defaultReason: string = "") => {
-    if (reasonMap[id]?.trim()) return reasonMap[id].trim();
-    const input = window.prompt("Nhập lý do kiểm duyệt bắt buộc cho thao tác này:", defaultReason);
-    if (!input?.trim()) return null;
-    const clean = input.trim();
-    setReasonMap((prev) => ({ ...prev, [id]: clean }));
-    return clean;
-  };
-
-  // Filtered lists
-  const filteredMaterials = (materialsData?.items || []).filter((item: any) => {
-    const matchesStatus =
-      materialStatusFilter === "all" || item.status === materialStatusFilter;
-    const matchesSearch =
-      !searchQuery.trim() ||
-      item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.author?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
-  const filteredReports = (reportsData?.items || []).filter((rep: any) => {
-    if (reportStatusFilter === "all") return true;
-    return rep.status === reportStatusFilter;
-  });
+  const isMutating =
+    reportUpdateMutation.isPending ||
+    suspendMutation.isPending ||
+    roleMutation.isPending ||
+    moderateMaterialMutation.isPending ||
+    deleteMaterialMutation.isPending ||
+    verifyPhoneMutation.isPending;
 
   const Pager = ({
     page,
@@ -163,9 +219,12 @@ export const AdminModerationPage: React.FC = () => {
     return (
       <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-2 border-t border-slate-100 text-xs text-slate-500 gap-3">
         <span className="font-medium">
-          Hiển thị trang <strong>{page}</strong> / <strong>{pages}</strong>
+          Trang <strong>{page}</strong> / <strong>{pages}</strong>
           {totalCount !== undefined && (
-            <span> (Tổng cộng <strong>{totalCount}</strong> mục)</span>
+            <span>
+              {" "}
+              (Tổng cộng <strong>{totalCount}</strong> mục)
+            </span>
           )}
         </span>
         <div className="flex items-center gap-1.5">
@@ -173,122 +232,91 @@ export const AdminModerationPage: React.FC = () => {
             type="button"
             disabled={page <= 1}
             onClick={() => onChange(page - 1)}
-            className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold cursor-pointer"
           >
-            Trang trước
+            Trước
           </button>
-          
-          <div className="flex items-center gap-1">
-            {Array.from({ length: pages }).map((_, idx) => {
-              const pageNum = idx + 1;
-              return (
-                <button
-                  key={pageNum}
-                  type="button"
-                  onClick={() => onChange(pageNum)}
-                  className={`w-7 h-7 rounded-xl font-bold transition-all cursor-pointer ${
-                    pageNum === page
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "border border-slate-200 text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-
           <button
             type="button"
             disabled={page >= pages}
             onClick={() => onChange(page + 1)}
-            className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-40 font-bold cursor-pointer"
           >
-            Trang sau
+            Sau
           </button>
         </div>
       </div>
     );
   };
 
+  const materialItems = materialsData?.items || [];
+  const reportItems = reportsData?.items || [];
+  const userItems = usersData?.items || [];
+  const phoneItems = phoneRequestsData?.items || [];
+
   return (
     <div className="space-y-6 animate-fadeIn" data-lenis-prevent>
-      {/* Header Top */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-            <Shield className="w-4 h-4 text-emerald-600" />
-            <span>Phân Hệ Quản Trị Vận Hành</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Kiểm Duyệt & An Toàn Nền Tảng
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Giám sát chất lượng nguồn cung, xử lý tố cáo vi phạm, xác minh danh tính và ghi nhận toàn bộ nhật ký thao tác.
-          </p>
+      <div>
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+          <Shield className="w-4 h-4 text-emerald-600" />
+          <span>Phân Hệ Quản Trị Vận Hành</span>
         </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Kiểm Duyệt & An Toàn Nền Tảng
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Lọc trực tiếp trên toàn bộ cơ sở dữ liệu, xử lý tố cáo vi phạm, xác minh SĐT và phân quyền thành viên.
+        </p>
       </div>
 
-      {/* KPI Stats Ribbon */}
+      {/* KPI Ribbon */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
             <span>Bài Đăng</span>
             <Layers className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-slate-900">{stats?.materials || 0}</div>
-          <span className="text-[10px] text-slate-400">Nguồn cung trên sàn</span>
+          <div className="text-2xl font-black text-slate-900">{stats?.materials ?? 0}</div>
         </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
             <span>Báo Cáo Mở</span>
             <AlertTriangle className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-black text-amber-600">{stats?.reports?.open || 0}</div>
-          <span className="text-[10px] text-slate-400">Cần xử lý gấp</span>
+          <div className="text-2xl font-black text-amber-600">{stats?.reports?.open ?? 0}</div>
         </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
             <span>Đang Xem Xét</span>
             <History className="w-4 h-4 text-sky-500" />
           </div>
-          <div className="text-2xl font-black text-sky-600">{stats?.reports?.reviewing || 0}</div>
-          <span className="text-[10px] text-slate-400">Đang kiểm chứng</span>
+          <div className="text-2xl font-black text-sky-600">{stats?.reports?.reviewing ?? 0}</div>
         </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
             <span>Đã Xử Lý</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-emerald-600">{stats?.reports?.resolved || 0}</div>
-          <span className="text-[10px] text-slate-400">Báo cáo hoàn tất</span>
+          <div className="text-2xl font-black text-emerald-600">{stats?.reports?.resolved ?? 0}</div>
         </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
             <span>Thành Viên</span>
             <Users className="w-4 h-4 text-teal-600" />
           </div>
-          <div className="text-2xl font-black text-slate-900">{stats?.users || 0}</div>
-          <span className="text-[10px] text-slate-400">Đã đăng ký</span>
+          <div className="text-2xl font-black text-slate-900">{stats?.users ?? 0}</div>
         </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
             <span>Tài Khoản Khóa</span>
             <Shield className="w-4 h-4 text-rose-500" />
           </div>
-          <div className="text-2xl font-black text-rose-600">{stats?.suspendedUsers || 0}</div>
-          <span className="text-[10px] text-slate-400">Vi phạm quy chế</span>
+          <div className="text-2xl font-black text-rose-600">{stats?.suspendedUsers ?? 0}</div>
         </div>
       </div>
 
       {/* Main Tabbed Container */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
-        {/* Navigation Tabs Header */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
         <div className="border-b border-slate-200 bg-slate-50/60 px-4 sm:px-6 pt-3 flex items-center gap-2 overflow-x-auto">
           <button
             type="button"
@@ -300,9 +328,9 @@ export const AdminModerationPage: React.FC = () => {
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Kiểm Duyệt Bài Đăng</span>
+            <span>Bài Đăng</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px]">
-              {materialsData?.pagination?.totalItems || 0}
+              {materialsData?.pagination?.total ?? stats?.materials ?? 0}
             </span>
           </button>
 
@@ -334,10 +362,10 @@ export const AdminModerationPage: React.FC = () => {
             }`}
           >
             <Phone className="w-4 h-4 text-emerald-600" />
-            <span>Xác Minh Số Điện Thoại</span>
-            {(phoneRequestsData?.items?.length || 0) > 0 && (
+            <span>Xác Minh SĐT</span>
+            {phoneItems.length > 0 && (
               <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px]">
-                {phoneRequestsData?.items?.length}
+                {phoneItems.length}
               </span>
             )}
           </button>
@@ -352,7 +380,10 @@ export const AdminModerationPage: React.FC = () => {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Danh Sách Thành Viên</span>
+            <span>Thành Viên</span>
+            <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px]">
+              {usersData?.pagination?.total ?? stats?.users ?? 0}
+            </span>
           </button>
 
           <button
@@ -369,49 +400,68 @@ export const AdminModerationPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Tab Body */}
         <div className="p-4 sm:p-6">
-          {/* TAB 1: KIỂM DUYỆT BÀI ĐĂNG */}
+          {/* TAB 1: MATERIALS */}
           {activeTab === "materials" && (
             <div className="space-y-4">
-              {/* Filter bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:w-72">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+                <div className="flex flex-wrap items-center gap-2 flex-1">
+                  <div className="relative flex-1 min-w-[210px] max-w-xs">
                     <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <input
                       type="text"
-                      placeholder="Tìm bài đăng hoặc tên người đăng..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Tìm theo tiêu đề, địa chỉ, SĐT..."
+                      value={materialSearch}
+                      onChange={(e) => {
+                        setMaterialSearch(e.target.value);
+                        setMaterialPage(1);
+                      }}
                       className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <select
                     value={materialStatusFilter}
-                    onChange={(e) => setMaterialStatusFilter(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none"
+                    onChange={(e) => {
+                      setMaterialStatusFilter(e.target.value);
+                      setMaterialPage(1);
+                    }}
+                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white font-semibold"
                   >
                     <option value="all">Tất cả trạng thái</option>
                     <option value="available">🟢 Đang hiển thị</option>
-                    <option value="pending">🟡 Chờ kiểm duyệt</option>
+                    <option value="reserved">🟡 Đã đặt chỗ</option>
                     <option value="completed">⚪ Đã ẩn / Hoàn thành</option>
+                  </select>
+
+                  <select
+                    value={materialCategoryFilter}
+                    onChange={(e) => {
+                      setMaterialCategoryFilter(e.target.value);
+                      setMaterialPage(1);
+                    }}
+                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white font-semibold"
+                  >
+                    <option value="all">Tất cả danh mục</option>
+                    {Object.entries(CATEGORY_LABELS).map(([k, label]) => (
+                      <option key={k} value={k}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                <div className="text-xs text-slate-400">
-                  Tìm thấy <strong>{filteredMaterials.length}</strong> bài đăng
-                </div>
+                <span className="text-xs text-slate-400">
+                  Kết quả: <strong>{materialsData?.pagination?.total ?? 0}</strong> bài
+                </span>
               </div>
 
-              {/* Table of materials */}
               {materialsLoading ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                   Đang tải danh sách bài đăng...
                 </div>
-              ) : filteredMaterials.length === 0 ? (
+              ) : materialItems.length === 0 ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   Không tìm thấy bài đăng nào phù hợp bộ lọc.
                 </div>
@@ -428,159 +478,185 @@ export const AdminModerationPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filteredMaterials.map((item: any) => (
-                        <tr key={item._id} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-3.5 pr-4">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={
-                                  item.images?.[0] ||
-                                  "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=160&q=80"
-                                }
-                                alt=""
-                                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100"
-                              />
-                              <div className="min-w-0">
-                                <div className="font-bold text-slate-900 text-xs truncate max-w-xs">
-                                  {item.title}
-                                </div>
-                                <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
-                                  <span className="font-medium text-emerald-700">
-                                    {CATEGORY_LABELS[item.category] || item.category}
-                                  </span>
-                                  <span>·</span>
-                                  <span className="truncate max-w-[150px]">
-                                    {item.address || "Chưa có địa chỉ"}
-                                  </span>
+                      {materialItems.map((item: any) => {
+                        const ownerObj = item.owner || item.author;
+                        const addr = item.location?.address || item.address || "Chưa có địa chỉ";
+                        return (
+                          <tr key={item._id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-3.5 pr-4">
+                              <div className="flex items-center gap-3">
+                                {item.images?.[0] ? (
+                                  <img
+                                    src={item.images[0]}
+                                    alt=""
+                                    className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                    <Tag className="w-4 h-4" />
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <div className="font-bold text-slate-900 text-xs truncate max-w-xs">
+                                    {item.title}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
+                                    <span className="font-semibold text-emerald-700">
+                                      {CATEGORY_LABELS[item.category] || item.category}
+                                    </span>
+                                    <span>·</span>
+                                    <span className="truncate max-w-[180px]" title={addr}>
+                                      {addr}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
+                            </td>
 
-                          <td className="py-3.5 pr-4">
-                            <div className="font-semibold text-slate-800">
-                              {item.author?.name || "Người dùng"}
-                            </div>
-                            <div className="text-[11px] text-slate-400 font-mono">
-                              {item.contactPhone || "Chưa có SĐT"}
-                            </div>
-                          </td>
+                            <td className="py-3.5 pr-4">
+                              <div className="font-bold text-slate-800">
+                                {ownerObj?.name || "Thành viên"}
+                              </div>
+                              <div className="text-[11px] text-slate-400 font-mono">
+                                {item.contactPhone || ownerObj?.phone || ownerObj?.email || ""}
+                              </div>
+                            </td>
 
-                          <td className="py-3.5 pr-4">
-                            <div className="font-bold text-slate-900">
-                              {item.price === 0 ? (
-                                <span className="text-emerald-700 font-bold">🎁 Miễn Phí (0đ)</span>
-                              ) : (
-                                formatPrice(item.price)
+                            <td className="py-3.5 pr-4">
+                              <div className="font-bold text-slate-900">
+                                {item.type === "free" || item.price === 0 ? (
+                                  <span className="text-emerald-700 font-bold">Cho/Tặng 0đ</span>
+                                ) : (
+                                  formatPrice(item.price)
+                                )}
+                              </div>
+                              {item.unit && item.type === "sell" && (
+                                <div className="text-[10px] text-slate-400">/{item.unit}</div>
                               )}
-                            </div>
-                            {item.unit && (
-                              <div className="text-[10px] text-slate-400">/{item.unit}</div>
-                            )}
-                          </td>
+                            </td>
 
-                          <td className="py-3.5 pr-4">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                                item.status === "available"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : item.status === "pending"
-                                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                                  : "bg-slate-100 text-slate-600 border-slate-200"
-                              }`}
-                            >
+                            <td className="py-3.5 pr-4">
                               <span
-                                className={`w-1.5 h-1.5 rounded-full ${
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
                                   item.status === "available"
-                                    ? "bg-emerald-500"
-                                    : item.status === "pending"
-                                    ? "bg-amber-500"
-                                    : "bg-slate-400"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : item.status === "reserved"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-slate-100 text-slate-600 border-slate-200"
                                 }`}
-                              />
-                              {item.status === "available"
-                                ? "Đang hiển thị"
-                                : item.status === "pending"
-                                ? "Chờ duyệt"
-                                : "Đã ẩn / Hoàn thành"}
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Chỉnh Sửa Trực Tiếp Bài Đăng */}
-                              <button
-                                type="button"
-                                onClick={() => setSelectedMaterialForEdit(item)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200 transition-colors cursor-pointer"
-                                title="Chỉnh sửa nội dung bài đăng bằng bộ công cụ nâng cao"
                               >
-                                <Edit3 className="w-3.5 h-3.5" />
-                                <span>Sửa Bài</span>
-                              </button>
+                                {item.status === "available"
+                                  ? "Đang hiển thị"
+                                  : item.status === "reserved"
+                                  ? "Đã đặt chỗ"
+                                  : "Đã đóng"}
+                              </span>
+                            </td>
 
-                              {/* Duyệt hiển thị nếu đang pending */}
-                              {item.status !== "available" && (
+                            <td className="py-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const actionReason = getOrPromptReason(
-                                      item._id,
-                                      "Phê duyệt bài đăng hợp lệ"
-                                    );
-                                    if (actionReason) {
-                                      moderateMaterialMutation.mutate({
-                                        id: item._id,
-                                        status: "available",
-                                        actionReason,
-                                      });
-                                    }
-                                  }}
-                                  className="p-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer"
-                                  title="Duyệt hiển thị bài đăng"
+                                  onClick={() => setSelectedMaterialForEdit(item)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200 cursor-pointer"
                                 >
-                                  <Check className="w-3.5 h-3.5" />
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <span>Sửa</span>
                                 </button>
-                              )}
 
-                              {/* Ẩn bài đăng nếu đang hiển thị */}
-                              {item.status === "available" && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const actionReason = getOrPromptReason(
-                                      item._id,
-                                      "Nội dung cần chỉnh sửa hoặc tạm dừng hiển thị"
-                                    );
-                                    if (actionReason) {
-                                      moderateMaterialMutation.mutate({
-                                        id: item._id,
-                                        status: "completed",
-                                        actionReason,
-                                      });
+                                {isAdmin && item.status !== "available" && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setReasonModal({
+                                        title: "Duyệt hiển thị lại bài đăng",
+                                        defaultReason: "Bài đăng hợp lệ, đủ điều kiện hiển thị trên sàn",
+                                        presets: [
+                                          "Bài đăng hợp lệ, đủ điều kiện hiển thị trên sàn",
+                                          "Đã cập nhật đầy đủ ảnh và thông tin liên hệ",
+                                        ],
+                                        confirmLabel: "Duyệt hiển thị",
+                                        execute: (reason) =>
+                                          moderateMaterialMutation.mutate({
+                                            id: item._id,
+                                            status: "available",
+                                            reason,
+                                          }),
+                                      })
                                     }
-                                  }}
-                                  className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
-                                  title="Ẩn bài viết khỏi sàn"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              )}
+                                    className="p-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                                    title="Duyệt hiển thị"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
 
-                              {/* Xem trên sàn */}
-                              <a
-                                href={`/materials/${item._id}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-                                title="Xem bài đăng ngoài sàn"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                {isAdmin && item.status === "available" && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setReasonModal({
+                                        title: "Tạm ẩn bài đăng khỏi sàn",
+                                        defaultReason: "Nội dung hoặc tọa độ cần bổ sung rõ hơn",
+                                        presets: [
+                                          "Nội dung hoặc tọa độ cần bổ sung rõ hơn",
+                                          "Thông tin liên hệ không chính xác",
+                                          "Vật liệu đã hết nhưng chưa đóng bài",
+                                        ],
+                                        danger: true,
+                                        confirmLabel: "Ẩn bài đăng",
+                                        execute: (reason) =>
+                                          moderateMaterialMutation.mutate({
+                                            id: item._id,
+                                            status: "completed",
+                                            reason,
+                                          }),
+                                      })
+                                    }
+                                    className="p-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 cursor-pointer"
+                                    title="Tạm ẩn bài"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+
+                                {isAdmin && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setReasonModal({
+                                        title: "Xóa vĩnh viễn bài đăng vi phạm",
+                                        defaultReason: "Bài đăng spam / sai sự thật vi phạm quy chế MatGreen",
+                                        presets: [
+                                          "Bài đăng spam / quảng cáo sai quy định",
+                                          "Bài đăng trùng lặp nhiều lần",
+                                          "Dấu hiệu lừa đảo / thông tin giả mạo",
+                                        ],
+                                        danger: true,
+                                        confirmLabel: "Xóa vĩnh viễn",
+                                        execute: (reason) =>
+                                          deleteMaterialMutation.mutate({ id: item._id, reason }),
+                                      })
+                                    }
+                                    className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer"
+                                    title="Xóa vĩnh viễn"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+
+                                <Link
+                                  to={`/materials/${item._id}`}
+                                  className="p-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                                  title="Xem trên sàn"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
 
@@ -595,24 +671,25 @@ export const AdminModerationPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 2: XỬ LÝ BÁO CÁO VI PHẠM */}
+          {/* TAB 2: REPORTS (Now displays Target Material / Target User card!) */}
           {activeTab === "reports" && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3">
-                <div className="flex items-center gap-2">
-                  <select
-                    value={reportStatusFilter}
-                    onChange={(e) => setReportStatusFilter(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white"
-                  >
-                    <option value="all">Tất cả báo cáo</option>
-                    <option value="open">🔴 Chờ xử lý</option>
-                    <option value="reviewing">🟡 Đang xem xét</option>
-                    <option value="resolved">🟢 Đã giải quyết</option>
-                  </select>
-                </div>
+              <div className="flex items-center justify-between pb-2">
+                <select
+                  value={reportStatusFilter}
+                  onChange={(e) => {
+                    setReportStatusFilter(e.target.value);
+                    setReportPage(1);
+                  }}
+                  className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white font-semibold"
+                >
+                  <option value="all">Tất cả báo cáo</option>
+                  <option value="open">🔴 Chờ xử lý</option>
+                  <option value="reviewing">🟡 Đang xem xét</option>
+                  <option value="resolved">🟢 Đã giải quyết</option>
+                </select>
                 <span className="text-xs text-slate-400">
-                  Tổng: <strong>{filteredReports.length}</strong> báo cáo
+                  Tổng: <strong>{reportsData?.pagination?.total ?? reportItems.length}</strong> báo cáo
                 </span>
               </div>
 
@@ -621,19 +698,19 @@ export const AdminModerationPage: React.FC = () => {
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                   Đang tải danh sách báo cáo...
                 </div>
-              ) : filteredReports.length === 0 ? (
+              ) : reportItems.length === 0 ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   Chưa có báo cáo vi phạm nào trong danh mục này.
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {filteredReports.map((report: any) => (
+                  {reportItems.map((report: any) => (
                     <div
                       key={report._id}
-                      className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition-all space-y-3"
+                      className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 flex-wrap">
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               report.targetType === "material"
@@ -641,15 +718,13 @@ export const AdminModerationPage: React.FC = () => {
                                 : "bg-purple-100 text-purple-900"
                             }`}
                           >
-                            {report.targetType === "material" ? "Vật Liệu" : "Người Dùng"}
+                            {report.targetType === "material" ? "Báo cáo Vật Liệu" : "Báo cáo Người Dùng"}
                           </span>
-                          <span className="font-bold text-slate-900 text-sm">
-                            {report.reason}
-                          </span>
+                          <span className="font-bold text-slate-900 text-sm">{report.reason}</span>
                         </div>
 
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold self-start ${
                             report.status === "open"
                               ? "bg-rose-100 text-rose-800"
                               : report.status === "reviewing"
@@ -665,77 +740,107 @@ export const AdminModerationPage: React.FC = () => {
                         </span>
                       </div>
 
-                      {report.details && (
-                        <div className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <strong>Chi tiết tố cáo:</strong> {report.details}
+                      {/* Target Object Link Card */}
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        {report.targetType === "material" && report.material ? (
+                          <>
+                            <div>
+                              <span className="text-slate-500">Bài đăng bị báo cáo: </span>
+                              <strong className="text-slate-900">{report.material.title}</strong>
+                            </div>
+                            <Link
+                              to={`/materials/${report.material._id}`}
+                              className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline"
+                            >
+                              Mở bài đăng <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                          </>
+                        ) : report.targetUser ? (
+                          <>
+                            <div>
+                              <span className="text-slate-500">Tài khoản bị báo cáo: </span>
+                              <strong className="text-slate-900">
+                                {report.targetUser.name} ({report.targetUser.email})
+                              </strong>
+                            </div>
+                            <Link
+                              to={`/users/${report.targetUser._id}`}
+                              className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline"
+                            >
+                              Xem hồ sơ <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                          </>
+                        ) : (
+                          <span className="text-slate-400 italic">Đối tượng bị báo cáo đã bị xóa.</span>
+                        )}
+                      </div>
+
+                      {report.resolution && (
+                        <div className="text-xs text-emerald-800 bg-emerald-50/70 px-3 py-2 rounded-xl border border-emerald-200">
+                          <strong>Kết quả xử lý:</strong> {report.resolution}
                         </div>
                       )}
 
-                      {/* Action Bar */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
                         <div className="text-[11px] text-slate-400">
-                          Người gửi: <strong>{report.reporter?.name || "Ẩn danh"}</strong> ·{" "}
+                          Người báo cáo: <strong>{report.reporter?.name || "Thành viên"}</strong> ·{" "}
                           {new Date(report.createdAt).toLocaleString("vi-VN")}
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Ghi chú kết quả xử lý..."
-                            value={reasonMap[report._id] || ""}
-                            onChange={(e) =>
-                              setReasonMap((prev) => ({
-                                ...prev,
-                                [report._id]: e.target.value,
-                              }))
-                            }
-                            className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs w-48 sm:w-60 focus:outline-none"
-                          />
+                        {report.status !== "resolved" && (
+                          <div className="flex items-center gap-2">
+                            {report.status === "open" && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setReasonModal({
+                                    title: "Chuyển sang trạng thái Đang Xem Xét",
+                                    defaultReason: "Ban quản trị đã tiếp nhận và đang xác minh thông tin",
+                                    presets: [
+                                      "Ban quản trị đã tiếp nhận và đang xác minh thông tin",
+                                      "Đang liên hệ người đăng để đối chiếu thực tế",
+                                    ],
+                                    confirmLabel: "Đánh dấu đang xem xét",
+                                    execute: (reason) =>
+                                      reportUpdateMutation.mutate({
+                                        id: report._id,
+                                        status: "reviewing",
+                                        reason,
+                                      }),
+                                  })
+                                }
+                                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer"
+                              >
+                                Xem Xét
+                              </button>
+                            )}
 
-                          {report.status === "open" && (
                             <button
                               type="button"
-                              onClick={() => {
-                                const actionReason = getOrPromptReason(
-                                  report._id,
-                                  "Đang liên hệ hai bên để xác minh"
-                                );
-                                if (actionReason) {
-                                  reportUpdateMutation.mutate({
-                                    id: report._id,
-                                    status: "reviewing",
-                                    actionReason,
-                                  });
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors cursor-pointer"
-                            >
-                              Xem Xét
-                            </button>
-                          )}
-
-                          {report.status !== "resolved" && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const actionReason = getOrPromptReason(
-                                  report._id,
-                                  "Đã xử lý nhắc nhở hoặc ẩn nội dung vi phạm"
-                                );
-                                if (actionReason) {
-                                  reportUpdateMutation.mutate({
-                                    id: report._id,
-                                    status: "resolved",
-                                    actionReason,
-                                  });
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                              onClick={() =>
+                                setReasonModal({
+                                  title: "Hoàn tất xử lý báo cáo",
+                                  defaultReason: "Đã kiểm tra và xử lý nội dung vi phạm theo quy chế",
+                                  presets: [
+                                    "Đã ẩn bài đăng vi phạm và nhắc nhở người đăng",
+                                    "Đã kiểm tra, nội dung không vi phạm quy chế",
+                                    "Đã khóa tài khoản vi phạm",
+                                  ],
+                                  confirmLabel: "Đánh dấu Đã giải quyết",
+                                  execute: (reason) =>
+                                    reportUpdateMutation.mutate({
+                                      id: report._id,
+                                      status: "resolved",
+                                      reason,
+                                    }),
+                                })
+                              }
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer"
                             >
                               Giải Quyết
                             </button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -751,87 +856,84 @@ export const AdminModerationPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 3: XÁC MINH SỐ ĐIỆN THOẠI */}
+          {/* TAB 3: PHONE VERIFICATION */}
           {activeTab === "phoneVerification" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500">
-                Danh sách thành viên gửi yêu cầu xác minh số điện thoại chính chủ để gia tăng độ uy tín khi giao dịch trên sàn MatGreen.
-              </p>
-
               {phoneLoading ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                   Đang tải yêu cầu xác minh...
                 </div>
-              ) : !phoneRequestsData?.items || phoneRequestsData.items.length === 0 ? (
+              ) : phoneItems.length === 0 ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   Hiện không có yêu cầu xác minh số điện thoại nào đang chờ.
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {phoneRequestsData.items.map((user: any) => (
+                  {phoneItems.map((u: any) => (
                     <div
-                      key={user._id}
+                      key={u._id}
                       className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                     >
                       <div className="space-y-1">
                         <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                          <span>{user.name}</span>
+                          <span>{u.name}</span>
                           <span className="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                            📞 {user.phone}
+                            📞 {u.phone}
                           </span>
                         </div>
-                        <div className="text-xs text-slate-500">Email: {user.email}</div>
-                        {user.phoneVerificationNote && (
+                        <div className="text-xs text-slate-500">Email: {u.email}</div>
+                        {u.phoneVerificationNote && (
                           <div className="text-xs text-slate-600 italic bg-slate-50 p-2 rounded-lg border border-slate-100 max-w-lg">
-                            "{user.phoneVerificationNote}"
+                            “{u.phoneVerificationNote}”
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const actionReason = getOrPromptReason(
-                              user._id,
-                              "Số điện thoại hợp lệ và đã gọi xác minh"
-                            );
-                            if (actionReason) {
-                              verifyPhoneMutation.mutate({
-                                id: user._id,
-                                verified: true,
-                                actionReason,
-                              });
+                      {isAdmin && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReasonModal({
+                                title: `Xác minh SĐT cho ${u.name}`,
+                                defaultReason: "Đã liên hệ xác thực số điện thoại chính chủ thành công",
+                                presets: [
+                                  "Đã liên hệ xác thực số điện thoại chính chủ thành công",
+                                  "Thông tin hồ sơ nhà thầu hợp lệ",
+                                ],
+                                confirmLabel: "Duyệt Xác Minh",
+                                execute: (reason) =>
+                                  verifyPhoneMutation.mutate({ id: u._id, verified: true, reason }),
+                              })
                             }
-                          }}
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-                        >
-                          <Check className="w-4 h-4" />
-                          <span>Duyệt Xác Minh</span>
-                        </button>
+                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Check className="w-4 h-4" /> Duyệt
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const actionReason = getOrPromptReason(
-                              user._id,
-                              "Số điện thoại không liên lạc được hoặc không hợp lệ"
-                            );
-                            if (actionReason) {
-                              verifyPhoneMutation.mutate({
-                                id: user._id,
-                                verified: false,
-                                actionReason,
-                              });
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReasonModal({
+                                title: `Từ chối xác minh SĐT của ${u.name}`,
+                                defaultReason: "Số điện thoại không liên lạc được hoặc chưa chính xác",
+                                presets: [
+                                  "Số điện thoại không liên lạc được",
+                                  "Định dạng số điện thoại chưa hợp lệ",
+                                ],
+                                danger: true,
+                                confirmLabel: "Từ chối",
+                                execute: (reason) =>
+                                  verifyPhoneMutation.mutate({ id: u._id, verified: false, reason }),
+                              })
                             }
-                          }}
-                          className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                          <span>Từ Chối</span>
-                        </button>
-                      </div>
+                            className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <X className="w-4 h-4" /> Từ chối
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -839,12 +941,55 @@ export const AdminModerationPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 4: QUẢN LÝ THÀNH VIÊN */}
+          {/* TAB 4: USERS MANAGEMENT (With Search, Filters & Role Toggle!) */}
           {activeTab === "users" && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+                <div className="flex flex-wrap items-center gap-2 flex-1">
+                  <div className="relative flex-1 min-w-[210px] max-w-xs">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Tìm tên, email hoặc số điện thoại..."
+                      value={userSearch}
+                      onChange={(e) => {
+                        setUserSearch(e.target.value);
+                        setUserPage(1);
+                      }}
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <select
+                    value={userRoleFilter}
+                    onChange={(e) => {
+                      setUserRoleFilter(e.target.value);
+                      setUserPage(1);
+                    }}
+                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white font-semibold"
+                  >
+                    <option value="all">Tất cả vai trò</option>
+                    <option value="user">Thành viên</option>
+                    <option value="moderator">Kiểm duyệt viên</option>
+                    <option value="admin">Quản trị viên</option>
+                  </select>
+
+                  <select
+                    value={userSuspendedFilter}
+                    onChange={(e) => {
+                      setUserSuspendedFilter(e.target.value);
+                      setUserPage(1);
+                    }}
+                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white font-semibold"
+                  >
+                    <option value="all">Mọi trạng thái</option>
+                    <option value="false">Đang hoạt động</option>
+                    <option value="true">Đã bị khóa</option>
+                  </select>
+                </div>
+
                 <span className="text-xs text-slate-500">
-                  Tổng số tài khoản: <strong>{usersData?.pagination?.totalItems || 0}</strong>
+                  Tổng: <strong>{usersData?.pagination?.total ?? 0}</strong> tài khoản
                 </span>
               </div>
 
@@ -866,12 +1011,17 @@ export const AdminModerationPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {(usersData?.items || []).map((u: any) => (
+                      {userItems.map((u: any) => (
                         <tr key={u._id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3.5 pr-4">
-                            <div className="font-bold text-slate-900">{u.name}</div>
+                            <Link
+                              to={`/users/${u._id}`}
+                              className="font-bold text-slate-900 hover:text-emerald-700"
+                            >
+                              {u.name}
+                            </Link>
                             <div className="text-[11px] text-slate-400 font-mono">
-                              ID: {u._id}
+                              Tham gia: {new Date(u.createdAt).toLocaleDateString("vi-VN")}
                             </div>
                           </td>
 
@@ -879,6 +1029,9 @@ export const AdminModerationPage: React.FC = () => {
                             <div className="font-medium text-slate-700">{u.email}</div>
                             <div className="text-[11px] text-slate-400">
                               {u.phone || "Chưa có SĐT"}
+                              {u.phoneVerified && (
+                                <span className="ml-1 text-emerald-700 font-bold">✓</span>
+                              )}
                             </div>
                           </td>
 
@@ -913,32 +1066,70 @@ export const AdminModerationPage: React.FC = () => {
                           </td>
 
                           <td className="py-3.5 text-right">
-                            {u.role !== "admin" && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const actionReason = getOrPromptReason(
-                                    u._id,
-                                    u.isSuspended
-                                      ? "Mở khóa tài khoản sau khi xem xét"
-                                      : "Khóa tài khoản do vi phạm quy chế"
-                                  );
-                                  if (actionReason) {
-                                    suspendMutation.mutate({
-                                      id: u._id,
-                                      suspended: !u.isSuspended,
-                                      actionReason,
+                            {isAdmin && u.role !== "admin" && u.role !== "superadmin" && (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextRole = u.role === "moderator" ? "user" : "moderator";
+                                    setReasonModal({
+                                      title:
+                                        nextRole === "moderator"
+                                          ? `Bổ nhiệm ${u.name} làm Kiểm duyệt viên`
+                                          : `Chuyển ${u.name} về Thành viên thường`,
+                                      defaultReason:
+                                        nextRole === "moderator"
+                                          ? "Bổ sung nhân sự hỗ trợ kiểm duyệt nội dung sàn"
+                                          : "Điều chỉnh lại phân quyền vận hành",
+                                      presets: [
+                                        "Bổ sung nhân sự hỗ trợ kiểm duyệt nội dung sàn",
+                                        "Điều chỉnh lại phân quyền vận hành",
+                                      ],
+                                      confirmLabel: "Xác nhận đổi vai trò",
+                                      execute: (reason) =>
+                                        roleMutation.mutate({ id: u._id, role: nextRole, reason }),
                                     });
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer"
+                                >
+                                  {u.role === "moderator" ? "Hạ quyền" : "Cấp Mod"}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setReasonModal({
+                                      title: u.isSuspended
+                                        ? `Mở khóa tài khoản ${u.name}`
+                                        : `Tạm khóa tài khoản ${u.name}`,
+                                      defaultReason: u.isSuspended
+                                        ? "Đã cam kết tuân thủ quy chế cộng đồng MatGreen"
+                                        : "Tài khoản vi phạm quy chế đăng tin trên sàn",
+                                      presets: u.isSuspended
+                                        ? ["Đã cam kết tuân thủ quy chế cộng đồng MatGreen"]
+                                        : [
+                                            "Đăng tin spam / quảng cáo sai quy định",
+                                            "Nhiều người dùng báo cáo thông tin không trung thực",
+                                          ],
+                                      danger: !u.isSuspended,
+                                      confirmLabel: u.isSuspended ? "Mở khóa" : "Khóa tài khoản",
+                                      execute: (reason) =>
+                                        suspendMutation.mutate({
+                                          id: u._id,
+                                          suspended: !u.isSuspended,
+                                          reason,
+                                        }),
+                                    })
                                   }
-                                }}
-                                className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
-                                  u.isSuspended
-                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                    : "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
-                                }`}
-                              >
-                                {u.isSuspended ? "Mở Khóa" : "Khóa Tài Khoản"}
-                              </button>
+                                  className={`px-3 py-1.5 rounded-xl font-bold text-xs cursor-pointer ${
+                                    u.isSuspended
+                                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                      : "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
+                                  }`}
+                                >
+                                  {u.isSuspended ? "Mở Khóa" : "Khóa"}
+                                </button>
+                              </div>
                             )}
                           </td>
                         </tr>
@@ -957,19 +1148,15 @@ export const AdminModerationPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 5: NHẬT KÝ QUẢN TRỊ */}
+          {/* TAB 5: AUDIT LOGS */}
           {activeTab === "auditLogs" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500">
-                Toàn bộ lịch sử thao tác của Ban Quản Trị và Hệ Thống đều được ghi lại tự động với lý do và mốc thời gian minh bạch.
-              </p>
-
               {auditLoading ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                   Đang tải nhật ký...
                 </div>
-              ) : !auditLogsData?.items || auditLogsData.items.length === 0 ? (
+              ) : !auditLogsData?.items?.length ? (
                 <div className="py-16 text-center text-xs text-slate-400">
                   Chưa có nhật ký hoạt động nào được ghi nhận.
                 </div>
@@ -983,19 +1170,23 @@ export const AdminModerationPage: React.FC = () => {
                       <div className="flex items-start gap-2.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
                         <div>
-                          <div>
-                            <strong className="text-slate-900">{log.actor?.name || "Hệ thống"}</strong>{" "}
-                            <span className="text-slate-600">{log.action}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-slate-900">
+                              {log.actor?.name || "Quản trị viên"}
+                            </strong>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-[11px]">
+                              {AUDIT_ACTION_LABELS[log.action] || log.action}
+                            </span>
                           </div>
                           {log.reason && (
                             <div className="text-[11px] text-slate-500 italic mt-0.5">
-                              Lý do: "{log.reason}"
+                              Lý do: “{log.reason}”
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="text-[11px] text-slate-400 font-mono shrink-0 sm:text-right">
+                      <div className="text-[11px] text-slate-400 font-mono shrink-0">
                         {new Date(log.createdAt).toLocaleString("vi-VN")}
                       </div>
                     </div>
@@ -1007,14 +1198,23 @@ export const AdminModerationPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal Chỉnh Sửa Bài Viết Người Đăng Bằng RichTextEditor */}
       <AdminEditMaterialModal
         material={selectedMaterialForEdit}
         isOpen={Boolean(selectedMaterialForEdit)}
         onClose={() => setSelectedMaterialForEdit(null)}
-        onSuccess={() => {
-          refetchMaterials();
-        }}
+        onSuccess={() => refetchMaterials()}
+      />
+
+      <AdminReasonModal
+        open={Boolean(reasonModal)}
+        title={reasonModal?.title || ""}
+        defaultReason={reasonModal?.defaultReason || ""}
+        presets={reasonModal?.presets || []}
+        danger={reasonModal?.danger}
+        confirmLabel={reasonModal?.confirmLabel}
+        loading={isMutating}
+        onConfirm={(reason) => reasonModal?.execute(reason)}
+        onCancel={() => setReasonModal(null)}
       />
     </div>
   );

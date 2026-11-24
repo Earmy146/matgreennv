@@ -1,9 +1,18 @@
 const MaterialRequest = require("../models/material-request.model");
 const Material = require("../models/material.model");
+const Review = require("../models/review.model");
 const { BadRequestError, ForbiddenError, NotFoundError } = require("../core/error.response");
 const notificationService = require("./notification.service");
 
 const REQUEST_STATUSES = ["pending", "approved", "rejected", "cancelled", "completed"];
+
+const STATUS_VI_MAP = {
+  pending: "chờ duyệt",
+  approved: "đã được duyệt",
+  rejected: "đã bị từ chối",
+  cancelled: "đã hủy",
+  completed: "đã hoàn tất bàn giao",
+};
 
 class MaterialRequestService {
   async createRequest(requesterId, materialId, message) {
@@ -38,24 +47,53 @@ class MaterialRequestService {
       type: "request_created",
       title: "Có yêu cầu nhận vật liệu mới",
       message: `Có người muốn nhận bài "${material.title}".`,
-      link: "/requests",
+      link: "/requests?tab=owner",
     });
     return this.populateRequest(request._id);
   }
 
   async listForUser(userId, role) {
-    const query = role === "owner"
-      ? { material: { $in: await Material.find({ owner: userId }).distinct("_id") } }
-      : { requester: userId };
-    return MaterialRequest.find(query)
+    const query =
+      role === "owner"
+        ? { material: { $in: await Material.find({ owner: userId }).distinct("_id") } }
+        : { requester: userId };
+
+    const items = await MaterialRequest.find(query)
       .populate({
         path: "material",
-        select: "title type status location images owner",
-        populate: { path: "owner", select: "name phone" },
+        select: "title type price unit category status location images owner",
+        populate: { path: "owner", select: "name phone avatar phoneVerified" },
       })
-      .populate("requester", "name phone email")
+      .populate("requester", "name phone email avatar phoneVerified")
       .sort({ createdAt: -1 })
       .lean();
+
+    if (!items.length) return [];
+
+    const requestIds = items.map((item) => item._id);
+    const myReviews = await Review.find({
+      reviewer: userId,
+      request: { $in: requestIds },
+    })
+      .select("request rating comment createdAt")
+      .lean();
+
+    const reviewByRequest = new Map(
+      myReviews.map((rev) => [
+        String(rev.request),
+        {
+          _id: rev._id,
+          rating: rev.rating,
+          comment: rev.comment || "",
+          createdAt: rev.createdAt,
+        },
+      ])
+    );
+
+    return items.map((item) => ({
+      ...item,
+      myReview: reviewByRequest.get(String(item._id)) || null,
+    }));
   }
 
   async updateStatus(userId, requestId, status) {
@@ -63,7 +101,10 @@ class MaterialRequestService {
       throw new BadRequestError("Trạng thái yêu cầu không hợp lệ");
     }
 
-    const request = await MaterialRequest.findById(requestId).populate("material", "owner title status");
+    const request = await MaterialRequest.findById(requestId).populate(
+      "material",
+      "owner title status"
+    );
     if (!request) throw new NotFoundError("Không tìm thấy yêu cầu nhận vật liệu");
 
     const isOwner = request.material.owner.toString() === userId.toString();
@@ -97,14 +138,20 @@ class MaterialRequestService {
       await Material.findByIdAndUpdate(request.material._id, { status: "reserved" });
     } else if (status === "completed") {
       await Material.findByIdAndUpdate(request.material._id, { status: "completed" });
+    } else if (status === "cancelled" && request.material.status === "reserved") {
+      await Material.findByIdAndUpdate(request.material._id, { status: "available" });
     }
+
     const recipient = isOwner ? request.requester : request.material.owner;
+    const targetTab = isOwner ? "requester" : "owner";
+    const statusText = STATUS_VI_MAP[status] || status;
+
     await notificationService.create({
       recipient,
       type: "request_status",
-      title: "Cập nhật yêu cầu nhận vật liệu",
-      message: `Yêu cầu cho bài "${request.material.title || "vật liệu"}" đã chuyển sang trạng thái ${status}.`,
-      link: "/requests",
+      title: "Cập nhật giao dịch vật liệu",
+      message: `Yêu cầu cho bài "${request.material.title || "vật liệu"}" ${statusText}.`,
+      link: `/requests?tab=${targetTab}`,
     });
     return this.populateRequest(request._id);
   }
@@ -118,7 +165,10 @@ class MaterialRequestService {
       throw new BadRequestError("Không thể đặt lịch quá 90 ngày kể từ hôm nay");
     }
 
-    const request = await MaterialRequest.findById(requestId).populate("material", "owner title status");
+    const request = await MaterialRequest.findById(requestId).populate(
+      "material",
+      "owner title status"
+    );
     if (!request) throw new NotFoundError("Không tìm thấy yêu cầu nhận vật liệu");
     const isOwner = request.material.owner.toString() === userId.toString();
     const isRequester = request.requester.toString() === userId.toString();
@@ -130,12 +180,14 @@ class MaterialRequestService {
     request.scheduledAt = parsedDate;
     await request.save();
     const recipient = isOwner ? request.requester : request.material.owner;
+    const targetTab = isOwner ? "requester" : "owner";
+
     await notificationService.create({
       recipient,
       type: "request_scheduled",
       title: "Lịch nhận vật liệu đã được cập nhật",
-      message: `Lịch nhận bài "${request.material.title || "vật liệu"}": ${parsedDate.toLocaleString("vi-VN")}.`,
-      link: "/requests",
+      message: `Lịch hẹn bài "${request.material.title || "vật liệu"}": ${parsedDate.toLocaleString("vi-VN")}.`,
+      link: `/requests?tab=${targetTab}`,
     });
     return this.populateRequest(request._id);
   }
@@ -144,10 +196,10 @@ class MaterialRequestService {
     return MaterialRequest.findById(id)
       .populate({
         path: "material",
-        select: "title type status location images owner",
-        populate: { path: "owner", select: "name phone" },
+        select: "title type price unit category status location images owner",
+        populate: { path: "owner", select: "name phone avatar phoneVerified" },
       })
-      .populate("requester", "name phone email")
+      .populate("requester", "name phone email avatar phoneVerified")
       .lean();
   }
 }

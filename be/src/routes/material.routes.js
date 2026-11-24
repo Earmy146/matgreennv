@@ -16,8 +16,10 @@ const createMaterialLimit = createUserRateLimit({
   message: "Bạn đã đăng quá nhiều bài trong một giờ, vui lòng thử lại sau",
 });
 
-// Thống kê tổng quan công khai trên sàn
+// Thống kê tổng quan công khai trên sàn & phân giải tọa độ địa chỉ
 router.get("/stats", materialController.stats);
+router.get("/geocode/reverse", materialController.reverseGeocode);
+router.get("/geocode/search", materialController.searchGeocode);
 
 // Lấy danh sách bài đăng theo bán kính quanh vị trí hiện tại — loại trừ bài của chính người dùng
 router.get("/nearby", optionalAuth, materialController.getNearby);

@@ -62,12 +62,34 @@ export const materialsApi = {
     const res = await api.delete<{ data: { success: boolean; message: string } }>(`/materials/${id}`);
     return res.data.data;
   },
-  update: async (id: string, data: Partial<MaterialItem>) => {
+  update: async (
+    id: string,
+    data: Partial<MaterialItem> & {
+      address?: string;
+      latitude?: number;
+      longitude?: number;
+      locationSource?: "browser_gps" | "map_pin";
+    }
+  ) => {
     const res = await api.patch<{ data: MaterialItem }>(`/materials/${id}`, data);
     return res.data.data;
   },
   verifyLocation: async (id: string) => {
     const res = await api.post<{ data: MaterialItem }>(`/materials/${id}/verify-location`);
+    return res.data.data;
+  },
+
+  reverseGeocode: async (lat: number, lng: number) => {
+    const res = await api.get<{
+      data: { address: string; displayName: string; lat: number; lng: number };
+    }>("/materials/geocode/reverse", { params: { lat, lng } });
+    return res.data.data;
+  },
+
+  searchAddress: async (q: string) => {
+    const res = await api.get<{
+      data: Array<{ label: string; fullAddress: string; lat: number; lng: number }>;
+    }>("/materials/geocode/search", { params: { q } });
     return res.data.data;
   },
 
@@ -88,6 +110,7 @@ export const materialsApi = {
     longitude: number;
     accuracy: number;
     capturedAt: string;
+    locationSource?: "browser_gps" | "map_pin";
     address: string;
     contactPhone: string;
     contactZalo?: string;
@@ -99,6 +122,13 @@ export const materialsApi = {
   },
 };
 
+export interface MaterialRequestReview {
+  _id: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
 export interface MaterialRequest {
   _id: string;
   message?: string;
@@ -106,7 +136,8 @@ export interface MaterialRequest {
   scheduledAt?: string;
   completedAt?: string;
   material: MaterialItem;
-  requester: { _id: string; name: string; phone?: string; email?: string };
+  requester: { _id: string; name: string; phone?: string; email?: string; avatar?: string; phoneVerified?: boolean };
+  myReview?: MaterialRequestReview | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -259,13 +290,24 @@ export const reportsApi = {
 
 export const adminApi = {
   stats: async () => (await api.get("/admin/stats")).data.data,
-  users: async (params?: { page?: number; limit?: number; search?: string }) => (await api.get("/admin/users", { params })).data.data,
-  suspendUser: async (id: string, suspended: boolean, reason: string) => (await api.patch(`/admin/users/${id}/suspend`, { suspended, reason })).data.data,
-  materials: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/materials", { params })).data.data,
-  phoneVerificationRequests: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/phone-verification-requests", { params })).data.data,
-  verifyPhone: async (id: string, verified: boolean, reason: string) => (await api.patch(`/admin/users/${id}/phone-verification`, { verified, reason })).data.data,
-  moderateMaterial: async (id: string, status: string, reason: string) => (await api.patch(`/admin/materials/${id}/status`, { status, reason })).data.data,
-  auditLogs: async (params?: { page?: number; limit?: number }) => (await api.get("/admin/audit-logs", { params })).data.data,
+  users: async (params?: { page?: number; limit?: number; search?: string; role?: string; suspended?: string }) =>
+    (await api.get("/admin/users", { params })).data.data,
+  suspendUser: async (id: string, suspended: boolean, reason: string) =>
+    (await api.patch(`/admin/users/${id}/suspend`, { suspended, reason })).data.data,
+  updateUserRole: async (id: string, role: "user" | "moderator", reason: string) =>
+    (await api.patch(`/admin/users/${id}/role`, { role, reason })).data.data,
+  materials: async (params?: { page?: number; limit?: number; search?: string; status?: string; category?: string; type?: string }) =>
+    (await api.get("/admin/materials", { params })).data.data,
+  deleteMaterial: async (id: string, reason: string) =>
+    (await api.delete(`/admin/materials/${id}`, { data: { reason } })).data.data,
+  phoneVerificationRequests: async (params?: { page?: number; limit?: number }) =>
+    (await api.get("/admin/phone-verification-requests", { params })).data.data,
+  verifyPhone: async (id: string, verified: boolean, reason: string) =>
+    (await api.patch(`/admin/users/${id}/phone-verification`, { verified, reason })).data.data,
+  moderateMaterial: async (id: string, status: string, reason: string) =>
+    (await api.patch(`/admin/materials/${id}/status`, { status, reason })).data.data,
+  auditLogs: async (params?: { page?: number; limit?: number }) =>
+    (await api.get("/admin/audit-logs", { params })).data.data,
   getSiteConfig: async () => (await api.get("/admin/site-config")).data.data,
   updateSiteConfig: async (data: any) => (await api.put("/admin/site-config", data)).data.data,
 };
@@ -476,7 +518,13 @@ export const authApi = {
     const res = await api.get<{ message: string; data: any }>("/auth/me");
     return res.data;
   },
-  updateProfile: async (payload: { name: string; phone?: string; address?: string; bio?: string }) => {
+  updateProfile: async (payload: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    bio?: string;
+    avatar?: string;
+  }) => {
     const res = await api.patch<{ message: string; data: any }>("/auth/profile", payload);
     return res.data;
   },
@@ -497,7 +545,40 @@ export const authApi = {
     return res.data;
   },
   publicProfile: async (id: string) => {
-    const res = await api.get<{ message: string; data: any }>(`/auth/users/${id}/profile`);
+    const res = await api.get<{
+      message: string;
+      data: {
+        user: {
+          id: string;
+          name: string;
+          address: string;
+          avatar: string;
+          bio: string;
+          phoneVerified: boolean;
+          role: string;
+          createdAt: string;
+        };
+        stats: {
+          totalPosts: number;
+          completedPosts: number;
+          ratingAvg: number;
+          reviewCount: number;
+        };
+        reviews: Array<{
+          _id: string;
+          rating: number;
+          comment?: string;
+          createdAt: string;
+          reviewer?: {
+            _id: string;
+            name: string;
+            avatar?: string;
+            phoneVerified?: boolean;
+          };
+        }>;
+        activeMaterials: MaterialItem[];
+      };
+    }>(`/auth/users/${id}/profile`);
     return res.data;
   },
 };

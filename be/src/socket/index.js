@@ -4,6 +4,12 @@ const logger = require("../utils/logger");
 const chatService = require("../services/chat.service");
 const env = require("../config/env");
 
+let ioInstance = null;
+
+function getIO() {
+  return ioInstance;
+}
+
 function initSocket(server, allowedOrigins = ["*"]) {
   const io = new Server(server, {
     cors: {
@@ -12,6 +18,8 @@ function initSocket(server, allowedOrigins = ["*"]) {
       credentials: true,
     },
   });
+
+  ioInstance = io;
 
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
@@ -29,7 +37,16 @@ function initSocket(server, allowedOrigins = ["*"]) {
     logger.info(`Client đã kết nối Socket: ${socket.id}`);
     socket.join(`user:${socket.userId}`);
 
-    socket.on("send_message", async (data) => {
+    socket.on("typing", ({ receiverId, materialId, isTyping } = {}) => {
+      if (!receiverId || receiverId === socket.userId) return;
+      io.to(`user:${receiverId}`).emit("typing", {
+        senderId: socket.userId,
+        materialId,
+        isTyping: Boolean(isTyping),
+      });
+    });
+
+    socket.on("send_message", async (data = {}) => {
       try {
         const { receiverId, materialId, content, attachments } = data;
         const savedMsg = await chatService.saveMessage({
@@ -38,15 +55,6 @@ function initSocket(server, allowedOrigins = ["*"]) {
           materialId,
           content,
           attachments,
-        });
-
-        socket.on("typing", ({ receiverId, materialId, isTyping }) => {
-          if (!receiverId || receiverId === socket.userId) return;
-          io.to(`user:${receiverId}`).emit("typing", {
-            senderId: socket.userId,
-            materialId,
-            isTyping: Boolean(isTyping),
-          });
         });
 
         io.to(`user:${receiverId}`).emit("new_message", savedMsg);
@@ -65,4 +73,4 @@ function initSocket(server, allowedOrigins = ["*"]) {
   return io;
 }
 
-module.exports = { initSocket };
+module.exports = { initSocket, getIO };

@@ -19,6 +19,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { aiMaterialsApi, materialsApi, uploadApi } from "@/services/api";
 import { CATEGORY_LABELS } from "@/lib/utils";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
+import { LocationMapPicker } from "@/components/map/LocationMapPicker";
 import type { InspectMaterialResult, MaterialPostPrefill } from "@/types/ai.types";
 
 export const PostMaterialPage: React.FC = () => {
@@ -42,8 +43,9 @@ export const PostMaterialPage: React.FC = () => {
     address: address || "",
     latitude: latitude || 0,
     longitude: longitude || 0,
-    accuracy: accuracy || 0,
-    capturedAt: capturedAt || "",
+    accuracy: accuracy || 15,
+    capturedAt: capturedAt || new Date().toISOString(),
+    locationSource: "browser_gps" as "browser_gps" | "map_pin",
     images: [] as string[],
   });
 
@@ -175,17 +177,18 @@ export const PostMaterialPage: React.FC = () => {
     setError(null);
 
     try {
-      // Có GPS hợp lệ là đủ — address chỉ cần không trống HOẶC đã có GPS
-      const hasValidGps = formData.latitude && formData.longitude && formData.capturedAt;
+      const hasValidGps = Boolean(formData.latitude && formData.longitude);
       if (!hasValidGps) {
-        throw new Error("Vui lòng lấy GPS hiện tại trước khi đăng bài");
+        throw new Error("Vui lòng lấy GPS hiện tại hoặc chạm vào bản đồ để ghim vị trí công trình");
       }
       if (!formData.address.trim()) {
-        throw new Error("Vui lòng nhập địa chỉ hoặc mô tả vị trí công trình");
+        throw new Error("Vui lòng nhập địa chỉ công trình");
       }
 
       const payload = {
         ...formData,
+        capturedAt: new Date().toISOString(),
+        accuracy: formData.accuracy || 15,
         price: formData.type === "free" ? 0 : Number(formData.price),
         contactZalo: formData.contactZalo || formData.contactPhone,
       };
@@ -453,58 +456,24 @@ export const PostMaterialPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Section: Vị Trí Công Trình & Tọa Độ */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Địa chỉ công trình & Vị trí GPS *
-              </label>
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    const position = await getCurrentLocation();
-                    const gpsLabel = `GPS (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
-                    setLocation(
-                      position.coords.latitude,
-                      position.coords.longitude,
-                      gpsLabel,
-                      position.coords.accuracy,
-                      new Date(position.timestamp).toISOString()
-                    );
-                    setFormData((prev) => ({
-                      ...prev,
-                      // Tự điền địa chỉ bằng tọa độ GPS nếu người dùng chưa nhập tay
-                      address: prev.address && !prev.address.startsWith("GPS (") ? prev.address : gpsLabel,
-                      latitude: position.coords.latitude,
-                      longitude: position.coords.longitude,
-                      accuracy: position.coords.accuracy,
-                      capturedAt: new Date(position.timestamp).toISOString(),
-                    }));
-                  } catch {
-                    // useGeolocation already exposes the user-facing error
-                  }
-                }}
-                disabled={isLocating}
-                className="text-xs text-emerald-700 font-bold flex items-center gap-1 hover:underline"
-              >
-                {isLocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
-                Lấy GPS hiện tại của tôi
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="VD: Số 12 ngõ 85 đường Cầu Giấy, Ba Đình, Hà Nội (hoặc lấy GPS bên trên)"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-            />
-            <div className="mt-1 text-xs text-slate-400 font-mono">
-              {capturedAt && accuracy
-                ? `Đã lấy GPS: [${formData.latitude.toFixed(5)}, ${formData.longitude.toFixed(5)}], độ chính xác khoảng ${Math.round(accuracy)} m`
-                : "Chưa có GPS hợp lệ. Bạn phải lấy vị trí hiện tại trước khi đăng bài."}
-            </div>
-          </div>
+          {/* Section: Vị Trí Công Trình & Bản Đồ Ghim Tương Tác */}
+          <LocationMapPicker
+            latitude={formData.latitude}
+            longitude={formData.longitude}
+            address={formData.address}
+            onChange={(loc) => {
+              setLocation(loc.latitude, loc.longitude, loc.address, loc.accuracy, loc.capturedAt);
+              setFormData((prev) => ({
+                ...prev,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                address: loc.address,
+                accuracy: loc.accuracy,
+                capturedAt: loc.capturedAt,
+                locationSource: loc.locationSource,
+              }));
+            }}
+          />
 
           {/* Section: Đầy Đủ Các Trường Liên Hệ (SĐT, Zalo, Người liên hệ, Khung giờ) */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-4">

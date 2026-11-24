@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,7 +22,16 @@ import {
 } from "@/stores/location.store";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useAuthStore } from "@/stores/auth.store";
-import { chatApi, notificationsApi } from "@/services/api";
+import { toast } from "@/stores/toast.store";
+import { chatApi, notificationsApi, type NotificationItem } from "@/services/api";
+
+function getRealtimeSocketUrl() {
+  const configuredApiUrl = import.meta.env.VITE_API_BASE_URL;
+  if (configuredApiUrl?.startsWith("http")) {
+    return configuredApiUrl.replace(/\/api\/?$/, "");
+  }
+  return window.location.origin;
+}
 
 interface DashboardTopbarProps {
   onToggleMobileMenu: () => void;
@@ -36,7 +46,7 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
 }) => {
   const { latitude, longitude, radiusKm, setRadius, setLocation, address } = useLocationStore();
   const { getCurrentLocation, isLocating, error: gpsError } = useGeolocation();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, token, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -87,6 +97,31 @@ export const DashboardTopbar: React.FC<DashboardTopbarProps> = ({
     refetchInterval: 45000,
   });
   const unreadChatCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+
+  // Global Realtime Socket Listener for instant notification & chat badges
+  useEffect(() => {
+    if (!isAuthenticated || !token) return;
+    const socket = io(getRealtimeSocketUrl(), {
+      auth: { token },
+      transports: ["websocket"],
+    });
+
+    socket.on("new_notification", (notif: NotificationItem) => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["material-requests"] });
+      if (notif?.title || notif?.message) {
+        toast.info(notif.title ? `${notif.title}: ${notif.message}` : notif.message);
+      }
+    });
+
+    socket.on("new_message", () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations-unread"] });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [isAuthenticated, queryClient, token]);
 
   const markAllRead = useMutation({
     mutationFn: notificationsApi.markAllRead,

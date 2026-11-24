@@ -135,6 +135,24 @@ class MaterialController {
     }
   }
 
+  async reverseGeocode(req, res, next) {
+    try {
+      const result = await materialService.reverseGeocodeCoords(req.query.lat, req.query.lng);
+      new OK({ message: "Phân giải địa chỉ thành công", data: result }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async searchGeocode(req, res, next) {
+    try {
+      const result = await materialService.searchAddressGeocode(req.query.q);
+      new OK({ message: "Tìm kiếm địa chỉ thành công", data: result }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getById(req, res, next) {
     try {
       const { id } = req.params;

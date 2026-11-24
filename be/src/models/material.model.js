@@ -83,7 +83,7 @@ const materialSchema = new mongoose.Schema(
       capturedAt: { type: Date },
       source: {
         type: String,
-        enum: ["browser_gps", "verified", "seed"],
+        enum: ["browser_gps", "map_pin", "verified", "seed"],
         default: "browser_gps",
       },
       verificationStatus: {

@@ -8,6 +8,8 @@ const {
   parseCoordinate,
   parsePositiveNumber,
 } = require("../utils/location-validation");
+const { runRedisCommand } = require("../utils/redis");
+const env = require("../config/env");
 
 const EARTH_RADIUS_KM = 6371;
 
@@ -26,6 +28,24 @@ class MaterialService {
       } else {
         material[key] = data[key];
       }
+    }
+    if (data.latitude !== undefined && data.longitude !== undefined) {
+      const nextLat = parseCoordinate(data.latitude, "Vĩ độ", -90, 90);
+      const nextLng = parseCoordinate(data.longitude, "Kinh độ", -180, 180);
+      if (!material.location) {
+        material.location = {
+          type: "Point",
+          coordinates: [nextLng, nextLat],
+          address: String(data.address || "Vị trí đã ghim").trim(),
+        };
+      } else {
+        material.location.coordinates = [nextLng, nextLat];
+      }
+      material.location.capturedAt = new Date();
+      if (data.locationSource === "map_pin" || data.locationSource === "browser_gps") {
+        material.location.source = data.locationSource;
+      }
+      material.location.verificationStatus = "unverified";
     }
     if (material.type === "free") material.price = 0;
     await material.save();
@@ -63,15 +83,16 @@ class MaterialService {
     if (latitude === undefined || longitude === undefined || !address?.trim()) {
       throw new BadRequestError("Vui lòng cung cấp tọa độ định vị và địa chỉ công trình");
     }
-    if (accuracy === undefined || capturedAt === undefined) {
-      throw new BadRequestError("Vui lòng lấy GPS hiện tại trước khi đăng bài");
-    }
 
+    const isMapPin = data.locationSource === "map_pin";
+    if (!isMapPin && (accuracy === undefined || capturedAt === undefined)) {
+      throw new BadRequestError("Vui lòng lấy GPS hiện tại hoặc ghim vị trí công trình trên bản đồ trước khi đăng bài");
+    }
 
     const parsedLatitude = parseCoordinate(latitude, "Vĩ độ", -90, 90);
     const parsedLongitude = parseCoordinate(longitude, "Kinh độ", -180, 180);
-    const parsedAccuracy = parseAccuracy(accuracy);
-    const parsedCapturedAt = parseCapturedAt(capturedAt);
+    const parsedAccuracy = isMapPin ? Number(accuracy) || 15 : parseAccuracy(accuracy);
+    const parsedCapturedAt = isMapPin ? new Date() : parseCapturedAt(capturedAt);
 
     if (!contactPhone) {
       throw new BadRequestError("Vui lòng cung cấp số điện thoại liên hệ");
@@ -94,7 +115,7 @@ class MaterialService {
         address: address.trim(),
         accuracy: parsedAccuracy,
         capturedAt: parsedCapturedAt,
-        source: "browser_gps",
+        source: isMapPin ? "map_pin" : "browser_gps",
       },
       contactPhone,
       contactZalo: contactZalo || contactPhone,
@@ -317,6 +338,108 @@ class MaterialService {
       totalSell,
       totalCompleted,
     };
+  }
+
+  async reverseGeocodeCoords(latitude, longitude) {
+    const lat = parseCoordinate(latitude, "Vĩ độ", -90, 90);
+    const lng = parseCoordinate(longitude, "Kinh độ", -180, 180);
+    const cacheKey = `matgreen:geo:rev:${lat.toFixed(4)}:${lng.toFixed(4)}`;
+
+    const cached = await runRedisCommand("GET", cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        // ignore invalid cache
+      }
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1&accept-language=vi`,
+        {
+          headers: {
+            "User-Agent": env.LOCATION_VERIFICATION_USER_AGENT || "MatGreen/2.0",
+          },
+          signal: AbortSignal.timeout(5000),
+        }
+      );
+      if (!response.ok) {
+        return { address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, raw: null };
+      }
+      const data = await response.json();
+      const a = data.address || {};
+      const parts = [
+        a.house_number && a.road ? `${a.house_number} ${a.road}` : a.road || a.pedestrian || a.residential,
+        a.suburb || a.quarter || a.neighbourhood || a.village || a.town,
+        a.city_district || a.district || a.county,
+        a.city || a.state,
+      ].filter(Boolean);
+
+      const formatted =
+        parts.length >= 2
+          ? parts.join(", ")
+          : data.display_name
+          ? String(data.display_name).split(",").slice(0, 4).join(",").trim()
+          : `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      const result = {
+        address: formatted,
+        displayName: data.display_name || formatted,
+        lat,
+        lng,
+      };
+      await runRedisCommand("SET", cacheKey, JSON.stringify(result), "EX", "604800");
+      return result;
+    } catch {
+      return {
+        address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        displayName: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        lat,
+        lng,
+      };
+    }
+  }
+
+  async searchAddressGeocode(queryText) {
+    const q = String(queryText || "").trim();
+    if (q.length < 3) return [];
+    const cacheKey = `matgreen:geo:search:${q.toLowerCase().slice(0, 80)}`;
+    const cached = await runRedisCommand("GET", cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        // ignore
+      }
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&countrycodes=vn&limit=5&addressdetails=1&accept-language=vi`,
+        {
+          headers: {
+            "User-Agent": env.LOCATION_VERIFICATION_USER_AGENT || "MatGreen/2.0",
+          },
+          signal: AbortSignal.timeout(5000),
+        }
+      );
+      if (!response.ok) return [];
+      const rows = await response.json();
+      if (!Array.isArray(rows)) return [];
+      const items = rows
+        .map((r) => ({
+          label: String(r.display_name || "").split(",").slice(0, 4).join(",").trim(),
+          fullAddress: String(r.display_name || ""),
+          lat: Number(r.lat),
+          lng: Number(r.lon),
+        }))
+        .filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lng) && r.label);
+      await runRedisCommand("SET", cacheKey, JSON.stringify(items), "EX", "86400");
+      return items;
+    } catch {
+      return [];
+    }
   }
 
   /**

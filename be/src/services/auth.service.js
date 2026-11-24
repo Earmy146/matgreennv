@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
+const Material = require("../models/material.model");
+const Review = require("../models/review.model");
 const emailService = require("./email.service");
 const env = require("../config/env");
 const {
@@ -192,12 +194,13 @@ class AuthService {
     };
   }
 
-  async updateProfile(userId, { name, phone, address, bio }) {
+  async updateProfile(userId, { name, phone, address, bio, avatar }) {
     const updates = {};
     if (typeof name === "string" && name.trim()) updates.name = name.trim();
     if (typeof phone === "string") updates.phone = phone.trim();
     if (typeof address === "string") updates.address = address.trim();
     if (typeof bio === "string") updates.bio = bio.trim().slice(0, 500);
+    if (typeof avatar === "string") updates.avatar = avatar.trim().slice(0, 1000);
     if (!Object.keys(updates).length) throw new BadRequestError("Vui lòng nhập ít nhất một thông tin cần cập nhật");
     const user = await User.findByIdAndUpdate(userId, updates, { new: true, runValidators: true });
     if (!user) throw new NotFoundError("Không tìm thấy tài khoản");
@@ -249,9 +252,61 @@ class AuthService {
   }
 
   async publicProfile(userId) {
-    const user = await User.findById(userId).select("name email phone address avatar bio phoneVerified role createdAt");
+    const user = await User.findById(userId)
+      .select("name address avatar bio phoneVerified role createdAt")
+      .lean();
     if (!user) throw new NotFoundError("Không tìm thấy người dùng");
-    return this.sanitizeUser(user);
+
+    const [totalPosts, completedPosts, reviewAgg, recentReviews, activeMaterials] =
+      await Promise.all([
+        Material.countDocuments({ owner: userId }),
+        Material.countDocuments({ owner: userId, status: "completed" }),
+        Review.aggregate([
+          { $match: { reviewedUser: user._id } },
+          {
+            $group: {
+              _id: null,
+              ratingAvg: { $avg: "$rating" },
+              reviewCount: { $sum: 1 },
+            },
+          },
+        ]),
+        Review.find({ reviewedUser: userId })
+          .populate("reviewer", "name avatar phoneVerified")
+          .sort({ createdAt: -1 })
+          .limit(12)
+          .lean(),
+        Material.find({ owner: userId, status: "available" })
+          .populate("owner", "name avatar phoneVerified")
+          .sort({ createdAt: -1 })
+          .limit(12)
+          .lean(),
+      ]);
+
+    const ratingStats = reviewAgg[0] || { ratingAvg: 0, reviewCount: 0 };
+
+    return {
+      user: {
+        id: user._id,
+        name: user.name,
+        address: user.address || "",
+        avatar: user.avatar || "",
+        bio: user.bio || "",
+        phoneVerified: Boolean(user.phoneVerified),
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+      stats: {
+        totalPosts,
+        completedPosts,
+        ratingAvg: ratingStats.ratingAvg
+          ? Math.round(ratingStats.ratingAvg * 10) / 10
+          : 0,
+        reviewCount: ratingStats.reviewCount || 0,
+      },
+      reviews: recentReviews,
+      activeMaterials,
+    };
   }
 
   generateToken(user) {

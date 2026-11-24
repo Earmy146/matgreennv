@@ -17,7 +17,7 @@ export interface MaterialLocation {
   address: string;
   accuracy?: number;
   capturedAt?: string;
-  source?: "browser_gps" | "verified" | "seed";
+  source?: "browser_gps" | "map_pin" | "verified" | "seed";
   verificationStatus?: "unverified" | "verified" | "flagged";
   verifiedAddress?: string;
   verifiedAt?: string;

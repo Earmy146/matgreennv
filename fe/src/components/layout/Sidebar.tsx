@@ -19,7 +19,7 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
-import { chatApi } from "@/services/api";
+import { chatApi, materialRequestsApi } from "@/services/api";
 import { BrandLogo } from "@/components/common/BrandLogo";
 
 interface NavItem {
@@ -62,6 +62,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const unreadChatCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
+  const { data: incomingRequests = [] } = useQuery({
+    queryKey: ["material-requests", "owner"],
+    queryFn: () => materialRequestsApi.listMine("owner"),
+    enabled: isAuthenticated,
+    staleTime: 30000,
+    refetchInterval: 45000,
+  });
+
+  const pendingIncomingCount = incomingRequests.filter((r) => r.status === "pending").length;
+
   const navGroups: NavGroup[] = [
     {
       group: "Khám Phá Sàn",
@@ -77,7 +87,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { label: "Đăng Vật Liệu Mới", href: "/post", icon: PlusCircle, highlight: true },
         { label: "Quản Lý Tin Đăng", href: "/my-posts", icon: FolderOpen },
-        { label: "Yêu Cầu Nhận", href: "/requests", icon: ClipboardList },
+        {
+          label: "Giao Dịch & Yêu Cầu",
+          href: "/requests",
+          icon: ClipboardList,
+          badgeCount: pendingIncomingCount,
+        },
         {
           label: "Tin Nhắn",
           href: "/chat",

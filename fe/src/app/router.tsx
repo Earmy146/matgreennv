@@ -24,6 +24,7 @@ const MyPostsPage = lazy(() => import("@/pages/MyPostsPage").then((m) => ({ defa
 const MaterialRequestsPage = lazy(() => import("@/pages/MaterialRequestsPage").then((m) => ({ default: m.MaterialRequestsPage })));
 const SavedMaterialsPage = lazy(() => import("@/pages/SavedMaterialsPage").then((m) => ({ default: m.SavedMaterialsPage })));
 const ProfilePage = lazy(() => import("@/pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
+const PublicProfilePage = lazy(() => import("@/pages/PublicProfilePage").then((m) => ({ default: m.PublicProfilePage })));
 const AiAdvisorPage = lazy(() => import("@/pages/AiAdvisorPage").then((m) => ({ default: m.AiAdvisorPage })));
 const ChatPage = lazy(() => import("@/pages/ChatPage").then((m) => ({ default: m.ChatPage })));
 const AdminHubPage = lazy(() => import("@/pages/AdminHubPage").then((m) => ({ default: m.AdminHubPage })));
@@ -147,6 +148,7 @@ export const router = createBrowserRouter([
             ),
           },
           { path: "materials/:id", element: <MaterialDetailPage /> },
+          { path: "users/:id", element: withSuspense(<PublicProfilePage />) },
           { path: "ai-advisor", element: withSuspense(<AiAdvisorPage />) },
           {
             path: "chat",

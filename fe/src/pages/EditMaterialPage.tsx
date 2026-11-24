@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
-  Loader2,
-  ArrowLeft,
-  Save,
-  CheckCircle,
   AlertCircle,
-  Phone,
-  Clock,
-  Sparkles,
+  ArrowLeft,
+  CheckCircle,
+  Loader2,
+  Save,
+  Upload,
+  X,
 } from "lucide-react";
-import { materialsApi } from "@/services/api";
+import { materialsApi, uploadApi } from "@/services/api";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
+import { LocationMapPicker } from "@/components/map/LocationMapPicker";
 import { CATEGORY_LABELS } from "@/lib/utils";
+import { toast } from "@/stores/toast.store";
 import type { MaterialCategory } from "@/types/material.types";
 
 export const EditMaterialPage: React.FC = () => {
@@ -30,9 +31,15 @@ export const EditMaterialPage: React.FC = () => {
   const [form, setForm] = useState<{
     title: string;
     category: MaterialCategory;
+    type: "free" | "sell";
     description: string;
     price: number;
     unit: string;
+    images: string[];
+    address: string;
+    latitude: number;
+    longitude: number;
+    locationSource: "browser_gps" | "map_pin";
     contactPhone: string;
     contactHours: string;
     contactName: string;
@@ -41,9 +48,15 @@ export const EditMaterialPage: React.FC = () => {
   }>({
     title: "",
     category: "khac",
+    type: "free",
     description: "",
     price: 0,
-    unit: "",
+    unit: "gói",
+    images: [],
+    address: "",
+    latitude: 0,
+    longitude: 0,
+    locationSource: "map_pin",
     contactPhone: "",
     contactHours: "",
     contactName: "",
@@ -51,33 +64,67 @@ export const EditMaterialPage: React.FC = () => {
     status: "available",
   });
 
+  const [uploadingImg, setUploadingImg] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (material) {
+      const coords = material.location?.coordinates || [0, 0];
       setForm({
         title: material.title || "",
         category: (material.category as MaterialCategory) || "khac",
+        type: material.type === "sell" ? "sell" : "free",
         description: material.description || "",
         price: material.price || 0,
-        unit: material.unit || "",
+        unit: material.unit || "gói",
+        images: material.images || [],
+        address: material.location?.address || "",
+        latitude: coords[1] || 0,
+        longitude: coords[0] || 0,
+        locationSource: "map_pin",
         contactPhone: material.contactPhone || "",
         contactHours: material.contactHours || "",
         contactName: material.contactName || "",
         contactZalo: material.contactZalo || "",
-        status: (material.status as any) || "available",
+        status: material.status || "available",
       });
     }
   }, [material]);
 
+  const handleUploadFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !files.length) return;
+    setUploadingImg(true);
+    setError(null);
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const res = await uploadApi.uploadImage(files[i], "materials");
+        urls.push(res.url);
+      }
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...urls] }));
+      toast.success(`Đã thêm ${urls.length} ảnh vật liệu`);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Không thể tải ảnh lên");
+    } finally {
+      setUploadingImg(false);
+      e.target.value = "";
+    }
+  };
+
   const updateMutation = useMutation({
-    mutationFn: () => materialsApi.update(id as string, form),
+    mutationFn: () =>
+      materialsApi.update(id as string, {
+        ...form,
+        price: form.type === "free" ? 0 : Number(form.price),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["material-detail", id] });
       queryClient.invalidateQueries({ queryKey: ["my-materials"] });
       setSuccess(true);
-      setTimeout(() => navigate(-1), 1200);
+      toast.success("Đã cập nhật bài đăng thành công!");
+      setTimeout(() => navigate(-1), 900);
     },
     onError: (err: any) => {
       setError(err?.response?.data?.message || "Không thể cập nhật bài đăng");
@@ -100,11 +147,12 @@ export const EditMaterialPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-6 animate-fadeIn">
+    <div className="max-w-4xl mx-auto py-4 animate-fadeIn">
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
             <button
+              type="button"
               onClick={() => navigate(-1)}
               className="text-xs font-bold text-slate-500 hover:text-emerald-700 flex items-center gap-1 mb-1 transition-colors cursor-pointer"
             >
@@ -167,19 +215,40 @@ export const EditMaterialPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Giá & Đơn vị */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          {/* Hình thức, Giá, Đơn vị & Trạng thái */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Giá (0đ = Miễn phí)
+                Hình thức
+              </label>
+              <select
+                value={form.type}
+                onChange={(e) => {
+                  const nextType = e.target.value as "free" | "sell";
+                  setForm({
+                    ...form,
+                    type: nextType,
+                    price: nextType === "free" ? 0 : form.price,
+                  });
+                }}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white font-bold"
+              >
+                <option value="free">Cho/Tặng 0đ</option>
+                <option value="sell">Bán thanh lý</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Giá (VNĐ)
               </label>
               <input
                 type="number"
                 min={0}
                 step={1000}
-                value={form.price}
+                disabled={form.type === "free"}
+                value={form.type === "free" ? 0 : form.price}
                 onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white disabled:opacity-60"
               />
             </div>
             <div>
@@ -188,7 +257,7 @@ export const EditMaterialPage: React.FC = () => {
               </label>
               <input
                 type="text"
-                placeholder="VD: chuyến xe, kg, trọn gói..."
+                placeholder="VD: chuyến xe, kg..."
                 value={form.unit}
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white"
@@ -196,19 +265,85 @@ export const EditMaterialPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Trạng thái hiển thị
+                Trạng thái
               </label>
               <select
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value as "available" | "reserved" | "completed" })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    status: e.target.value as "available" | "reserved" | "completed",
+                  })
+                }
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white font-bold"
               >
-                <option value="available">🟢 Đang hiển thị trên sàn</option>
-                <option value="reserved">🟡 Đã nhận gạch / Đặt chỗ</option>
-                <option value="completed">⚪ Đã bốc hết / Hoàn tất</option>
+                <option value="available">🟢 Đang khả dụng</option>
+                <option value="reserved">🟡 Đã có người hẹn</option>
+                <option value="completed">⚪ Đã bàn giao xong</option>
               </select>
             </div>
           </div>
+
+          {/* Quản lý thư viện ảnh */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+              Thư viện ảnh vật liệu ({form.images.length})
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {form.images.map((url, idx) => (
+                <div
+                  key={`${url}-${idx}`}
+                  className="relative h-28 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"
+                >
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((prev) => ({
+                        ...prev,
+                        images: prev.images.filter((_, i) => i !== idx),
+                      }))
+                    }
+                    className="absolute top-1.5 right-1.5 p-1 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <label className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-colors">
+                {uploadingImg ? (
+                  <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+                ) : (
+                  <Upload className="w-5 h-5 text-slate-400 mb-1" />
+                )}
+                <span className="text-[11px] font-bold text-slate-600">Thêm ảnh</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  disabled={uploadingImg}
+                  onChange={handleUploadFiles}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Bản đồ ghim vị trí */}
+          <LocationMapPicker
+            latitude={form.latitude}
+            longitude={form.longitude}
+            address={form.address}
+            onChange={(loc) =>
+              setForm((prev) => ({
+                ...prev,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                address: loc.address,
+                locationSource: loc.locationSource,
+              }))
+            }
+          />
 
           {/* Liên hệ */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -250,23 +385,19 @@ export const EditMaterialPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Description with RichTextEditor */}
+          {/* Description */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>Mô tả chi tiết công trình & vật liệu (Bộ công cụ nâng cao)</span>
-              <span className="text-[11px] font-normal text-slate-400 lowercase">
-                hỗ trợ căn lề, cỡ chữ, chèn ảnh, bảng, định dạng
-              </span>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Mô tả chi tiết công trình & vật liệu
             </label>
             <RichTextEditor
               value={form.description}
               onChange={(description) => setForm({ ...form, description })}
               placeholder="Nhập mô tả chi tiết vật liệu, tình trạng công trình, điều kiện bốc hàng..."
-              minHeight={260}
+              minHeight={240}
             />
           </div>
 
-          {/* Nút lưu */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"
@@ -288,7 +419,7 @@ export const EditMaterialPage: React.FC = () => {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Lưu Thay Đổi Bài Đăng</span>
+                  <span>Lưu Thay Đổi</span>
                 </>
               )}
             </button>

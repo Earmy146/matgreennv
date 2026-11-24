@@ -315,20 +315,56 @@ export const MaterialDetailPage: React.FC = () => {
                   Người liên hệ: <strong>{material.contactName || material.owner.name}</strong>
                 </span>
               </div>
-              <div className="border-t border-slate-200 pt-2 mt-2 space-y-1">
-                <div className="text-xs font-bold text-slate-700">Hồ sơ người đăng</div>
-                {material.owner.email && <div className="text-xs text-slate-600">Email: {material.owner.email}</div>}
-                {material.owner.phone && (
-                  <div className="text-xs text-slate-600">
-                    SĐT: {material.owner.phone}{" "}
-                    {material.owner.phoneVerified ? (
-                      <span className="text-emerald-700 font-semibold">(đã xác minh)</span>
+              <div className="border-t border-slate-200 pt-2.5 mt-2 space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs font-bold text-slate-700">Hồ sơ người đăng</div>
+                  {material.owner?._id && (
+                    <Link
+                      to={`/users/${material.owner._id}`}
+                      className="text-[11px] font-bold text-emerald-700 hover:underline"
+                    >
+                      Xem uy tín & bài đăng →
+                    </Link>
+                  )}
+                </div>
+                <div className="flex items-center gap-2.5 py-1">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center overflow-hidden shrink-0">
+                    {material.owner?.avatar ? (
+                      <img
+                        src={material.owner.avatar}
+                        alt={material.owner.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <span className="text-amber-700 font-semibold">(chưa xác minh)</span>
+                      material.owner?.name?.[0]?.toUpperCase() || "U"
                     )}
                   </div>
+                  <div className="min-w-0">
+                    {material.owner?._id ? (
+                      <Link
+                        to={`/users/${material.owner._id}`}
+                        className="font-bold text-xs text-slate-900 hover:text-emerald-700 block truncate"
+                      >
+                        {material.owner.name}
+                      </Link>
+                    ) : (
+                      <span className="font-bold text-xs text-slate-900">{material.owner?.name}</span>
+                    )}
+                    {material.owner.phone && (
+                      <div className="text-[11px] text-slate-600">
+                        SĐT: {material.owner.phone}{" "}
+                        {material.owner.phoneVerified ? (
+                          <span className="text-emerald-700 font-semibold">(đã xác minh)</span>
+                        ) : (
+                          <span className="text-amber-700 font-semibold">(chưa xác minh)</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {material.owner.bio && (
+                  <div className="text-xs text-slate-600">Giới thiệu: {material.owner.bio}</div>
                 )}
-                {material.owner.bio && <div className="text-xs text-slate-600">Giới thiệu: {material.owner.bio}</div>}
               </div>
               {material.contactHours && (
                 <div className="flex items-center gap-2">

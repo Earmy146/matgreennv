@@ -2,7 +2,18 @@ const Notification = require("../models/notification.model");
 
 class NotificationService {
   async create({ recipient, type, title, message, link }) {
-    return Notification.create({ recipient, type, title, message, link });
+    const doc = await Notification.create({ recipient, type, title, message, link });
+    try {
+      const { getIO } = require("../socket");
+      const io = getIO();
+      if (io && recipient) {
+        const payload = typeof doc.toObject === "function" ? doc.toObject() : doc;
+        io.to(`user:${String(recipient)}`).emit("new_notification", payload);
+      }
+    } catch {
+      // Non-blocking: realtime push failure must never break DB notification creation
+    }
+    return doc;
   }
 
   async listForUser(userId, limit = 30) {

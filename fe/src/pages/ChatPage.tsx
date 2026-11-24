@@ -367,21 +367,27 @@ export const ChatPage: React.FC = () => {
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </Link>
-                  <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 overflow-hidden">
-                    {partner?.avatar ? (
-                      <img src={partner.avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-4 h-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-sm truncate">
-                      {partner?.name || "Cuộc trò chuyện"}
+                  <Link
+                    to={`/users/${partnerId}`}
+                    className="flex items-center gap-2.5 min-w-0 group"
+                    title="Xem hồ sơ uy tín của đối tác"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 overflow-hidden">
+                      {partner?.avatar ? (
+                        <img src={partner.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-4 h-4" />
+                      )}
                     </div>
-                    <div className="text-[11px] text-emerald-400">
-                      {connected ? "Đang trực tuyến" : "Đang kết nối lại..."}
+                    <div className="min-w-0">
+                      <div className="font-bold text-sm truncate group-hover:text-emerald-300 transition-colors">
+                        {partner?.name || "Cuộc trò chuyện"}
+                      </div>
+                      <div className="text-[11px] text-emerald-400">
+                        {connected ? "Đang trực tuyến • Xem hồ sơ" : "Đang kết nối lại..."}
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
                 <span
                   className={`text-[11px] px-2.5 py-1 rounded-full ${
