@@ -7,14 +7,16 @@ import {
   Camera,
   CheckCircle2,
   ExternalLink,
+  History,
   ImagePlus,
   Leaf,
   Lightbulb,
   Loader2,
   MapPin,
-  RotateCcw,
+  Plus,
   Send,
   Sparkles,
+  Trash2,
   Truck,
   Wallet,
   X,
@@ -22,6 +24,7 @@ import {
 import { aiMaterialsApi } from "@/services/api";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLocationStore } from "@/stores/location.store";
+import { useAiAssistantStore } from "@/stores/ai-assistant.store";
 import { AiMarkdownText } from "@/components/ai/AiMarkdownText";
 import { CATEGORY_LABELS, formatCurrency, formatDistance } from "@/lib/utils";
 import type {
@@ -32,14 +35,6 @@ import type {
   UserAiQuota,
 } from "@/types/ai.types";
 
-const CHAT_STORAGE_KEY = "matgreen_ai_advisor_chat_v2";
-
-const DEFAULT_WELCOME: AiChatMessage = {
-  role: "assistant",
-  content:
-    "Chào bạn! Mình là **MatGreen AI** kết nối trực tiếp dữ liệu kho vật liệu thật của MatGreen.\n- Hỏi tìm vật liệu **cho tặng 0đ** hoặc **thanh lý** quanh vị trí GPS của bạn.\n- Hỏi định giá sắt thép, tôn, cửa nhôm kính, gỗ cốp pha cũ.\n- Hỏi quy trình tháo dỡ & loại xe tải phù hợp.",
-};
-
 const QUICK_PROMPTS = [
   "Tìm vật liệu cho tặng miễn phí gần vị trí của tôi",
   "Trên sàn đang có lô sắt thép hoặc cửa nhôm kính nào không?",
@@ -47,24 +42,22 @@ const QUICK_PROMPTS = [
   "Định giá tham khảo tôn lạnh cũ, xà gồ sắt hộp và gạch thẻ nguyên vẹn",
 ];
 
-function loadSavedMessages(): AiChatMessage[] {
-  try {
-    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-    if (!raw) return [DEFAULT_WELCOME];
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.slice(-20);
-    }
-  } catch {
-    // ignore storage errors
-  }
-  return [DEFAULT_WELCOME];
-}
-
 export const AiAdvisorPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const { latitude, longitude, radiusKm, address: gpsAddress } = useLocationStore();
+  const {
+    activeConversationId,
+    conversations,
+    messages,
+    historyLoading,
+    syncForAuth,
+    selectConversation,
+    startNewConversation,
+    deleteConversation,
+    setMessagesLocal,
+    persistTurn,
+  } = useAiAssistantStore();
 
   const [activeTab, setActiveTab] = useState<"demolition" | "chat">("demolition");
 
@@ -79,26 +72,23 @@ export const AiAdvisorPage: React.FC = () => {
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [result, setResult] = useState<DemolitionAnalysisResult | null>(null);
 
-  // Chat state
-  const [messages, setMessages] = useState<AiChatMessage[]>(() => loadSavedMessages());
+  // Chat UI state
   const [inputMsg, setInputMsg] = useState("");
   const [chatting, setChatting] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [quota, setQuota] = useState<UserAiQuota | null>(null);
   const [guestRemaining, setGuestRemaining] = useState<number | null>(null);
-  const chatBottomRef = useRef<HTMLDivElement | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-20)));
-    } catch {
-      // ignore quota exceeded
-    }
-  }, [messages]);
+    void syncForAuth(isAuthenticated && user?.id ? user.id : null);
+  }, [isAuthenticated, user?.id, syncForAuth]);
 
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, chatting]);
+    const el = chatScrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [messages, chatting, activeTab]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -205,7 +195,7 @@ export const AiAdvisorPage: React.FC = () => {
     if (!text || chatting) return;
 
     const nextMessages: AiChatMessage[] = [...messages, { role: "user", content: text }];
-    setMessages(nextMessages);
+    setMessagesLocal(nextMessages, isAuthenticated);
     if (!textOverride) setInputMsg("");
     setChatError(null);
     setChatting(true);
@@ -220,16 +210,19 @@ export const AiAdvisorPage: React.FC = () => {
         context: siteAddress ? `Khu vực người dùng quan tâm: ${siteAddress}` : undefined,
       });
 
-      setMessages([
-        ...nextMessages,
-        {
-          role: "assistant",
-          content: res.reply,
-          recommended_materials: res.recommended_materials,
-          tools_used: res.tools_used,
-          model: res.model,
-        },
-      ]);
+      const assistantMsg: AiChatMessage = {
+        role: "assistant",
+        content: res.reply,
+        recommended_materials: res.recommended_materials,
+        tools_used: res.tools_used,
+        model: res.model,
+      };
+      setMessagesLocal([...nextMessages, assistantMsg], isAuthenticated);
+      await persistTurn({
+        isAuthenticated,
+        userContent: text,
+        assistantMessage: assistantMsg,
+      });
 
       if (res.quota && !isAuthenticated) {
         setGuestRemaining(res.quota.daily_remaining);
@@ -577,151 +570,230 @@ export const AiAdvisorPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: AI CHAT WITH LIVE TOOL CALLING */}
+      {/* TAB 2: AI CHAT WITH LIVE TOOL CALLING + PERSISTENT HISTORY */}
       {activeTab === "chat" && (
-        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">
-          <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <Bot className="w-5 h-5 text-emerald-400" />
-              <div>
-                <div className="font-bold text-sm">Hỏi Đáp & Tra Cứu Kho Vật Liệu Với MatGreen AI</div>
-                <div className="text-[11px] text-slate-400">
-                  {latitude && longitude
-                    ? `Đang gắn GPS (${latitude.toFixed(4)}, ${longitude.toFixed(4)}) • Bán kính ${radiusKm} km`
-                    : "Chưa bật GPS — AI sẽ tìm trên toàn sàn MatGreen"}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* History Sidebar (for authenticated users) */}
+          {isAuthenticated && (
+            <aside className="lg:col-span-4 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden max-h-[590px]">
+              <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                  <History className="w-4 h-4 text-emerald-600" />
+                  <span>Lịch sử chat ({conversations.length})</span>
                 </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setMessages([DEFAULT_WELCOME]);
-                setChatError(null);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Cuộc trò chuyện mới
-            </button>
-          </div>
-
-          <div className="p-4 sm:p-5 h-[430px] overflow-y-auto space-y-4 bg-slate-50">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
-                <div
-                  className={`max-w-[85%] px-4 py-3 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-emerald-600 text-white rounded-br-none"
-                      : "bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => {
+                    startNewConversation(true);
+                    setChatError(null);
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer"
                 >
-                  {m.role === "user" ? (
-                    <span className="whitespace-pre-wrap">{m.content}</span>
-                  ) : (
-                    <AiMarkdownText content={m.content} />
-                  )}
-                </div>
-
-                {/* Recommended Live Material Cards */}
-                {m.recommended_materials && m.recommended_materials.length > 0 && (
-                  <div className="mt-2.5 w-full max-w-[90%] grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {m.recommended_materials.map((card) => (
-                      <Link
-                        key={card.id}
-                        to={`/materials/${card.id}`}
-                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition-all"
+                  <Plus className="w-3.5 h-3.5" /> Mới
+                </button>
+              </div>
+              <div
+                data-lenis-prevent
+                onWheel={(e) => e.stopPropagation()}
+                className="flex-1 overflow-y-auto overscroll-contain p-2.5 space-y-1.5"
+              >
+                {conversations.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-8 px-3">
+                    Các cuộc trò chuyện của bạn với MatGreen AI sẽ tự động lưu tại đây.
+                  </p>
+                ) : (
+                  conversations.map((conv) => (
+                    <div
+                      key={conv._id}
+                      className={`flex items-center gap-2 p-2.5 rounded-2xl border text-xs transition-all ${
+                        conv._id === activeConversationId
+                          ? "bg-emerald-50 border-emerald-300 text-emerald-950"
+                          : "bg-slate-50/60 border-transparent hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => void selectConversation(conv._id)}
+                        className="flex-1 text-left min-w-0 cursor-pointer"
                       >
-                        {card.image ? (
-                          <img
-                            src={card.image}
-                            alt={card.title}
-                            className="w-14 h-14 rounded-xl object-cover shrink-0 bg-slate-100"
-                          />
-                        ) : (
-                          <div className="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
-                            MatGreen
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <div className="text-xs font-bold text-slate-900 truncate">{card.title}</div>
-                          <div className="text-[11px] font-bold mt-0.5">
-                            <span className={card.type === "free" ? "text-emerald-600" : "text-amber-600"}>
-                              {card.type === "free"
-                                ? "Cho tặng 0đ"
-                                : `${formatCurrency(card.price)} / ${card.unit}`}
-                            </span>
-                          </div>
-                          <div className="text-[11px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3 shrink-0 text-emerald-600" />
-                            <span className="truncate">{card.address || "Xem chi tiết"}</span>
-                            {card.distance_km !== null && card.distance_km !== undefined && (
-                              <span className="text-emerald-700 font-semibold shrink-0">
-                                ({formatDistance(card.distance_km)})
-                              </span>
-                            )}
-                          </div>
+                        <div className="font-bold truncate">{conv.title}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {new Date(conv.lastMessageAt).toLocaleString("vi-VN")}
                         </div>
-                        <ExternalLink className="w-4 h-4 text-slate-400 shrink-0" />
-                      </Link>
-                    ))}
-                  </div>
+                      </button>
+                      <button
+                        type="button"
+                        title="Xóa cuộc trò chuyện"
+                        onClick={() => void deleteConversation(conv._id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))
                 )}
               </div>
-            ))}
+            </aside>
+          )}
 
-            {chatting && (
-              <div className="text-xs text-slate-500 flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                <span>MatGreen AI đang tra cứu dữ liệu sàn & soạn câu trả lời...</span>
-              </div>
-            )}
-
-            {chatError && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{chatError}</span>
-              </div>
-            )}
-            <div ref={chatBottomRef} />
-          </div>
-
-          {/* Quick prompts */}
-          <div className="px-4 py-2.5 bg-white border-t border-slate-100 flex gap-2 overflow-x-auto">
-            {QUICK_PROMPTS.map((q) => (
-              <button
-                key={q}
-                type="button"
-                disabled={chatting}
-                onClick={() => handleSendChat(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap font-medium transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void handleSendChat();
-            }}
-            className="p-3.5 bg-white border-t border-slate-200 flex gap-2"
+          {/* Main Chat Panel */}
+          <div
+            className={`${
+              isAuthenticated ? "lg:col-span-8" : "lg:col-span-12"
+            } bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col h-[590px]`}
           >
-            <input
-              type="text"
-              placeholder="Hỏi tìm vật liệu quanh bạn, định giá phế liệu, thủ tục tháo dỡ..."
-              value={inputMsg}
-              onChange={(e) => setInputMsg(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <button
-              type="submit"
-              disabled={chatting || !inputMsg.trim()}
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+            <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Bot className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-bold text-sm truncate">Hỏi Đáp & Tra Cứu Kho Vật Liệu Với MatGreen AI</div>
+                  <div className="text-[11px] text-slate-400 truncate">
+                    {latitude && longitude
+                      ? `Đang gắn GPS • Bán kính ${radiusKm} km`
+                      : "Chưa bật GPS — AI sẽ tìm trên toàn sàn MatGreen"}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  startNewConversation(isAuthenticated);
+                  setChatError(null);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold transition-colors cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Cuộc trò chuyện mới
+              </button>
+            </div>
+
+            <div
+              ref={chatScrollRef}
+              data-lenis-prevent
+              onWheel={(e) => e.stopPropagation()}
+              className="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto overscroll-contain space-y-4 bg-slate-50"
             >
-              <Send className="w-4 h-4" />
-              <span className="hidden sm:inline">Gửi</span>
-            </button>
-          </form>
+              {historyLoading ? (
+                <div className="h-full flex items-center justify-center gap-2 text-xs text-slate-500">
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                  <span>Đang tải lịch sử trò chuyện...</span>
+                </div>
+              ) : (
+                messages.map((m, i) => (
+                  <div key={i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`max-w-[85%] px-4 py-3 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                        m.role === "user"
+                          ? "bg-emerald-600 text-white rounded-br-none"
+                          : "bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs"
+                      }`}
+                    >
+                      {m.role === "user" ? (
+                        <span className="whitespace-pre-wrap">{m.content}</span>
+                      ) : (
+                        <AiMarkdownText content={m.content} />
+                      )}
+                    </div>
+
+                    {m.recommended_materials && m.recommended_materials.length > 0 && (
+                      <div className="mt-2.5 w-full max-w-[92%] grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {m.recommended_materials.map((card) => (
+                          <Link
+                            key={card.id}
+                            to={`/materials/${card.id}`}
+                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition-all"
+                          >
+                            {card.image ? (
+                              <img
+                                src={card.image}
+                                alt={card.title}
+                                className="w-14 h-14 rounded-xl object-cover shrink-0 bg-slate-100"
+                              />
+                            ) : (
+                              <div className="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                MatGreen
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-slate-900 truncate">{card.title}</div>
+                              <div className="text-[11px] font-bold mt-0.5">
+                                <span className={card.type === "free" ? "text-emerald-600" : "text-amber-600"}>
+                                  {card.type === "free"
+                                    ? "Cho tặng 0đ"
+                                    : `${formatCurrency(card.price)} / ${card.unit}`}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3 shrink-0 text-emerald-600" />
+                                <span className="truncate">{card.address || "Xem chi tiết"}</span>
+                                {card.distance_km !== null && card.distance_km !== undefined && (
+                                  <span className="text-emerald-700 font-semibold shrink-0">
+                                    ({formatDistance(card.distance_km)})
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <ExternalLink className="w-4 h-4 text-slate-400 shrink-0" />
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+
+              {chatting && (
+                <div className="text-xs text-slate-500 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                  <span>MatGreen AI đang tra cứu dữ liệu sàn & soạn câu trả lời...</span>
+                </div>
+              )}
+
+              {chatError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{chatError}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="px-4 py-2 bg-white border-t border-slate-100 flex gap-2 overflow-x-auto shrink-0">
+              {QUICK_PROMPTS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  disabled={chatting}
+                  onClick={() => void handleSendChat(q)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap font-medium transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleSendChat();
+              }}
+              className="p-3 bg-white border-t border-slate-200 flex gap-2 shrink-0"
+            >
+              <input
+                type="text"
+                placeholder="Hỏi tìm vật liệu quanh bạn, định giá phế liệu, thủ tục tháo dỡ..."
+                value={inputMsg}
+                onChange={(e) => setInputMsg(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <button
+                type="submit"
+                disabled={chatting || !inputMsg.trim()}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                <span className="hidden sm:inline">Gửi</span>
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

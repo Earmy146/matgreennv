@@ -2,13 +2,22 @@ import React, { useEffect, useRef } from "react";
 import Lenis from "lenis";
 import { useLocation } from "react-router-dom";
 
+const LANDING_PATHS = new Set(["/", "/about", "/services", "/contact", "/news"]);
+
+function shouldUseLenis(pathname: string): boolean {
+  if (LANDING_PATHS.has(pathname)) return true;
+  if (pathname.startsWith("/news/")) return true;
+  return false;
+}
+
 export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const lenisRef = useRef<Lenis | null>(null);
   const location = useLocation();
 
   useEffect(() => {
-    // Không chạy Lenis trên phân hệ Quản trị Admin để giữ cuộn native 100% mượt mà cho bảng & form
-    if (location.pathname.startsWith("/admin")) {
+    // Chỉ bật Lenis trên các trang Landing/Tin tức marketing;
+    // toàn bộ khu vực App/Dashboard/Chat/AI/Admin dùng cuộn native để không bao giờ cướp wheel của khung con.
+    if (!shouldUseLenis(location.pathname)) {
       if (lenisRef.current) {
         lenisRef.current.destroy();
         lenisRef.current = null;
@@ -18,14 +27,13 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
       return;
     }
 
-    // Chỉ khởi tạo Lenis nếu không phải thiết bị giảm chuyển động (reduced-motion)
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
     if (!lenisRef.current) {
       const lenis = new Lenis({
-        duration: 1.1,
+        duration: 1.0,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: "vertical",
         gestureOrientation: "vertical",
@@ -35,8 +43,7 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
         prevent: (node) => {
           return (
             node.closest("[data-lenis-prevent]") !== null ||
-            node.closest(".admin-scrollable") !== null ||
-            window.location.pathname.startsWith("/admin")
+            node.closest(".admin-scrollable") !== null
           );
         },
       });
@@ -60,7 +67,6 @@ export const SmoothScrollProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [location.pathname]);
 
-  // Cuộn lên đầu trang tức thì khi chuyển trang
   useEffect(() => {
     if (lenisRef.current) {
       lenisRef.current.scrollTo(0, { immediate: true });

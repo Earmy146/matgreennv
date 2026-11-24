@@ -18,6 +18,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 export const AdminLayout: React.FC = () => {
   const { pathname } = useLocation();
@@ -80,21 +81,8 @@ export const AdminLayout: React.FC = () => {
       >
         {/* Brand & Portal Badge */}
         <div className="h-20 shrink-0 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950/40">
-          <Link to="/admin" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
-              <Shield className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl font-black text-white tracking-tight">MatGreen</span>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Admin
-                </span>
-              </div>
-              <span className="text-[11px] text-slate-400 font-medium block">
-                Cổng Điều Hành Nền Tảng
-              </span>
-            </div>
+          <Link to="/admin" className="group min-w-0">
+            <BrandLogo size="md" theme="dark" badge="Admin" subtitle="Cổng Điều Hành Nền Tảng" />
           </Link>
 
           <button

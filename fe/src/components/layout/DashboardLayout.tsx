@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { DashboardTopbar } from "./DashboardTopbar";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { FloatingAiAssistant } from "@/components/ai/FloatingAiAssistant";
 
 export const DashboardLayout: React.FC = () => {
@@ -10,7 +11,6 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Component */}
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed(!collapsed)}
@@ -18,10 +18,9 @@ export const DashboardLayout: React.FC = () => {
         onCloseMobile={() => setIsMobileOpen(false)}
       />
 
-      {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          collapsed ? "lg:ml-20" : "lg:ml-72"
+          collapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
         <DashboardTopbar
@@ -30,11 +29,12 @@ export const DashboardLayout: React.FC = () => {
           collapsed={collapsed}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-7 pb-24 lg:pb-8 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
       </div>
 
+      <MobileBottomNav />
       <FloatingAiAssistant />
     </div>
   );

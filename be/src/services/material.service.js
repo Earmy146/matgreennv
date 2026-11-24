@@ -171,8 +171,15 @@ class MaterialService {
       query.owner = { $ne: new mongoose.Types.ObjectId(excludeUserId) };
     }
 
-    // Đếm tổng số bài đăng trong bán kính để làm phân trang
-    const [rawMaterials, total] = await Promise.all([
+    // Đếm tổng số bài đăng trong bán kính + tổng theo hình thức để KPI luôn chính xác
+    const geoWithinFilter = {
+      location: {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius / EARTH_RADIUS_KM],
+        },
+      },
+    };
+    const [rawMaterials, total, totalFreeInRadius, totalSellInRadius] = await Promise.all([
       Material.aggregate([
         {
           $geoNear: {
@@ -189,11 +196,17 @@ class MaterialService {
       ]),
       Material.countDocuments({
         ...query,
-        location: {
-          $geoWithin: {
-            $centerSphere: [[lng, lat], radius / EARTH_RADIUS_KM],
-          },
-        },
+        ...geoWithinFilter,
+      }),
+      Material.countDocuments({
+        ...query,
+        type: "free",
+        ...geoWithinFilter,
+      }),
+      Material.countDocuments({
+        ...query,
+        type: "sell",
+        ...geoWithinFilter,
       }),
     ]);
 
@@ -229,24 +242,48 @@ class MaterialService {
       },
       searchRadiusKm: radius,
       searchDiameterKm: radius * 2,
+      summary: {
+        totalFree: totalFreeInRadius,
+        totalSell: totalSellInRadius,
+      },
     };
   }
 
-  async getAllMaterials({ category, type, page = 1, limit = 12 }) {
+  async getAllMaterials({ category, type, search, sort = "newest", page = 1, limit = 12, excludeUserId = null }) {
     const query = { status: "available" };
     if (category) query.category = category;
     if (type) query.type = type;
+    if (search && typeof search === "string" && search.trim()) {
+      const term = search.trim();
+      query.$or = [
+        { title: { $regex: term, $options: "i" } },
+        { description: { $regex: term, $options: "i" } },
+        { "location.address": { $regex: term, $options: "i" } },
+      ];
+    }
+    if (excludeUserId && mongoose.Types.ObjectId.isValid(excludeUserId)) {
+      query.owner = { $ne: new mongoose.Types.ObjectId(excludeUserId) };
+    }
+
+    const sortSpec =
+      sort === "price_asc"
+        ? { price: 1, createdAt: -1 }
+        : sort === "price_desc"
+        ? { price: -1, createdAt: -1 }
+        : { createdAt: -1 };
 
     const currentPage = Math.max(1, Number(page) || 1);
     const pageSize = Math.max(1, Math.min(50, Number(limit) || 12));
-    const [items, total] = await Promise.all([
+    const [items, total, totalFree, totalSell] = await Promise.all([
       Material.find(query)
         .populate("owner", "name phone avatar email bio phoneVerified")
-        .sort({ createdAt: -1 })
+        .sort(sortSpec)
         .skip((currentPage - 1) * pageSize)
         .limit(pageSize)
         .lean(),
       Material.countDocuments(query),
+      Material.countDocuments({ ...query, type: "free" }),
+      Material.countDocuments({ ...query, type: "sell" }),
     ]);
 
     const totalPages = Math.ceil(total / pageSize);
@@ -260,6 +297,25 @@ class MaterialService {
         hasPrevPage: currentPage > 1,
         hasNextPage: currentPage < totalPages,
       },
+      summary: {
+        totalFree,
+        totalSell,
+      },
+    };
+  }
+
+  async getPublicStats() {
+    const [totalAvailable, totalFree, totalSell, totalCompleted] = await Promise.all([
+      Material.countDocuments({ status: "available" }),
+      Material.countDocuments({ status: "available", type: "free" }),
+      Material.countDocuments({ status: "available", type: "sell" }),
+      Material.countDocuments({ status: "completed" }),
+    ]);
+    return {
+      totalAvailable,
+      totalFree,
+      totalSell,
+      totalCompleted,
     };
   }
 

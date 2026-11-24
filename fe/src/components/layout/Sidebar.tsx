@@ -1,37 +1,32 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Recycle,
-  LayoutDashboard,
   Compass,
   PlusCircle,
   FolderOpen,
   MessageSquare,
   Sparkles,
   MapPin,
-  LocateFixed,
-  ChevronRight,
   LogOut,
   User as UserIcon,
-  Layers,
-  PhoneCall,
-  ShieldCheck,
   ClipboardList,
   Heart,
   Shield,
-  ShieldAlert,
   Newspaper,
+  Home,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
-import { useLocationStore } from "@/stores/location.store";
-import { useGeolocation } from "@/hooks/useGeolocation";
-import { formatDistance } from "@/lib/utils";
+import { chatApi } from "@/services/api";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
+  badgeCount?: number;
   highlight?: boolean;
   ai?: boolean;
 }
@@ -56,94 +51,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { pathname } = useLocation();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { latitude, longitude, radiusKm, address } = useLocationStore();
-  const { getCurrentLocation, isLocating } = useGeolocation();
+
+  const { data: conversations = [] } = useQuery({
+    queryKey: ["chat-conversations-unread"],
+    queryFn: chatApi.getConversations,
+    enabled: isAuthenticated,
+    staleTime: 30000,
+    refetchInterval: 45000,
+  });
+
+  const unreadChatCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   const navGroups: NavGroup[] = [
     {
-      group: "Khám Phá & Tìm Kiếm",
+      group: "Khám Phá Sàn",
       items: [
-        {
-          label: "Trang Chủ",
-          href: "/",
-          icon: Layers,
-        },
-        {
-          label: "Bảng Điều Khiển",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-          badge: "Mới",
-        },
-        {
-          label: "Kho Vật Liệu Quanh Bạn",
-          href: "/materials",
-          icon: Compass,
-        },
-        {
-          label: "Vật Liệu Đã Lưu",
-          href: "/saved",
-          icon: Heart,
-        },
-        {
-          label: "Hồ Sơ & Xác Minh",
-          href: "/profile",
-          icon: UserIcon,
-        },
-        {
-          label: "Bản Đồ Radar Vị Trí",
-          href: "/map-radar",
-          icon: MapPin,
-        },
+        { label: "Kho Vật Liệu", href: "/materials", icon: Compass },
+        { label: "Bản Đồ Radar", href: "/dashboard", icon: MapPin },
+        { label: "Trợ Lý AI MatGreen", href: "/ai-advisor", icon: Sparkles, ai: true },
+        { label: "Tin Tức & Cẩm Nang", href: "/news", icon: Newspaper },
       ],
     },
     {
-      group: "Dành Cho Nhà A (Bên Tháo Dỡ)",
+      group: "Giao Dịch & Cá Nhân",
       items: [
+        { label: "Đăng Vật Liệu Mới", href: "/post", icon: PlusCircle, highlight: true },
+        { label: "Quản Lý Tin Đăng", href: "/my-posts", icon: FolderOpen },
+        { label: "Yêu Cầu Nhận", href: "/requests", icon: ClipboardList },
         {
-          label: "Đăng Vật Liệu Thừa",
-          href: "/post",
-          icon: PlusCircle,
-          highlight: true,
-        },
-        {
-          label: "Quản Lý Tin Của Tôi",
-          href: "/my-posts",
-          icon: FolderOpen,
-        },
-        {
-          label: "Yêu Cầu Nhận Của Tôi",
-          href: "/requests",
-          icon: ClipboardList,
-        },
-      ],
-    },
-    {
-      group: "Giao Dịch, Tin Tức & AI",
-      items: [
-        {
-          label: "Tin Tức & Cẩm Nang",
-          href: "/news",
-          icon: MessageSquare,
-        },
-        {
-          label: "Tin Nhắn Trao Đổi",
+          label: "Tin Nhắn",
           href: "/chat",
-          icon: PhoneCall,
-          badge: "2",
+          icon: MessageSquare,
+          badgeCount: unreadChatCount,
         },
-        {
-          label: "AI Bóc Tách Tháo Dỡ",
-          href: "/ai-advisor",
-          icon: Sparkles,
-          ai: true,
-        },
+        { label: "Vật Liệu Đã Lưu", href: "/saved", icon: Heart },
+        { label: "Hồ Sơ Cá Nhân", href: "/profile", icon: UserIcon },
       ],
     },
   ];
 
+  const isActivePath = (href: string) => {
+    if (href === "/dashboard" && (pathname === "/dashboard" || pathname === "/map-radar")) {
+      return true;
+    }
+    return pathname === href;
+  };
+
   return (
     <>
-      {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
@@ -151,56 +106,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ease-in-out ${
-          collapsed ? "w-20" : "w-72"
-        } ${
-          isMobileOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
-        }`}
+        data-lenis-prevent
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200/90 transition-all duration-300 ease-in-out ${
+          collapsed ? "w-20" : "w-64"
+        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
+        {/* Brand Header — Unified BrandLogo */}
+        <div className="h-16 flex items-center justify-between px-3.5 border-b border-slate-100 shrink-0">
           <Link
-            to="/dashboard"
-            className="flex items-center gap-2.5 overflow-hidden group"
+            to="/"
+            className="group min-w-0 flex-1"
             onClick={onCloseMobile}
+            title="Về Trang Chủ MatGreen"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform shrink-0">
-              <Recycle className="w-6 h-6 animate-spin-slow" />
-            </div>
-            {!collapsed && (
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-emerald-700 tracking-tight font-black text-xl">
-                    Mat
-                  </span>
-                  <span className="text-slate-800 font-extrabold text-xl">
-                    Green
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase -mt-1">
-                  Vật Liệu Tuần Hoàn
-                </span>
-              </div>
-            )}
+            <BrandLogo size="sm" showText={!collapsed} />
           </Link>
+
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+              title={collapsed ? "Mở rộng menu" : "Thu gọn menu"}
+            >
+              {collapsed ? (
+                <PanelLeftOpen className="w-4 h-4" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Navigation List */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-6">
-          {navGroups.map((group, gIdx) => (
-            <div key={gIdx} className="space-y-1">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-5">
+          {navGroups.map((group) => (
+            <div key={group.group} className="space-y-1">
               {!collapsed && (
-                <div className="px-3 text-[11px] font-bold tracking-wider uppercase text-slate-400 mb-2">
+                <div className="px-3 text-[10.5px] font-bold tracking-wider uppercase text-slate-400 mb-1.5">
                   {group.group}
                 </div>
               )}
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = isActivePath(item.href);
 
                 return (
                   <Link
@@ -208,20 +158,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     to={item.href}
                     onClick={onCloseMobile}
                     title={collapsed ? item.label : undefined}
-                    className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all ${
                       isActive
-                        ? "bg-emerald-50 text-emerald-800 shadow-xs"
+                        ? "bg-emerald-50 text-emerald-800"
                         : item.highlight
                         ? "text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/70"
                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
                     }`}
                   >
                     <Icon
-                      className={`w-5 h-5 shrink-0 transition-colors ${
+                      className={`w-[18px] h-[18px] shrink-0 transition-colors ${
                         isActive
                           ? "text-emerald-600"
                           : item.ai
-                          ? "text-teal-600 group-hover:text-teal-700"
+                          ? "text-teal-600"
                           : item.highlight
                           ? "text-emerald-600"
                           : "text-slate-400 group-hover:text-slate-600"
@@ -231,20 +181,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {!collapsed && (
                       <>
                         <span className="truncate flex-1">{item.label}</span>
-                        {item.badge && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            {item.badge}
+                        {typeof item.badgeCount === "number" && item.badgeCount > 0 && (
+                          <span className="min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                            {item.badgeCount > 99 ? "99+" : item.badgeCount}
                           </span>
                         )}
                         {item.ai && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-teal-100 text-teal-800">
+                          <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-teal-100 text-teal-800">
                             AI
                           </span>
                         )}
                       </>
                     )}
 
-                    {/* Active indicator bar */}
                     {isActive && (
                       <span className="absolute left-0 top-2 bottom-2 w-1 bg-emerald-600 rounded-r-full" />
                     )}
@@ -253,69 +202,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
               })}
             </div>
           ))}
+
+          {/* Back to Landing link */}
+          <div className="pt-2 border-t border-slate-100">
+            <Link
+              to="/"
+              onClick={onCloseMobile}
+              title={collapsed ? "Về Trang Giới Thiệu" : undefined}
+              className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 transition-colors"
+            >
+              <Home className="w-4 h-4 shrink-0 text-slate-400" />
+              {!collapsed && <span>Về Trang Giới Thiệu</span>}
+            </Link>
+          </div>
         </div>
 
-        {/* GPS Live Status Widget */}
-        {!collapsed && (
-          <div className="p-3 mx-3 mb-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="font-bold text-slate-700 flex items-center gap-1.5 text-[11px]">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    latitude && longitude
-                      ? "bg-emerald-500"
-                      : "bg-amber-500 animate-pulse"
-                  }`}
-                />
-                Vị Trí Của Bạn
-              </span>
-              <button
-                onClick={getCurrentLocation}
-                disabled={isLocating}
-                className={`flex items-center gap-1 font-bold text-[11px] transition-all cursor-pointer ${
-                  latitude && longitude
-                    ? "text-emerald-700 hover:underline"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-0.5 rounded-lg shadow-xs text-[10px]"
-                }`}
-                title="Cập nhật tọa độ GPS"
-              >
-                <LocateFixed
-                  className={`w-3 h-3 ${isLocating ? "animate-spin" : ""}`}
-                />
-                {isLocating
-                  ? "Đang dò..."
-                  : latitude && longitude
-                  ? "Cập nhật"
-                  : "Bật GPS"}
-              </button>
-            </div>
-            <div
-              className={`text-[11px] truncate font-medium ${
-                latitude && longitude ? "text-slate-600" : "text-amber-700 font-bold"
-              }`}
-              title={address || "Chưa xác định"}
-            >
-              {latitude && longitude ? `📍 ${address}` : "⚠️ Chưa xác định vị trí"}
-            </div>
-            <div className="mt-1 text-[11px] text-slate-400 font-mono flex items-center justify-between">
-              <span>Bán kính: <strong className="text-emerald-700 font-bold">{radiusKm} km</strong></span>
-              {!(latitude && longitude) && (
-                <span className="text-[10px] text-amber-600 font-sans font-bold">Cần GPS</span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Switch to Admin Portal if current user is admin */}
+        {/* Switch to Admin Portal */}
         {isAuthenticated && (user?.role === "admin" || user?.role === "moderator") && !collapsed && (
-          <div className="px-3 pb-2">
+          <div className="px-3 pb-2 shrink-0">
             <Link
               to="/admin"
-              className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-md hover:bg-slate-800 transition-all border border-slate-700"
+              onClick={onCloseMobile}
+              className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-all"
             >
               <span className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-emerald-400" />
-                <span>Vào Cổng Quản Trị</span>
+                <span>Cổng Quản Trị</span>
               </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
                 Admin
@@ -324,30 +236,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* User Card & Logout */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+        {/* User Footer */}
+        <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0">
           {isAuthenticated ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 overflow-hidden">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 shadow-sm text-sm">
-                  {user?.name?.[0]?.toUpperCase() || "U"}
+            <div className="flex items-center justify-between gap-2">
+              <Link
+                to="/profile"
+                onClick={onCloseMobile}
+                className="flex items-center gap-2.5 overflow-hidden min-w-0 group"
+              >
+                <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 overflow-hidden text-sm">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    user?.name?.[0]?.toUpperCase() || "U"
+                  )}
                 </div>
                 {!collapsed && (
-                  <div className="overflow-hidden">
-                    <div className="font-bold text-xs text-slate-900 truncate">
+                  <div className="overflow-hidden min-w-0">
+                    <div className="font-bold text-xs text-slate-900 truncate group-hover:text-emerald-700">
                       {user?.name || "Người dùng"}
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      {user?.email || "user@matgreen.vn"}
-                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">{user?.email}</div>
                   </div>
                 )}
-              </div>
+              </Link>
               {!collapsed && (
                 <button
+                  type="button"
                   onClick={logout}
                   title="Đăng xuất"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -356,7 +275,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ) : (
             <Link
               to="/login"
-              className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-sm hover:bg-emerald-700 transition-colors"
+              onClick={onCloseMobile}
+              className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-xs hover:bg-emerald-700 transition-colors"
             >
               <UserIcon className="w-4 h-4" />
               {!collapsed && <span>Đăng Nhập</span>}

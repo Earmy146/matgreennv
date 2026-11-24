@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, MessageSquare, Navigation, Phone } from "lucide-react";
+import { MapPin, MessageSquare, Navigation, Phone, Sparkles } from "lucide-react";
 import type { MaterialItem } from "@/types/material.types";
 import { CATEGORY_LABELS, formatCurrency, formatDistance } from "@/lib/utils";
+import { useAiAssistantStore } from "@/stores/ai-assistant.store";
 
 interface RadarMapWidgetProps {
   materials: MaterialItem[];
@@ -57,10 +58,22 @@ export const RadarMapWidget: React.FC<RadarMapWidgetProps> = ({
   userLongitude,
 }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<MaterialItem | null>(materials[0] || null);
+  const openAiDrawer = useAiAssistantStore((state) => state.openDrawer);
   const validMaterials = useMemo(
     () => materials.filter((item) => item.location?.coordinates?.length === 2),
     [materials]
   );
+
+  // Tự đồng bộ marker đang chọn khi danh sách bộ lọc thay đổi
+  useEffect(() => {
+    if (!validMaterials.length) {
+      setSelectedMaterial(null);
+      return;
+    }
+    if (!selectedMaterial || !validMaterials.some((m) => m._id === selectedMaterial._id)) {
+      setSelectedMaterial(validMaterials[0]);
+    }
+  }, [validMaterials, selectedMaterial]);
 
   if (userLatitude === null || userLongitude === null || userLatitude === undefined || userLongitude === undefined) {
     return (
@@ -116,19 +129,40 @@ export const RadarMapWidget: React.FC<RadarMapWidgetProps> = ({
 
         <div className="lg:col-span-4 p-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200">
           {selectedMaterial ? (
-            <div className="space-y-4">
+            <div className="space-y-3.5">
+              {selectedMaterial.images?.[0] && (
+                <div className="h-36 rounded-2xl overflow-hidden border border-slate-200 bg-slate-200">
+                  <img
+                    src={selectedMaterial.images[0]}
+                    alt={selectedMaterial.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">{CATEGORY_LABELS[selectedMaterial.category] || "Vật liệu"}</div>
               <h4 className="font-bold text-slate-900 text-sm leading-snug">{selectedMaterial.title}</h4>
-              <div className="text-base font-extrabold text-amber-600">{formatCurrency(selectedMaterial.price)}{selectedMaterial.unit && selectedMaterial.type !== "free" ? ` / ${selectedMaterial.unit}` : ""}</div>
-              <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 space-y-2">
+              <div className={`text-base font-extrabold ${selectedMaterial.type === "free" ? "text-emerald-600" : "text-amber-600"}`}>{formatCurrency(selectedMaterial.price)}{selectedMaterial.unit && selectedMaterial.type !== "free" ? ` / ${selectedMaterial.unit}` : ""}</div>
+              <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 space-y-1.5">
                 <div><strong>Địa chỉ:</strong> {selectedMaterial.location.address}</div>
                 <div><strong>Khoảng cách:</strong> {selectedMaterial.distanceKm !== undefined ? formatDistance(selectedMaterial.distanceKm) : "Trong bán kính"}</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <a href={`tel:${selectedMaterial.contactPhone}`} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700"><Phone className="w-3.5 h-3.5 text-emerald-600" /> Gọi điện</a>
-                <Link to={`/chat?partnerId=${selectedMaterial.owner?._id}&materialId=${selectedMaterial._id}`} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold"><MessageSquare className="w-3.5 h-3.5" /> Nhắn tin</Link>
+                <a href={`tel:${selectedMaterial.contactPhone}`} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700"><Phone className="w-3.5 h-3.5 text-emerald-600" /> Gọi điện</a>
+                <Link to={`/chat?partnerId=${selectedMaterial.owner?._id}&materialId=${selectedMaterial._id}`} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"><MessageSquare className="w-3.5 h-3.5" /> Nhắn tin</Link>
               </div>
-              <Link to={`/materials/${selectedMaterial._id}`} className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white border border-emerald-200 text-emerald-800 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() =>
+                  openAiDrawer({
+                    materialContext: { materialId: selectedMaterial._id, title: selectedMaterial.title },
+                    prompt: `Thẩm định giúp mình lô "${selectedMaterial.title}" trên bản đồ này: giá/hình thức có hợp lý và cần xe gì chở?`,
+                  })
+                }
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 text-xs font-bold cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" /> Hỏi AI thẩm định lô này
+              </button>
+              <Link to={`/materials/${selectedMaterial._id}`} className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
                 <Navigation className="w-3.5 h-3.5" /> Xem chi tiết & chỉ đường
               </Link>
             </div>

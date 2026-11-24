@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { authApi } from "@/services/api";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 type AuthMode = "login" | "register" | "verify" | "forgot" | "reset";
 
@@ -238,8 +239,8 @@ export const LoginPage: React.FC = () => {
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-teal-100 rounded-full blur-3xl opacity-60 pointer-events-none" />
 
           <div className="text-center mb-6 relative">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white mb-3 shadow-lg shadow-emerald-500/25">
-              <Recycle className="w-8 h-8 animate-pulse" />
+            <div className="flex justify-center mb-3">
+              <BrandLogo size="lg" showText={false} />
             </div>
 
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">

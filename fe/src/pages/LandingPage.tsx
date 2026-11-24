@@ -5,6 +5,7 @@ import { LandingOffers } from "@/components/landing/LandingOffers";
 import { LandingAbout } from "@/components/landing/LandingAbout";
 import { LandingOpening } from "@/components/landing/LandingOpening";
 import { LandingServices } from "@/components/landing/LandingServices";
+import { LandingAiAdvisor } from "@/components/landing/LandingAiAdvisor";
 import { LandingProducts } from "@/components/landing/LandingProducts";
 import { LandingGallery } from "@/components/landing/LandingGallery";
 import { LandingTestimonials } from "@/components/landing/LandingTestimonials";
@@ -36,7 +37,10 @@ export const LandingPage: React.FC = () => {
         {/* 6. Service Page Three: 4 thẻ dịch vụ với nền họa tiết service-bg-3.jpg */}
         <LandingServices />
 
-        {/* 7. Product One: 4 nguồn vật liệu đang có sẵn quanh đây với đánh giá sao & khoảng cách GPS */}
+        {/* 6.5. AI Advisor Showcase: Giới thiệu Trợ Lý AI Bóc Tách & Vision AI thực chiến */}
+        <LandingAiAdvisor />
+
+        {/* 7. Product One: 4 nguồn vật liệu đang có sẵn trên sàn MatGreen */}
         <LandingProducts />
 
         {/* 8. Gallery Two: 4 ảnh thực tế công trường & khối thông tin tin cậy nền gallery-info-bg.jpg */}

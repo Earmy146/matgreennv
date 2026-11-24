@@ -1,9 +1,12 @@
 import api from "@/lib/api";
 import aiApi from "@/lib/ai-api";
-import type { MaterialItem, NearbyMaterialsResult } from "@/types/material.types";
+import type { MaterialItem, NearbyMaterialsResult, PublicMaterialStats } from "@/types/material.types";
 import type { NewsArticle } from "@/types/news.types";
 import type {
+  AiChatMessage,
   AiChatResponse,
+  AiConversationDetail,
+  AiConversationSummary,
   ChatQuotaInfo,
   DemolitionAnalysisResult,
   InspectMaterialResult,
@@ -26,8 +29,20 @@ export const materialsApi = {
     return res.data.data;
   },
 
-  getAll: async (params?: { category?: string; type?: string; page?: number; limit?: number }) => {
+  getAll: async (params?: {
+    category?: string;
+    type?: string;
+    search?: string;
+    sort?: "newest" | "price_asc" | "price_desc";
+    page?: number;
+    limit?: number;
+  }) => {
     const res = await api.get<{ data: NearbyMaterialsResult }>("/materials", { params });
+    return res.data.data;
+  },
+
+  getStats: async (): Promise<PublicMaterialStats> => {
+    const res = await api.get<{ data: PublicMaterialStats }>("/materials/stats");
     return res.data.data;
   },
 
@@ -340,6 +355,38 @@ export const aiMaterialsApi = {
 
   getUserQuota: async (): Promise<UserAiQuota> => {
     const res = await api.get<{ data: UserAiQuota }>("/ai/quota");
+    return res.data.data;
+  },
+
+  listConversations: async (limit = 20): Promise<AiConversationSummary[]> => {
+    const res = await api.get<{ data: AiConversationSummary[] }>("/ai/conversations", {
+      params: { limit },
+    });
+    return res.data.data;
+  },
+
+  getConversation: async (id: string): Promise<AiConversationDetail> => {
+    const res = await api.get<{ data: AiConversationDetail }>(`/ai/conversations/${id}`);
+    return res.data.data;
+  },
+
+  saveConversationTurn: async (payload: {
+    conversationId?: string | null;
+    materialId?: string | null;
+    userMessage: { content: string };
+    assistantMessage: {
+      content: string;
+      recommended_materials?: AiChatMessage["recommended_materials"];
+      tools_used?: string[];
+      model?: string | null;
+    };
+  }): Promise<AiConversationDetail> => {
+    const res = await api.post<{ data: AiConversationDetail }>("/ai/conversations/save-turn", payload);
+    return res.data.data;
+  },
+
+  deleteConversation: async (id: string): Promise<{ deleted: boolean; id: string }> => {
+    const res = await api.delete<{ data: { deleted: boolean; id: string } }>(`/ai/conversations/${id}`);
     return res.data.data;
   },
 };

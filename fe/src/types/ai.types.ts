@@ -23,6 +23,26 @@ export interface AiChatMessage {
   recommended_materials?: RecommendedMaterialCard[];
   tools_used?: string[];
   model?: string | null;
+  createdAt?: string;
+}
+
+export interface AiConversationSummary {
+  _id: string;
+  title: string;
+  materialId?: string | null;
+  messageCount: number;
+  lastMessagePreview: string;
+  lastMessageAt: string;
+  createdAt: string;
+}
+
+export interface AiConversationDetail {
+  _id: string;
+  title: string;
+  materialId?: string | null;
+  messages: AiChatMessage[];
+  lastMessageAt: string;
+  createdAt: string;
 }
 
 export interface AiChatResponse {

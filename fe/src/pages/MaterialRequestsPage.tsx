@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ClipboardList, Loader2, MapPin, XCircle, CheckCircle2, MessageSquare } from "lucide-react";
 import { materialRequestsApi, reviewsApi, type MaterialRequest } from "@/services/api";
+import { toast } from "@/stores/toast.store";
 
 const statusLabels: Record<MaterialRequest["status"], string> = {
   pending: "Đang chờ người đăng duyệt",
@@ -30,16 +31,26 @@ export const MaterialRequestsPage: React.FC = () => {
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: MaterialRequest["status"] }) =>
       materialRequestsApi.updateStatus(id, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] }),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] });
+      toast.success(vars.status === "completed" ? "Đã xác nhận nhận vật liệu thành công!" : "Đã hủy yêu cầu nhận vật liệu");
+    },
+    onError: () => toast.error("Không thể cập nhật trạng thái yêu cầu"),
   });
   const schedule = useMutation({
     mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt: string }) =>
       materialRequestsApi.schedule(id, scheduledAt),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["material-requests", "requester"] });
+      toast.success("Đã cập nhật lịch hẹn nhận vật liệu!");
+    },
+    onError: () => toast.error("Không thể đặt lịch lúc này"),
   });
   const [reviewValues, setReviewValues] = React.useState<Record<string, { rating: number; comment: string }>>({});
   const review = useMutation({
     mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment: string }) => reviewsApi.create(id, rating, comment),
+    onSuccess: () => toast.success("Cảm ơn bạn đã gửi đánh giá giao dịch!"),
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể gửi đánh giá"),
   });
 
   return (

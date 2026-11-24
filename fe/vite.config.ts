@@ -14,6 +14,21 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("@tiptap") || id.includes("prosemirror")) return "vendor-editor";
+          if (id.includes("leaflet")) return "vendor-map";
+          if (id.includes("socket.io")) return "vendor-socket";
+          if (id.includes("lucide-react")) return "vendor-icons";
+          if (id.includes("react-router") || id.includes("@tanstack")) return "vendor-routing";
+          if (id.includes("react-dom") || id.includes("/react/")) return "vendor-react";
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

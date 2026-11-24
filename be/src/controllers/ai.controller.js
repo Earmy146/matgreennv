@@ -1,5 +1,6 @@
 const { OK } = require("../core/success.response");
 const aiGatewayService = require("../services/ai-gateway.service");
+const aiHistoryService = require("../services/ai-history.service");
 
 class AiController {
   async inspectMaterial(req, res, next) {
@@ -45,6 +46,42 @@ class AiController {
         message: "Lấy hạn mức AI thành công",
         data,
       }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async listConversations(req, res, next) {
+    try {
+      const data = await aiHistoryService.listConversations(req.user.id, req.query?.limit);
+      new OK({ message: "Lấy lịch sử chat AI thành công", data }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getConversation(req, res, next) {
+    try {
+      const data = await aiHistoryService.getConversation(req.user.id, req.params.id);
+      new OK({ message: "Lấy chi tiết hội thoại AI thành công", data }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async saveConversationTurn(req, res, next) {
+    try {
+      const data = await aiHistoryService.saveTurn(req.user.id, req.body);
+      new OK({ message: "Đã lưu lịch sử trò chuyện AI", data }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async deleteConversation(req, res, next) {
+    try {
+      const data = await aiHistoryService.deleteConversation(req.user.id, req.params.id);
+      new OK({ message: "Đã xóa cuộc trò chuyện AI", data }).send(res);
     } catch (err) {
       next(err);
     }

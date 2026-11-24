@@ -38,6 +38,10 @@ function handleUpload(req, res, next) {
 }
 
 router.get("/quota", authenticate, aiController.getQuota);
+router.get("/conversations", authenticate, aiController.listConversations);
+router.get("/conversations/:id", authenticate, aiController.getConversation);
+router.post("/conversations/save-turn", authenticate, aiController.saveConversationTurn);
+router.delete("/conversations/:id", authenticate, aiController.deleteConversation);
 router.post("/inspect-material", authenticate, handleUpload, aiController.inspectMaterial);
 router.post("/analyze-demolition-images", authenticate, handleUpload, aiController.analyzeDemolitionImages);
 

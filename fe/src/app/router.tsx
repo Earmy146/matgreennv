@@ -1,31 +1,46 @@
+import React, { Suspense, lazy } from "react";
 import { Outlet, createBrowserRouter } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { SmoothScrollProvider } from "@/components/common/SmoothScrollProvider";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { LandingPage } from "@/pages/LandingPage";
-import { AboutPage } from "@/pages/AboutPage";
-import { ServicesPage } from "@/pages/ServicesPage";
-import { ContactPage } from "@/pages/ContactPage";
-import { NewsPage } from "@/pages/NewsPage";
-import { NewsDetailPage } from "@/pages/NewsDetailPage";
-import { AdminNewsPage } from "@/pages/AdminNewsPage";
-import { AdminSettingsPage } from "@/pages/AdminSettingsPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { HomePage } from "@/pages/HomePage";
-import { PostMaterialPage } from "@/pages/PostMaterialPage";
-import { MyPostsPage } from "@/pages/MyPostsPage";
 import { MaterialDetailPage } from "@/pages/MaterialDetailPage";
-import { AiAdvisorPage } from "@/pages/AiAdvisorPage";
-import { ChatPage } from "@/pages/ChatPage";
 import { LoginPage } from "@/pages/LoginPage";
-import { MaterialRequestsPage } from "@/pages/MaterialRequestsPage";
-import { SavedMaterialsPage } from "@/pages/SavedMaterialsPage";
-import { EditMaterialPage } from "@/pages/EditMaterialPage";
-import { AdminModerationPage } from "@/pages/AdminModerationPage";
-import { AdminHubPage } from "@/pages/AdminHubPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { ProfilePage } from "@/pages/ProfilePage";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+
+// Lazy-load secondary, editor-heavy & admin pages to shrink initial JS bundle
+const AboutPage = lazy(() => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage })));
+const ServicesPage = lazy(() => import("@/pages/ServicesPage").then((m) => ({ default: m.ServicesPage })));
+const ContactPage = lazy(() => import("@/pages/ContactPage").then((m) => ({ default: m.ContactPage })));
+const NewsPage = lazy(() => import("@/pages/NewsPage").then((m) => ({ default: m.NewsPage })));
+const NewsDetailPage = lazy(() => import("@/pages/NewsDetailPage").then((m) => ({ default: m.NewsDetailPage })));
+const PostMaterialPage = lazy(() => import("@/pages/PostMaterialPage").then((m) => ({ default: m.PostMaterialPage })));
+const EditMaterialPage = lazy(() => import("@/pages/EditMaterialPage").then((m) => ({ default: m.EditMaterialPage })));
+const MyPostsPage = lazy(() => import("@/pages/MyPostsPage").then((m) => ({ default: m.MyPostsPage })));
+const MaterialRequestsPage = lazy(() => import("@/pages/MaterialRequestsPage").then((m) => ({ default: m.MaterialRequestsPage })));
+const SavedMaterialsPage = lazy(() => import("@/pages/SavedMaterialsPage").then((m) => ({ default: m.SavedMaterialsPage })));
+const ProfilePage = lazy(() => import("@/pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
+const AiAdvisorPage = lazy(() => import("@/pages/AiAdvisorPage").then((m) => ({ default: m.AiAdvisorPage })));
+const ChatPage = lazy(() => import("@/pages/ChatPage").then((m) => ({ default: m.ChatPage })));
+const AdminHubPage = lazy(() => import("@/pages/AdminHubPage").then((m) => ({ default: m.AdminHubPage })));
+const AdminModerationPage = lazy(() => import("@/pages/AdminModerationPage").then((m) => ({ default: m.AdminModerationPage })));
+const AdminNewsPage = lazy(() => import("@/pages/AdminNewsPage").then((m) => ({ default: m.AdminNewsPage })));
+const AdminSettingsPage = lazy(() => import("@/pages/AdminSettingsPage").then((m) => ({ default: m.AdminSettingsPage })));
+
+const PageLoader = () => (
+  <div className="min-h-[45vh] flex items-center justify-center gap-2 text-emerald-700 text-xs font-semibold">
+    <Loader2 className="w-5 h-5 animate-spin" />
+    <span>Đang tải...</span>
+  </div>
+);
+
+const withSuspense = (node: React.ReactNode) => (
+  <Suspense fallback={<PageLoader />}>{node}</Suspense>
+);
 
 const RootLayout = () => (
   <SmoothScrollProvider>
@@ -38,33 +53,14 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <NotFoundPage />,
     children: [
-      // Các trang công khai phong cách Landing (Home Three & Solox style)
-      {
-        path: "/",
-        element: <LandingPage />,
-      },
-      {
-        path: "/about",
-        element: <AboutPage />,
-      },
-      {
-        path: "/services",
-        element: <ServicesPage />,
-      },
-      {
-        path: "/contact",
-        element: <ContactPage />,
-      },
-      // Module Tin Tức & Quản Trị Bài Viết
-      {
-        path: "/news",
-        element: <NewsPage />,
-      },
-      {
-        path: "/news/:id",
-        element: <NewsDetailPage />,
-      },
-      // Trung Tâm Quản Trị Viên (Admin Portal Hub - Tách biệt hoàn toàn)
+      { path: "/", element: <LandingPage /> },
+      { path: "/about", element: withSuspense(<AboutPage />) },
+      { path: "/services", element: withSuspense(<ServicesPage />) },
+      { path: "/contact", element: withSuspense(<ContactPage />) },
+      { path: "/news", element: withSuspense(<NewsPage />) },
+      { path: "/news/:id", element: withSuspense(<NewsDetailPage />) },
+
+      // Admin Portal Hub
       {
         path: "/admin",
         element: (
@@ -73,19 +69,13 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          {
-            index: true,
-            element: <AdminHubPage />,
-          },
-          {
-            path: "moderation",
-            element: <AdminModerationPage />,
-          },
+          { index: true, element: withSuspense(<AdminHubPage />) },
+          { path: "moderation", element: withSuspense(<AdminModerationPage />) },
           {
             path: "news",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminNewsPage />
+                {withSuspense(<AdminNewsPage />)}
               </ProtectedRoute>
             ),
           },
@@ -93,34 +83,26 @@ export const router = createBrowserRouter([
             path: "settings",
             element: (
               <ProtectedRoute requiredRole="admin">
-                <AdminSettingsPage />
+                {withSuspense(<AdminSettingsPage />)}
               </ProtectedRoute>
             ),
           },
         ],
       },
-      // Khu vực Bảng điều khiển & Nghiệp vụ nền tảng
+
+      // Main App Shell
       {
         path: "/",
         element: <DashboardLayout />,
         children: [
-          {
-            path: "dashboard",
-            element: <DashboardPage />,
-          },
-          {
-            path: "materials",
-            element: <HomePage />,
-          },
-          {
-            path: "map-radar",
-            element: <DashboardPage />,
-          },
+          { path: "dashboard", element: <DashboardPage /> },
+          { path: "materials", element: <HomePage /> },
+          { path: "map-radar", element: <DashboardPage /> },
           {
             path: "post",
             element: (
               <ProtectedRoute>
-                <PostMaterialPage />
+                {withSuspense(<PostMaterialPage />)}
               </ProtectedRoute>
             ),
           },
@@ -128,7 +110,7 @@ export const router = createBrowserRouter([
             path: "my-posts",
             element: (
               <ProtectedRoute>
-                <MyPostsPage />
+                {withSuspense(<MyPostsPage />)}
               </ProtectedRoute>
             ),
           },
@@ -136,7 +118,7 @@ export const router = createBrowserRouter([
             path: "materials/:id/edit",
             element: (
               <ProtectedRoute>
-                <EditMaterialPage />
+                {withSuspense(<EditMaterialPage />)}
               </ProtectedRoute>
             ),
           },
@@ -144,7 +126,7 @@ export const router = createBrowserRouter([
             path: "requests",
             element: (
               <ProtectedRoute>
-                <MaterialRequestsPage />
+                {withSuspense(<MaterialRequestsPage />)}
               </ProtectedRoute>
             ),
           },
@@ -152,7 +134,7 @@ export const router = createBrowserRouter([
             path: "saved",
             element: (
               <ProtectedRoute>
-                <SavedMaterialsPage />
+                {withSuspense(<SavedMaterialsPage />)}
               </ProtectedRoute>
             ),
           },
@@ -160,36 +142,24 @@ export const router = createBrowserRouter([
             path: "profile",
             element: (
               <ProtectedRoute>
-                <ProfilePage />
+                {withSuspense(<ProfilePage />)}
               </ProtectedRoute>
             ),
           },
-          {
-            path: "materials/:id",
-            element: <MaterialDetailPage />,
-          },
-          {
-            path: "ai-advisor",
-            element: <AiAdvisorPage />,
-          },
+          { path: "materials/:id", element: <MaterialDetailPage /> },
+          { path: "ai-advisor", element: withSuspense(<AiAdvisorPage />) },
           {
             path: "chat",
             element: (
               <ProtectedRoute>
-                <ChatPage />
+                {withSuspense(<ChatPage />)}
               </ProtectedRoute>
             ),
           },
-          {
-            path: "login",
-            element: <LoginPage />,
-          },
+          { path: "login", element: <LoginPage /> },
         ],
       },
-      {
-        path: "*",
-        element: <NotFoundPage />,
-      },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ]);

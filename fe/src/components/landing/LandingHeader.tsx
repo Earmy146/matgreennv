@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { useSiteConfigStore } from "@/stores/site-config.store";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 export const LandingHeader: React.FC = () => {
   const navigate = useNavigate();
@@ -107,34 +108,9 @@ export const LandingHeader: React.FC = () => {
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-          {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 sm:gap-3.5 group shrink-0">
-            {config.general?.logoUrl ? (
-              <div className="w-13 h-13 sm:w-14 sm:h-14 md:w-15 md:h-15 rounded-2xl bg-white border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
-                <img
-                  src={config.general.logoUrl}
-                  alt={config.general.siteName || "MatGreen"}
-                  className="w-full h-full object-contain rounded-xl"
-                />
-              </div>
-            ) : (
-              <div className="w-13 h-13 sm:w-14 sm:h-14 md:w-15 md:h-15 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform shrink-0">
-                <Recycle className="w-7 h-7 sm:w-8 sm:h-8 animate-spin-slow" />
-              </div>
-            )}
-            <div className="flex flex-col justify-center min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-[260px] xl:max-w-[300px]">
-              <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-slate-900 block leading-tight truncate">
-                {config.general?.siteName || (
-                  <>Mat<span className="text-emerald-600">Green</span></>
-                )}
-              </span>
-              <span
-                className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-500 block mt-1 truncate"
-                title={config.general?.siteTagline || "Vật Liệu Tuần Hoàn"}
-              >
-                {config.general?.siteTagline || "Vật Liệu Tuần Hoàn"}
-              </span>
-            </div>
+          {/* Brand Logo đồng bộ toàn hệ thống */}
+          <Link to="/" className="group shrink-0 max-w-[260px]">
+            <BrandLogo size="lg" />
           </Link>
 
           {/* Desktop Navigation Links */}

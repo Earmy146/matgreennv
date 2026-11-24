@@ -1,27 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FolderOpen,
   PlusCircle,
   MapPin,
-  Clock,
   Trash2,
   CheckCircle,
-  AlertCircle,
   Eye,
   MessageSquare,
-  Tag,
 } from "lucide-react";
 import { formatCurrency, CATEGORY_LABELS } from "@/lib/utils";
-import type { MaterialItem } from "@/types/material.types";
-import { materialRequestsApi, materialsApi, type MaterialRequest } from "@/services/api";
-import { reviewsApi } from "@/services/api";
+import { materialRequestsApi, materialsApi, reviewsApi, type MaterialRequest } from "@/services/api";
 import { HorizontalItemSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { toast } from "@/stores/toast.store";
+
+const REQUEST_STATUS_VI: Record<string, string> = {
+  pending: "Chờ bạn duyệt",
+  approved: "Đã duyệt nhận",
+  rejected: "Đã từ chối",
+  cancelled: "Người nhận đã hủy",
+  completed: "Đã hoàn tất giao dịch",
+};
 
 export const MyPostsPage: React.FC = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["my-materials"],
     queryFn: () => materialsApi.getMyPosts({ limit: 50 }),
@@ -34,27 +43,50 @@ export const MyPostsPage: React.FC = () => {
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => materialsApi.updateStatus(id, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-materials"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-materials"] });
+      toast.success("Đã cập nhật trạng thái bài đăng");
+    },
+    onError: () => toast.error("Không thể cập nhật trạng thái"),
   });
   const updateRequest = useMutation({
     mutationFn: ({ id, status }: { id: string; status: MaterialRequest["status"] }) =>
       materialRequestsApi.updateStatus(id, status),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ["material-requests", "owner"] });
       queryClient.invalidateQueries({ queryKey: ["my-materials"] });
+      toast.success(vars.status === "approved" ? "Đã duyệt yêu cầu nhận vật liệu" : "Đã từ chối yêu cầu");
     },
+    onError: () => toast.error("Không thể xử lý yêu cầu lúc này"),
   });
   const [reviewValues, setReviewValues] = React.useState<Record<string, { rating: number; comment: string }>>({});
-  const review = useMutation({ mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment: string }) => reviewsApi.create(id, rating, comment) });
+  const review = useMutation({
+    mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment: string }) =>
+      reviewsApi.create(id, rating, comment),
+    onSuccess: () => toast.success("Đã gửi đánh giá thành công!"),
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể gửi đánh giá"),
+  });
   const verifyLocation = useMutation({
     mutationFn: (id: string) => materialsApi.verifyLocation(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-materials"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-materials"] });
+      toast.success("Đã đối chiếu tọa độ GPS với dữ liệu bản đồ");
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || "Không thể xác minh GPS lúc này"),
   });
 
-  const deletePost = async (id: string) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa tin đăng vật liệu này?")) {
-      await materialsApi.delete(id);
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleting(true);
+    try {
+      await materialsApi.delete(deleteTargetId);
       await queryClient.invalidateQueries({ queryKey: ["my-materials"] });
+      toast.success("Đã xóa bài đăng vật liệu");
+      setDeleteTargetId(null);
+    } catch {
+      toast.error("Không thể xóa bài đăng. Vui lòng thử lại.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -99,7 +131,7 @@ export const MyPostsPage: React.FC = () => {
           title="Bạn chưa có bài đăng vật liệu nào"
           description="Khi công trình của bạn chuẩn bị tháo dỡ, hãy đăng thông tin và ảnh vật liệu lên để người dân quanh khu vực có thể hỗ trợ dọn dẹp hoặc mua lại nhanh chóng."
           actionText="Đăng tin vật liệu ngay"
-          onAction={() => window.location.href = "/post"}
+          onAction={() => navigate("/post")}
         />
       ) : (
         <div className="space-y-4 animate-fadeIn">
@@ -220,8 +252,9 @@ export const MyPostsPage: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => deletePost(post._id)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors"
+                    type="button"
+                    onClick={() => setDeleteTargetId(post._id)}
+                    className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors cursor-pointer"
                     title="Xóa bài đăng"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -248,7 +281,9 @@ export const MyPostsPage: React.FC = () => {
                     Người nhận: <strong>{request.requester?.name}</strong>{request.requester?.phone ? ` · ${request.requester.phone}` : ""}
                   </div>
                   {request.message && <div className="text-xs text-slate-500 mt-1">“{request.message}”</div>}
-                  <div className="text-xs mt-1 text-emerald-700">Trạng thái: {request.status}</div>
+                  <div className="text-xs mt-1 text-emerald-700 font-semibold">
+                    Trạng thái: {REQUEST_STATUS_VI[request.status] || request.status}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Link
@@ -277,6 +312,15 @@ export const MyPostsPage: React.FC = () => {
           </div>
         </section>
       )}
+      <ConfirmModal
+        open={Boolean(deleteTargetId)}
+        title="Xóa bài đăng vật liệu?"
+        description="Bài đăng sẽ bị gỡ vĩnh viễn khỏi sàn MatGreen và không thể khôi phục."
+        confirmLabel="Xóa bài đăng"
+        loading={deleting}
+        onConfirm={() => void handleConfirmDelete()}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 };

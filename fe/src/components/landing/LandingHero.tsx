@@ -31,7 +31,7 @@ export const LandingHero: React.FC = () => {
     if (searchCategory && searchCategory !== "all") query.set("category", searchCategory);
     if (searchKeyword.trim()) query.set("search", searchKeyword.trim());
 
-    navigate(`/dashboard?${query.toString()}`);
+    navigate(`/materials?${query.toString()}`);
   };
 
   const heroImage = hero.imageUrl || DEFAULT_SITE_CONFIG.homePage.hero.imageUrl;

@@ -22,6 +22,36 @@ export function formatDistance(distanceKm?: number): string {
   return `${distanceKm.toFixed(1)} km`;
 }
 
+export function stripHtml(html?: string | null): string {
+  if (!html) return "";
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function formatRelativeTime(isoDate?: string | null): string {
+  if (!isoDate) return "";
+  const time = new Date(isoDate).getTime();
+  if (Number.isNaN(time)) return "";
+  const diffSec = Math.max(0, Math.floor((Date.now() - time) / 1000));
+  if (diffSec < 60) return "Vừa đăng";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} giờ trước`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 30) return `${diffDay} ngày trước`;
+  return new Date(isoDate).toLocaleDateString("vi-VN");
+}
+
 // Tính khoảng cách Haversine giữa tọa độ người dùng và công trình (km)
 export function calculateHaversineDistance(
   lat1: number,

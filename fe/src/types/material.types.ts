@@ -57,6 +57,17 @@ export interface MaterialItem {
 export interface NearbyMaterialsResult {
   items: MaterialItem[];
   pagination: Pagination;
-  searchRadiusKm: number;
-  searchDiameterKm: number;
+  searchRadiusKm?: number;
+  searchDiameterKm?: number;
+  summary?: {
+    totalFree: number;
+    totalSell: number;
+  };
+}
+
+export interface PublicMaterialStats {
+  totalAvailable: number;
+  totalFree: number;
+  totalSell: number;
+  totalCompleted: number;
 }

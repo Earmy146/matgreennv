@@ -104,15 +104,30 @@ class MaterialController {
 
   async list(req, res, next) {
     try {
-      const { category, type, page, limit } = req.query;
+      const { category, type, search, sort, page, limit } = req.query;
       const result = await materialService.getAllMaterials({
         category,
         type,
+        search,
+        sort,
         page,
         limit,
+        excludeUserId: req.user?.id || null,
       });
       new OK({
         message: "Lấy danh sách bài đăng thành công",
+        data: result,
+      }).send(res);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async stats(req, res, next) {
+    try {
+      const result = await materialService.getPublicStats();
+      new OK({
+        message: "Lấy thống kê sàn thành công",
         data: result,
       }).send(res);
     } catch (err) {

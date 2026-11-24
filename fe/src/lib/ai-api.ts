@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth.store";
+import { toast } from "@/stores/toast.store";
 
 const aiBaseUrl = import.meta.env.VITE_AI_BASE_URL ?? "/ai-api";
 
@@ -18,5 +19,22 @@ aiApi.interceptors.request.use((config) => {
   }
   return config;
 });
+
+let lastAiLogoutAt = 0;
+
+aiApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401 && useAuthStore.getState().token) {
+      useAuthStore.getState().logout();
+      const now = Date.now();
+      if (now - lastAiLogoutAt > 4000) {
+        lastAiLogoutAt = now;
+        toast.warning("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để sử dụng MatGreen AI.");
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default aiApi;
