@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LocateFixed,
   Upload,
@@ -7,30 +7,34 @@ import {
   AlertCircle,
   Loader2,
   X,
-  Image as ImageIcon,
   Phone,
   Clock,
   User,
   MessageCircle,
+  Sparkles,
+  Camera,
 } from "lucide-react";
 import { useLocationStore } from "@/stores/location.store";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { materialsApi, uploadApi } from "@/services/api";
+import { aiMaterialsApi, materialsApi, uploadApi } from "@/services/api";
 import { CATEGORY_LABELS } from "@/lib/utils";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
+import type { InspectMaterialResult, MaterialPostPrefill } from "@/types/ai.types";
 
 export const PostMaterialPage: React.FC = () => {
   const navigate = useNavigate();
+  const routeLocation = useLocation();
+  const aiPrefill = (routeLocation.state as { aiPrefill?: MaterialPostPrefill } | null)?.aiPrefill;
   const { latitude, longitude, address, accuracy, capturedAt, setLocation } = useLocationStore();
   const { getCurrentLocation, isLocating } = useGeolocation();
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "sat_thep",
-    type: "free",
-    price: 0,
-    unit: "gói",
+    title: aiPrefill?.title || "",
+    description: aiPrefill?.description || "",
+    category: aiPrefill?.category || "sat_thep",
+    type: aiPrefill?.type || "free",
+    price: aiPrefill?.price ?? 0,
+    unit: aiPrefill?.unit || "gói",
     contactName: "",
     contactPhone: "",
     contactZalo: "",
@@ -46,8 +50,83 @@ export const PostMaterialPage: React.FC = () => {
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [aiInspecting, setAiInspecting] = useState(false);
+  const [aiResult, setAiResult] = useState<InspectMaterialResult | null>(null);
+  const [aiNotice, setAiNotice] = useState<string | null>(
+    aiPrefill?.sourceLabel
+      ? `Đã điền sẵn thông tin từ "${aiPrefill.sourceLabel}". Bạn hãy bổ sung ảnh thực tế, GPS và SĐT trước khi đăng nhé!`
+      : null
+  );
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (aiPrefill) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [aiPrefill]);
+
+  // Chụp/chọn ảnh vật liệu -> AI Vision nhận diện & tự điền biểu mẫu + tự động tải ảnh lên tin đăng
+  const handleAiInspectFromFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []).slice(0, 4);
+    if (!selected.length) return;
+    e.target.value = "";
+
+    for (const file of selected) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        setError("AI Vision chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Mỗi ảnh gửi phân tích AI tối đa 5 MB.");
+        return;
+      }
+    }
+
+    setAiInspecting(true);
+    setError(null);
+    setAiNotice(null);
+
+    try {
+      // Chạy song song: gọi AI Vision nhận diện & upload ảnh lên gallery bài đăng
+      const [inspectRes, uploadedUrls] = await Promise.all([
+        aiMaterialsApi.inspectMaterialImages(selected, formData.title, formData.address),
+        Promise.all(
+          selected.map((file) =>
+            uploadApi
+              .uploadImage(file, "materials")
+              .then((r) => r.url)
+              .catch(() => null)
+          )
+        ),
+      ]);
+
+      const validUrls = uploadedUrls.filter((u): u is string => Boolean(u));
+      const { draft } = inspectRes;
+      setAiResult(inspectRes);
+      setFormData((prev) => ({
+        ...prev,
+        title: draft.title || prev.title,
+        category: draft.category || prev.category,
+        type: draft.type === "sell" ? "sell" : "free",
+        price: draft.type === "sell" ? Math.round(draft.price || 0) : 0,
+        unit: draft.unit || prev.unit,
+        description: draft.description || prev.description,
+        images: validUrls.length ? [...prev.images, ...validUrls] : prev.images,
+      }));
+      setAiNotice(
+        `AI đã nhận diện ảnh (độ tin cậy ${Math.round((draft.confidence || 0.75) * 100)}%, tình trạng ~${draft.condition_score}%) và tự điền biểu mẫu giúp bạn. Vui lòng kiểm tra lại giá và số lượng trước khi đăng!`
+      );
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          "Không thể phân tích ảnh bằng AI lúc này. Bạn vẫn có thể điền thủ công bên dưới."
+      );
+    } finally {
+      setAiInspecting(false);
+    }
+  };
 
   // Upload ảnh thực tế từ thiết bị lên máy chủ
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,10 +224,72 @@ export const PostMaterialPage: React.FC = () => {
 
         {error && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-rose-600" />
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
             <span>{error}</span>
           </div>
         )}
+
+        {/* AI Vision Auto-Fill Banner */}
+        <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50/60 to-white border border-emerald-200 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-800 uppercase tracking-wider">
+                <Sparkles className="w-4 h-4 text-emerald-600" />
+                AI Nhận Diện Ảnh & Tự Điền Tin Đăng
+              </div>
+              <p className="text-xs text-slate-600">
+                Chọn 1–4 ảnh vật liệu thực tế — MatGreen Vision AI sẽ tự động nhận diện loại vật liệu, gợi ý giá thanh lý/cho tặng, viết mô tả và gắn luôn ảnh vào bài đăng.
+              </p>
+            </div>
+            <label
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all shrink-0 ${
+                aiInspecting ? "opacity-60 cursor-wait" : "cursor-pointer active:scale-95"
+              }`}
+            >
+              {aiInspecting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>AI đang đọc ảnh...</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="w-4 h-4" />
+                  <span>Chụp / Chọn ảnh để AI điền</span>
+                </>
+              )}
+              <input
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                disabled={aiInspecting}
+                onChange={handleAiInspectFromFiles}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          {aiNotice && (
+            <div className="p-3 rounded-xl bg-white/90 border border-emerald-200 text-xs text-emerald-900 space-y-1.5">
+              <div className="font-semibold flex items-start gap-1.5">
+                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>{aiNotice}</span>
+              </div>
+              {aiResult?.summary && (
+                <p className="text-slate-600 pl-5">
+                  <strong>Nhận định AI:</strong> {aiResult.summary}
+                  {aiResult.draft.estimated_quantity ? ` (Ước lượng: ${aiResult.draft.estimated_quantity})` : ""}
+                </p>
+              )}
+              {aiResult?.warnings && aiResult.warnings.length > 0 && (
+                <ul className="pl-5 list-disc text-amber-800 space-y-0.5">
+                  {aiResult.warnings.map((w, idx) => (
+                    <li key={idx}>{w}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}

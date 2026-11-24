@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { DashboardTopbar } from "./DashboardTopbar";
+import { FloatingAiAssistant } from "@/components/ai/FloatingAiAssistant";
 
 export const DashboardLayout: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -33,6 +34,8 @@ export const DashboardLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      <FloatingAiAssistant />
     </div>
   );
 };

@@ -11,6 +11,7 @@ const favoriteRoutes = require("./favorite.routes");
 const reviewRoutes = require("./review.routes");
 const reportRoutes = require("./report.routes");
 const adminRoutes = require("./admin.routes");
+const aiRoutes = require("./ai.routes");
 
 router.get("/health", (req, res) => {
   res.json({
@@ -30,6 +31,7 @@ router.use("/favorites", favoriteRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/reports", reportRoutes);
 router.use("/admin", adminRoutes);
+router.use("/ai", aiRoutes);
 
 // Articles / News
 const articleRoutes = require("./article.routes");

@@ -1,6 +1,9 @@
 from datetime import UTC, datetime
 from fastapi import APIRouter
+
 from app.config import settings
+from app.services.proxy_llm import proxy_llm
+from app.services.redis_client import check_redis_health
 
 router = APIRouter(prefix="/health", tags=["Health"])
 
@@ -16,10 +19,15 @@ async def health_live():
 
 @router.get("/ready")
 async def health_ready():
-    has_key = bool(settings.groq_api_key)
+    redis_ok, redis_state = check_redis_health()
+    proxy_ok, proxy_state = await proxy_llm.probe_proxy()
     return {
-        "status": "ok" if has_key else "ready_without_llm_key",
+        "status": "ok" if (redis_ok and proxy_ok) else "degraded",
         "service": "matgreen-ai",
-        "model": settings.groq_model,
-        "has_groq_key": has_key,
+        "chat_model": settings.ai_chat_model,
+        "fallback_model": settings.ai_fallback_model,
+        "vision_model": settings.ai_vision_model,
+        "proxy_configured": proxy_llm.is_chat_configured(),
+        "proxy_status": proxy_state,
+        "redis_status": redis_state,
     }

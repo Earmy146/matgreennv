@@ -2,6 +2,13 @@ import api from "@/lib/api";
 import aiApi from "@/lib/ai-api";
 import type { MaterialItem, NearbyMaterialsResult } from "@/types/material.types";
 import type { NewsArticle } from "@/types/news.types";
+import type {
+  AiChatResponse,
+  ChatQuotaInfo,
+  DemolitionAnalysisResult,
+  InspectMaterialResult,
+  UserAiQuota,
+} from "@/types/ai.types";
 
 export const materialsApi = {
   getNearby: async (params: {
@@ -254,17 +261,86 @@ export const siteConfigApi = {
 };
 
 export const aiMaterialsApi = {
-  analyzeDemolition: async (description: string, address?: string) => {
-    const res = await aiApi.post("/ai/materials/analyze-demolition", {
+  analyzeDemolition: async (
+    description: string,
+    address?: string
+  ): Promise<DemolitionAnalysisResult> => {
+    const res = await aiApi.post<DemolitionAnalysisResult>("/ai/materials/analyze-demolition", {
       description,
-      address,
+      address: address || undefined,
     });
     return res.data;
   },
 
-  chatAdvice: async (messages: Array<{ role: string; content: string }>, context?: string) => {
-    const res = await aiApi.post("/ai/chat", { messages, context });
+  analyzeDemolitionWithImages: async (
+    files: File[],
+    description = "",
+    address = ""
+  ): Promise<DemolitionAnalysisResult> => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("images", file));
+    if (description.trim()) formData.append("description", description.trim());
+    if (address.trim()) formData.append("address", address.trim());
+
+    const res = await api.post<{ data: DemolitionAnalysisResult }>(
+      "/ai/analyze-demolition-images",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 120000,
+      }
+    );
+    return res.data.data;
+  },
+
+  inspectMaterialImages: async (
+    files: File[],
+    note = "",
+    address = ""
+  ): Promise<InspectMaterialResult> => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("images", file));
+    if (note.trim()) formData.append("note", note.trim());
+    if (address.trim()) formData.append("address", address.trim());
+
+    const res = await api.post<{ data: InspectMaterialResult }>(
+      "/ai/inspect-material",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 120000,
+      }
+    );
+    return res.data.data;
+  },
+
+  chatAdvice: async (payload: {
+    messages: Array<{ role: "user" | "assistant"; content: string }>;
+    context?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    radius_km?: number;
+    material_id?: string | null;
+  }): Promise<AiChatResponse> => {
+    const res = await aiApi.post<AiChatResponse>("/ai/chat", {
+      messages: payload.messages,
+      context: payload.context || undefined,
+      latitude: payload.latitude ?? undefined,
+      longitude: payload.longitude ?? undefined,
+      radius_km: payload.radius_km ?? 10,
+      material_id: payload.material_id || undefined,
+    });
     return res.data;
+  },
+
+  getChatQuota: async (): Promise<ChatQuotaInfo> => {
+    const res = await aiApi.get<ChatQuotaInfo>("/ai/chat/quota");
+    return res.data;
+  },
+
+  getUserQuota: async (): Promise<UserAiQuota> => {
+    const res = await api.get<{ data: UserAiQuota }>("/ai/quota");
+    return res.data.data;
   },
 };
 

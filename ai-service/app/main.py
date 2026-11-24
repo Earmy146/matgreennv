@@ -7,15 +7,17 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.config import settings
+from app.routers.chat import router as chat_router
 from app.routers.health import router as health_router
 from app.routers.materials_ai import router as materials_ai_router
-from app.routers.chat import router as chat_router
+from app.routers.vision_internal import router as vision_internal_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
 app = FastAPI(
     title="MatGreen AI Service",
-    description="Microservice AI tư vấn và phân tích bóc tách vật liệu xây dựng/tháo dỡ",
-    version="1.0.0",
+    description="Microservice AI tư vấn, tra cứu kho vật liệu (Tool Calling) và nhận diện/bóc tách vật liệu bằng Vision AI qua cli-proxy-public",
+    version="2.0.0",
 )
 
 
@@ -28,7 +30,6 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         return response
 
 
-# CORS config
 origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
 if "*" not in origins:
     origins.extend(["http://localhost:5173", "http://127.0.0.1:5173"])
@@ -43,16 +44,16 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Include Routers
 app.include_router(health_router)
 app.include_router(materials_ai_router)
 app.include_router(chat_router)
+app.include_router(vision_internal_router)
 
 
 @app.get("/")
 async def root():
     return {
-        "message": "MatGreen AI Service is operational",
+        "message": "MatGreen AI Service v2 is operational",
         "docs": "/docs",
-        "health": "/health/live",
+        "health": "/health/ready",
     }

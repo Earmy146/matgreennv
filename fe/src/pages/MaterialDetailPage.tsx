@@ -12,9 +12,11 @@ import {
   User,
   CheckCircle2,
   Heart,
+  Sparkles,
 } from "lucide-react";
 import { favoritesApi, materialRequestsApi, materialsApi, reportsApi } from "@/services/api";
 import { useAuthStore } from "@/stores/auth.store";
+import { useAiAssistantStore } from "@/stores/ai-assistant.store";
 import { formatCurrency, formatDistance, CATEGORY_LABELS } from "@/lib/utils";
 import { useLocationStore } from "@/stores/location.store";
 import { MaterialMap } from "@/components/map/MaterialMap";
@@ -27,6 +29,7 @@ export const MaterialDetailPage: React.FC = () => {
   const [reportReason, setReportReason] = useState("");
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuthStore();
+  const openAiDrawer = useAiAssistantStore((state) => state.openDrawer);
   const favoriteStatus = useQuery({
     queryKey: ["favorite-status", id],
     queryFn: () => favoritesApi.status(id as string),
@@ -125,17 +128,32 @@ export const MaterialDetailPage: React.FC = () => {
           <div className="space-y-4">
             <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider">{CATEGORY_LABELS[material.category] || "Vật liệu khác"}</div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">{material.title}</h1>
-            {isAuthenticated && (
+            <div className="flex flex-wrap items-center gap-2">
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={() => favoriteMutation.mutate()}
+                  disabled={favoriteMutation.isPending}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer ${favoriteStatus.data?.saved ? "border-rose-200 bg-rose-50 text-rose-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <Heart className={`w-4 h-4 ${favoriteStatus.data?.saved ? "fill-current" : ""}`} />
+                  {favoriteStatus.data?.saved ? "Đã lưu bài này" : "Lưu bài này"}
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => favoriteMutation.mutate()}
-                disabled={favoriteMutation.isPending}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold ${favoriteStatus.data?.saved ? "border-rose-200 bg-rose-50 text-rose-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+                onClick={() =>
+                  openAiDrawer({
+                    materialContext: { materialId: material._id, title: material.title },
+                    prompt: `Hãy thẩm định giúp mình lô vật liệu "${material.title}": mức giá/hình thức có hợp lý không, cần loại xe nào để chở và cần kiểm tra những điểm gì khi đến lấy?`,
+                  })
+                }
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
               >
-                <Heart className={`w-4 h-4 ${favoriteStatus.data?.saved ? "fill-current" : ""}`} />
-                {favoriteStatus.data?.saved ? "Đã lưu bài này" : "Lưu bài này"}
+                <Sparkles className="w-3.5 h-3.5" />
+                Hỏi AI thẩm định lô này
               </button>
-            )}
+            </div>
             <div className="text-2xl font-extrabold text-amber-600">
               {formatCurrency(material.price)}{material.unit && !isFree ? ` / ${material.unit}` : ""}
             </div>
