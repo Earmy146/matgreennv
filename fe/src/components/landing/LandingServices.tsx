@@ -28,17 +28,13 @@ export const LandingServices: React.FC = () => {
   return (
     <section
       id="services"
-      className="py-20 lg:py-28 bg-stone-100 relative"
+      className="py-20 lg:py-28 bg-slate-100/80 relative"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-        {/* Section Header Solox Style */}
+        {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <img
-            src="/assets/images/shapes/sec-title-s-1.png"
-            alt="Solox decorative icon"
-            className="mx-auto mb-3 h-5 w-auto object-contain"
-          />
-          <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3 font-sans">
+            <Recycle className="w-3.5 h-3.5" />
             {servicesConfig.badge || "Dịch Vụ Tuần Hoàn Toàn Diện"}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">
@@ -81,12 +77,7 @@ export const LandingServices: React.FC = () => {
                     {item.title}
                   </h3>
 
-                  {/* Decorative divider wave shape */}
-                  <img
-                    src="/assets/images/shapes/service-card-two-s-1.png"
-                    alt="Divider"
-                    className="my-3 h-2 w-auto opacity-60"
-                  />
+                  <div className="w-10 h-1 rounded-full bg-emerald-500/70 my-3" />
 
                   <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     {item.desc}

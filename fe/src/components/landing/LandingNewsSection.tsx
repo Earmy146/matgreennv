@@ -16,16 +16,12 @@ export const LandingNewsSection: React.FC = () => {
   const latestArticles = articles.slice(0, 3);
 
   return (
-    <section id="news" className="py-20 lg:py-28 bg-stone-50 relative z-20">
+    <section id="news" className="py-20 lg:py-28 bg-slate-50 relative z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Section Header Solox Style */}
+        {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <img
-            src="/assets/images/shapes/sec-title-s-1.png"
-            alt="Decorative"
-            className="mx-auto mb-3 h-5 w-auto object-contain"
-          />
-          <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 block mb-2 font-sans">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3 font-sans">
+            <Calendar className="w-3.5 h-3.5" />
             {badge}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight font-display">

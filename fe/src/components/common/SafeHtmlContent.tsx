@@ -6,7 +6,7 @@ interface SafeHtmlContentProps {
   className?: string;
 }
 
-function sanitizeHtml(raw: string): string {
+export function sanitizeHtml(raw: string): string {
   // Remove dangerous tags and inline event handlers
   return raw
     .replace(/<(script|iframe|object|embed|style|form|meta|link)[^>]*>[\s\S]*?<\/\1>/gi, "")

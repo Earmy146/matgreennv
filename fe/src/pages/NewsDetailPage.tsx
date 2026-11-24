@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
 import {
   Calendar,
   Clock,
@@ -7,24 +7,16 @@ import {
   ArrowLeft,
   Share2,
   Tag,
-  Building2,
-  Compass,
-  ArrowRight,
-  User,
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { sanitizeHtml } from "@/components/common/SafeHtmlContent";
 import { useNewsStore } from "@/stores/news.store";
-import { useSiteConfigStore } from "@/stores/site-config.store";
+import { toast } from "@/stores/toast.store";
 
 export const NewsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { articles, getArticleBySlugOrId, incrementViews } = useNewsStore();
-  const { config } = useSiteConfigStore();
-
-  const headerBg =
-    config.newsPage?.header?.bgImageUrl || "/assets/images/backgrounds/page-header-bg-1-1.jpg";
 
   const article = getArticleBySlugOrId(id || "");
 
@@ -32,7 +24,22 @@ export const NewsDetailPage: React.FC = () => {
     if (article) {
       incrementViews(article.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article?.id]);
+
+  const safeHtml = useMemo(() => {
+    if (!article?.content) return "";
+    return sanitizeHtml(article.content);
+  }, [article?.content]);
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Đã sao chép đường dẫn bài viết!");
+    } catch {
+      toast.info("Hãy sao chép đường dẫn trên thanh địa chỉ trình duyệt.");
+    }
+  };
 
   if (!article) {
     return (
@@ -57,7 +64,6 @@ export const NewsDetailPage: React.FC = () => {
     );
   }
 
-  // Lấy các bài viết khác làm bài viết liên quan
   const relatedArticles = articles
     .filter((item) => item.id !== article.id)
     .slice(0, 2);
@@ -66,38 +72,35 @@ export const NewsDetailPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       <LandingHeader />
 
-      {/* Solox Page Header Banner */}
-      <section className="relative py-16 lg:py-20 bg-slate-900 text-white overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{ backgroundImage: `url('${headerBg}')` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-slate-900/80 to-slate-900/90" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          <span className="text-emerald-400 font-serif italic text-base sm:text-lg tracking-wider">
-            {article.category}
-          </span>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mt-2 tracking-tight leading-snug max-w-3xl mx-auto">
-            {article.title}
-          </h1>
-          <div className="flex items-center justify-center gap-2 text-xs text-slate-300 mt-4 font-medium flex-wrap">
-            <Link to="/" className="hover:text-emerald-400">Trang chủ</Link>
+      {/* Compact Breadcrumb Bar (No duplicate H1) */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-slate-500 min-w-0">
+            <Link to="/news" className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline shrink-0">
+              <ArrowLeft className="w-3.5 h-3.5" /> Cẩm nang
+            </Link>
             <span>/</span>
-            <Link to="/news" className="hover:text-emerald-400">Tin tức</Link>
-            <span>/</span>
-            <span className="text-emerald-400">Chi tiết bài viết</span>
+            <span className="truncate text-slate-600 font-medium">{article.category}</span>
           </div>
-        </div>
-      </section>
 
-      <main className="flex-1 py-10 lg:py-14">
+          <button
+            type="button"
+            onClick={() => void handleShare()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold text-slate-700 cursor-pointer shrink-0"
+          >
+            <Share2 className="w-3.5 h-3.5" /> Chia sẻ
+          </button>
+        </div>
+      </div>
+
+      <main className="flex-1 py-8 lg:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-sm mb-8">
-            <div className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 mb-4">
+          <article className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-sm mb-8">
+            <div className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/70 mb-4">
               {article.category}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight mb-5">
               {article.title}
             </h1>
 
@@ -135,7 +138,7 @@ export const NewsDetailPage: React.FC = () => {
             </div>
 
             {/* Banner Image */}
-            <div className="mt-6 rounded-2xl overflow-hidden">
+            <div className="mt-6 rounded-2xl overflow-hidden bg-slate-100">
               <img
                 src={article.bannerImage || article.thumbnail}
                 alt={article.title}
@@ -144,40 +147,42 @@ export const NewsDetailPage: React.FC = () => {
             </div>
 
             {/* Lead Excerpt */}
-            <div className="mt-6 p-4 rounded-2xl bg-emerald-50/60 border-l-4 border-emerald-600 text-slate-700 text-sm font-medium leading-relaxed italic">
+            <div className="mt-6 p-4 rounded-2xl bg-emerald-50/60 border-l-4 border-emerald-600 text-slate-700 text-sm font-medium leading-relaxed">
               {article.excerpt}
             </div>
 
-            {/* Main Content Body (Rich Text Render) */}
+            {/* Sanitized Rich Text Body */}
             <div
               className="mt-8 news-rich-text font-normal"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: safeHtml }}
             />
 
             {/* Tags */}
-            <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 flex items-center gap-1 mr-2">
-                <Tag className="w-3.5 h-3.5" /> Từ khóa:
-              </span>
-              {article.tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium"
-                >
-                  #{tag}
+            {article.tags?.length > 0 && (
+              <div className="mt-10 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 flex items-center gap-1 mr-2">
+                  <Tag className="w-3.5 h-3.5" /> Từ khóa:
                 </span>
-              ))}
-            </div>
-          </div>
+                {article.tags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </article>
 
-          {/* CTA Box: You have demolition materials? */}
+          {/* CTA Box */}
           <div className="bg-gradient-to-r from-emerald-800 to-teal-900 text-white rounded-3xl p-8 shadow-xl mb-12 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="space-y-2 text-center sm:text-left">
               <h3 className="text-xl font-bold">
                 Bạn Có Công Trình Cần Đập Phá Hay Thừa Vật Liệu?
               </h3>
               <p className="text-xs sm:text-sm text-emerald-100 max-w-md">
-                Đăng tin ngay lên MatGreen hoàn toàn miễn phí. Hàng trăm nhà thầu và người dân quanh bạn sẽ đến thu gom giúp bạn!
+                Đăng tin ngay lên MatGreen hoàn toàn miễn phí. Nhà thầu và hộ dân quanh bạn sẽ đến thu gom nhanh chóng!
               </p>
             </div>
 

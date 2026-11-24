@@ -78,11 +78,9 @@ export const NewsPage: React.FC = () => {
       >
         <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <img
-            src="/assets/images/shapes/page-header-s-1.png"
-            alt="Page header shape"
-            className="mx-auto mb-4 h-6 w-auto object-contain brightness-0 invert opacity-80"
-          />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 mb-4 border border-emerald-500/30">
+            <Newspaper className="w-6 h-6" />
+          </div>
           <ul className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
             <li><Link to="/" className="hover:underline text-slate-300">Trang Chủ</Link></li>
             <li>/</li>
@@ -94,14 +92,16 @@ export const NewsPage: React.FC = () => {
           <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mx-auto mt-3 leading-relaxed">
             {headerSubtitle}
           </p>
-          <div className="mt-5">
-            <Link
-              to="/admin/news"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
-            >
-              <Settings className="w-4 h-4" /> Bảng Quản Trị: Thêm & Chỉnh Sửa Bài Viết
-            </Link>
-          </div>
+          {(user?.role === "admin" || user?.role === "superadmin") && (
+            <div className="mt-5">
+              <Link
+                to="/admin/news"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
+              >
+                <Settings className="w-4 h-4" /> Quản trị bài viết
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

@@ -43,12 +43,8 @@ export const LandingWhyChoose: React.FC = () => {
           {/* Cột Trái (5 Cột): Tiêu Đề & Lời Kêu Gọi */}
           <div className="lg:col-span-5 space-y-6">
             <div>
-              <img
-                src="/assets/images/shapes/why-choose-2-s-2.png"
-                alt="Decorative leaf"
-                className="mb-3 h-5 w-auto object-contain brightness-0 invert opacity-90"
-              />
-              <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-2 font-sans">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-xs font-bold uppercase tracking-wider text-emerald-300 mb-3 font-sans">
+                <Leaf className="w-3.5 h-3.5" />
                 {whyConfig.badge || "Lợi Thế Vượt Trội"}
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight font-display leading-tight">

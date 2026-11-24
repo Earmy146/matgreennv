@@ -39,24 +39,18 @@ export const LandingHero: React.FC = () => {
   const highlights = hero.highlights?.length ? hero.highlights : DEFAULT_SITE_CONFIG.homePage.hero.highlights;
 
   return (
-    <section className="relative bg-stone-100 overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28">
-      {/* Background shape pattern từ Solox index-3.html (slider-3-bg-1.png) */}
+    <section className="relative bg-slate-50 overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28 border-b border-slate-200/70">
+      {/* Subtle Eco-Tech Architectural Grid + Emerald Radial Glow */}
       <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-40 z-0"
-        style={{ backgroundImage: "url('/assets/images/shapes/slider-3-bg-1.png')" }}
+        className="absolute inset-0 pointer-events-none opacity-[0.4] z-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(#cbd5e1 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       />
-
-      {/* Decorative floating shapes bên trái và phải (slider-3-shape-1 & 2) */}
-      <img
-        src="/assets/images/shapes/slider-3-shape-2.png"
-        alt="Decorative shape"
-        className="absolute top-10 left-0 max-w-[150px] sm:max-w-[220px] pointer-events-none opacity-80 z-0 animate-float"
-      />
-      <img
-        src="/assets/images/shapes/slider-3-shape-1.png"
-        alt="Decorative shape"
-        className="absolute bottom-10 right-0 max-w-[150px] sm:max-w-[220px] pointer-events-none opacity-80 z-0"
-      />
+      <div className="absolute -top-28 -left-24 w-96 h-96 bg-emerald-200/45 rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-200/35 rounded-full blur-3xl pointer-events-none z-0" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">

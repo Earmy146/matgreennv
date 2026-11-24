@@ -315,6 +315,19 @@ export const adminApi = {
 export const siteConfigApi = {
   get: async () => (await api.get("/site-config")).data.data,
   update: async (data: any) => (await api.put("/admin/site-config", data)).data.data,
+  submitContact: async (payload: {
+    name: string;
+    phone: string;
+    email?: string;
+    subject?: string;
+    message?: string;
+  }) => {
+    const res = await api.post<{ message: string; data: { received: boolean } }>(
+      "/site-config/contact",
+      payload
+    );
+    return res.data;
+  },
 };
 
 export const aiMaterialsApi = {

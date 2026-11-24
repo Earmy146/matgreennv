@@ -60,6 +60,7 @@ export const router = createBrowserRouter([
       { path: "/contact", element: withSuspense(<ContactPage />) },
       { path: "/news", element: withSuspense(<NewsPage />) },
       { path: "/news/:id", element: withSuspense(<NewsDetailPage />) },
+      { path: "/login", element: <LoginPage /> },
 
       // Admin Portal Hub
       {
@@ -158,7 +159,6 @@ export const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
-          { path: "login", element: <LoginPage /> },
         ],
       },
       { path: "*", element: <NotFoundPage /> },

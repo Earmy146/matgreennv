@@ -37,8 +37,9 @@ router.use("/ai", aiRoutes);
 const articleRoutes = require("./article.routes");
 router.use("/articles", articleRoutes);
 
-// Public Site Config endpoint
+// Public Site Config & Contact endpoint
 const siteConfigController = require("../controllers/site-config.controller");
 router.get("/site-config", siteConfigController.get);
+router.post("/site-config/contact", siteConfigController.submitContact);
 
 module.exports = router;

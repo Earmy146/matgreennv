@@ -4,12 +4,10 @@ import {
   Phone,
   Mail,
   MapPin,
-  Clock,
   Send,
   CheckCircle2,
   Building,
-  Truck,
-  MessageCircle,
+  Loader2,
   Recycle,
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
@@ -17,10 +15,13 @@ import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingOpening } from "@/components/landing/LandingOpening";
 import { LandingBrands } from "@/components/landing/LandingBrands";
 import { useSiteConfigStore } from "@/stores/site-config.store";
+import { siteConfigApi } from "@/services/api";
+import { toast } from "@/stores/toast.store";
 
 export const ContactPage: React.FC = () => {
   const { config } = useSiteConfigStore();
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -29,11 +30,13 @@ export const ContactPage: React.FC = () => {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    setSubmitting(true);
+    try {
+      const res = await siteConfigApi.submitContact(formData);
+      setSubmitted(true);
+      toast.success(res.message || "Đã gửi thông tin liên hệ tới đội ngũ MatGreen!");
       setFormData({
         name: "",
         phone: "",
@@ -41,7 +44,13 @@ export const ContactPage: React.FC = () => {
         subject: "",
         message: "",
       });
-    }, 4000);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || "Không thể gửi yêu cầu lúc này. Vui lòng thử lại."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const offices = config?.contact?.offices?.length
@@ -198,10 +207,15 @@ export const ContactPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="solox-btn solox-btn--emerald w-full shadow-md text-sm cursor-pointer active:scale-98"
+                  disabled={submitting}
+                  className="solox-btn solox-btn--emerald w-full shadow-md text-sm cursor-pointer active:scale-98 disabled:opacity-60"
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  <span>Gửi Yêu Cầu Hỗ Trợ Ngay</span>
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4 mr-2" />
+                  )}
+                  <span>{submitting ? "Đang gửi yêu cầu..." : "Gửi Yêu Cầu Hỗ Trợ Ngay"}</span>
                 </button>
 
                 {submitted && (
