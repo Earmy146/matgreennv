@@ -15,20 +15,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
 
-  // 1. Nếu chưa đăng nhập: chuyển hướng về trang login kèm redirect URL
+  // 1. Nếu chưa đăng nhập: chuyển hướng về trang login kèm redirect URL đầy đủ (cả query string)
   if (!isAuthenticated || !user) {
+    const targetPath = `${location.pathname}${location.search || ""}`;
     return (
       <Navigate
-        to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
+        to={`/login?redirect=${encodeURIComponent(targetPath)}`}
         replace
-        state={{ message: "Vui lòng đăng nhập tài khoản để thực hiện tính năng này." }}
+        state={{ infoMessage: "Đăng nhập tài khoản để tiếp tục sử dụng tính năng này." }}
       />
     );
   }
 
-  // 2. Nếu có yêu cầu quyền admin mà tài khoản không phải admin
-  const roleLevels = { user: 0, moderator: 1, admin: 2, superadmin: 3 };
-  if (requiredRole && roleLevels[user.role] < roleLevels[requiredRole]) {
+  // 2. Nếu có yêu cầu quyền quản trị mà tài khoản không đủ cấp bậc
+  const roleLevels: Record<string, number> = { user: 0, moderator: 1, admin: 2, superadmin: 3 };
+  const currentLevel = roleLevels[user.role] ?? 0;
+  if (requiredRole && currentLevel < roleLevels[requiredRole]) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-6 text-center">
         <div className="max-w-md bg-white p-8 rounded-3xl border border-rose-200 shadow-xl space-y-4">

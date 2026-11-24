@@ -8,6 +8,7 @@ const env = require("../config/env");
 const {
   BadRequestError,
   AuthFailureError,
+  ForbiddenError,
   ConflictRequestError,
   NotFoundError,
 } = require("../core/error.response");
@@ -165,6 +166,10 @@ class AuthService {
       throw new AuthFailureError("Email hoặc mật khẩu không chính xác");
     }
 
+    if (user.isSuspended) {
+      throw new ForbiddenError("Tài khoản của bạn hiện đang bị tạm khóa bởi quản trị viên");
+    }
+
     // Kiểm tra tài khoản đã kích hoạt qua Gmail chưa
     if (!user.isVerified) {
       const otpCode = this.generateOtp();
@@ -192,6 +197,15 @@ class AuthService {
       user: this.sanitizeUser(user),
       token,
     };
+  }
+
+  async getMe(userId) {
+    const user = await User.findById(userId);
+    if (!user) throw new NotFoundError("Không tìm thấy tài khoản");
+    if (user.isSuspended) {
+      throw new ForbiddenError("Tài khoản của bạn hiện đang bị tạm khóa");
+    }
+    return this.sanitizeUser(user);
   }
 
   async updateProfile(userId, { name, phone, address, bio, avatar }) {

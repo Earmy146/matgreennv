@@ -10,7 +10,6 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -28,8 +27,29 @@ api.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     const reqUrl: string = error?.config?.url || "";
-    const isAuthEndpoint = reqUrl.includes("/auth/login") || reqUrl.includes("/auth/register");
-    if (status === 401 && !isAuthEndpoint && useAuthStore.getState().token) {
+
+    // Không tự động logout đối với các endpoint xác thực hoặc đổi mật khẩu
+    const isNonSessionAuthCall =
+      reqUrl.includes("/auth/login") ||
+      reqUrl.includes("/auth/register") ||
+      reqUrl.includes("/auth/verify-email") ||
+      reqUrl.includes("/auth/resend-otp") ||
+      reqUrl.includes("/auth/forgot-password") ||
+      reqUrl.includes("/auth/reset-password") ||
+      reqUrl.includes("/auth/change-password");
+
+    const authHeader: string =
+      error?.config?.headers?.Authorization || error?.config?.headers?.authorization || "";
+    const sentToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    const currentToken = useAuthStore.getState().token;
+
+    // Chỉ đăng xuất khi đúng token hiện tại bị máy chủ từ chối (401)
+    if (
+      status === 401 &&
+      !isNonSessionAuthCall &&
+      Boolean(currentToken) &&
+      sentToken === currentToken
+    ) {
       useAuthStore.getState().logout();
       const now = Date.now();
       if (now - lastAuthLogoutAt > 4000) {

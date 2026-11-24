@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   ArrowLeft,
@@ -8,6 +8,7 @@ import {
   Compass,
   Eye,
   EyeOff,
+  Info,
   KeyRound,
   Lock,
   Mail,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { authApi } from "@/services/api";
+import { toast } from "@/stores/toast.store";
 import { BrandLogo } from "@/components/common/BrandLogo";
 
 type AuthMode = "login" | "register" | "verify" | "forgot" | "reset";
@@ -53,7 +55,7 @@ export const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const explicitRedirect = searchParams.get("redirect");
 
-  const { setAuth } = useAuthStore();
+  const { user, isAuthenticated, setAuth } = useAuthStore();
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
@@ -69,13 +71,18 @@ export const LoginPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [resendCountdown, setResendCountdown] = useState(0);
 
   useEffect(() => {
-    if (location.state && (location.state as any).message) {
-      setErrorMsg((location.state as any).message);
+    const navState = location.state as { infoMessage?: string; message?: string } | null;
+    const notice = navState?.infoMessage || navState?.message;
+    if (notice) {
+      setInfoMsg(notice);
+      // Xóa state khỏi history để F5 hoặc Back không bao giờ hiện lặp lại thông báo cũ
+      window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
@@ -86,22 +93,42 @@ export const LoginPage: React.FC = () => {
   }, [resendCountdown]);
 
   const clearMessages = () => {
+    setInfoMsg(null);
     setErrorMsg(null);
     setSuccessMsg(null);
   };
 
   const resolveDestination = (role?: string) => {
-    if (explicitRedirect) return explicitRedirect;
-    if (role === "admin" || role === "moderator") return "/admin";
+    if (explicitRedirect && explicitRedirect.startsWith("/") && !explicitRedirect.startsWith("/login")) {
+      return explicitRedirect;
+    }
+    if (role === "admin" || role === "superadmin" || role === "moderator") return "/admin";
     return "/dashboard";
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Nếu người dùng đã đăng nhập hợp lệ, tự động đưa thẳng tới trang đích (không giữ lại ở màn hình Login)
+  if (isAuthenticated && user) {
+    return <Navigate to={resolveDestination(user.role)} replace />;
+  }
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     clearMessages();
+
+    // Đọc fallback từ FormData phòng trường hợp trình duyệt tự động điền (autofill) chưa kịp bắn sự kiện onChange
+    const fd = new FormData(e.currentTarget);
+    const submitEmail = (email || String(fd.get("email") || "")).trim();
+    const submitPassword = password || String(fd.get("password") || "");
+
+    if (!submitEmail || !submitPassword) {
+      setErrorMsg("Vui lòng nhập đầy đủ email và mật khẩu.");
+      return;
+    }
+
+    setEmail(submitEmail);
     setLoading(true);
     try {
-      const response = await authApi.login({ email, password });
+      const response = await authApi.login({ email: submitEmail, password: submitPassword });
       const data = response.data;
 
       if (data.needVerify) {
@@ -115,8 +142,8 @@ export const LoginPage: React.FC = () => {
 
       if (data.user && data.token) {
         setAuth(data.user, data.token);
-        setSuccessMsg("Đăng nhập thành công! Đang chuyển hướng...");
-        setTimeout(() => navigate(resolveDestination(data.user.role)), 500);
+        toast.success(`Chào mừng ${data.user.name || "bạn"} quay trở lại!`);
+        navigate(resolveDestination(data.user.role), { replace: true });
       }
     } catch (err: any) {
       setErrorMsg(
@@ -174,8 +201,8 @@ export const LoginPage: React.FC = () => {
       const data = response.data;
       if (data.user && data.token) {
         setAuth(data.user, data.token);
-        setSuccessMsg("Xác thực thành công! Đang vào sàn MatGreen...");
-        setTimeout(() => navigate(resolveDestination(data.user.role)), 600);
+        toast.success("Xác thực tài khoản thành công!");
+        navigate(resolveDestination(data.user.role), { replace: true });
       } else {
         setSuccessMsg("Xác thực tài khoản thành công! Vui lòng đăng nhập.");
         setMode("login");
@@ -373,6 +400,13 @@ export const LoginPage: React.FC = () => {
               </p>
             </div>
 
+            {infoMsg && !errorMsg && (
+              <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-xs flex items-start gap-2.5">
+                <Info className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+                <div className="leading-relaxed font-medium">{infoMsg}</div>
+              </div>
+            )}
+
             {errorMsg && (
               <div className="mb-5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
@@ -398,6 +432,8 @@ export const LoginPage: React.FC = () => {
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                     <input
                       type="email"
+                      name="email"
+                      autoComplete="email"
                       required
                       placeholder="nguyenvan@gmail.com"
                       value={email}
@@ -425,6 +461,8 @@ export const LoginPage: React.FC = () => {
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                     <input
                       type={showPassword ? "text" : "password"}
+                      name="password"
+                      autoComplete="current-password"
                       required
                       placeholder="••••••••"
                       value={password}

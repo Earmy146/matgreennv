@@ -52,9 +52,10 @@ class AuthController {
 
   async me(req, res, next) {
     try {
+      const data = await authService.getMe(req.user.id);
       new OK({
         message: "Lấy thông tin tài khoản thành công",
-        data: req.user,
+        data,
       }).send(res);
     } catch (err) {
       next(err);

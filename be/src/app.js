@@ -12,10 +12,10 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// CORS configuration
+// CORS configuration (reflect origin when '*' so credentials requests never violate CORS spec)
 const allowedOrigins =
   env.CORS_ORIGINS === "*"
-    ? "*"
+    ? true
     : env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean);
 
 app.use(
